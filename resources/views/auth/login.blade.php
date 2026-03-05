@@ -1,8 +1,7 @@
 <x-guest-layout>
-    <div class="mb-6 border-b border-blue-100 pb-4">
-        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-blue-900">Secure Access</p>
-        <h1 class="mt-1 text-xl font-bold text-slate-900">PGSO Property Login</h1>
-        <p class="mt-1 text-sm text-slate-600">Sign in with your authorized government account.</p>
+    <div class="mb-6 border-b border-white/10 pb-5 text-center">
+        <h1 class="text-2xl font-black text-white tracking-tight">System Access</h1>
+        <p class="mt-1.5 text-xs font-bold text-slate-400 uppercase tracking-widest">Sign in with your authorized account</p>
     </div>
 
     <!-- Session Status -->
@@ -13,41 +12,37 @@
 
         <!-- Email Address -->
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <label for="email" class="block text-xs font-bold tracking-widest uppercase text-slate-300 mb-2">{{ __('Email Address') }}</label>
+            <input id="email" class="block w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3 text-white placeholder-white/30 shadow-inner focus:border-blue-400 focus:ring-1 focus:ring-blue-400 focus:outline-none backdrop-blur-sm transition" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" placeholder="Enter your email" />
+            <x-input-error :messages="$errors->get('email')" class="mt-2 text-rose-400 font-medium" />
         </div>
 
         <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div class="mt-6">
+            <label for="password" class="block text-xs font-bold tracking-widest uppercase text-slate-300 mb-2">{{ __('Password') }}</label>
+            <input id="password" class="block w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3 text-white placeholder-white/30 shadow-inner focus:border-blue-400 focus:ring-1 focus:ring-blue-400 focus:outline-none backdrop-blur-sm transition" type="password" name="password" required autocomplete="current-password" placeholder="Enter your password" />
+            <x-input-error :messages="$errors->get('password')" class="mt-2 text-rose-400 font-medium" />
         </div>
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-slate-300 text-blue-800 shadow-sm focus:ring-blue-700" name="remember">
-                <span class="ms-2 text-sm text-slate-600">{{ __('Remember me') }}</span>
+        <!-- Remember Me & Forgot Password -->
+        <div class="mt-6 flex items-center justify-between">
+            <label for="remember_me" class="inline-flex items-center cursor-pointer group">
+                <input id="remember_me" type="checkbox" class="h-4 w-4 rounded border-white/20 bg-white/10 text-blue-500 shadow-sm focus:ring-blue-500/50 focus:ring-offset-0 transition" name="remember">
+                <span class="ms-2 text-sm font-semibold text-slate-300 group-hover:text-white transition">{{ __('Stay signed in') }}</span>
             </label>
-        </div>
 
-        <div class="flex items-center justify-end mt-4">
             @if (Route::has('password.request'))
-                <a class="underline text-sm text-slate-600 hover:text-blue-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-700" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
+                <a class="text-sm font-bold text-blue-400 hover:text-blue-300 transition" href="{{ route('password.request') }}">
+                    {{ __('Forgot password?') }}
                 </a>
             @endif
+        </div>
 
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
+        <div class="mt-8">
+            <button type="submit" class="w-full flex justify-center items-center gap-2 rounded-xl bg-blue-600 px-4 py-3.5 text-sm font-bold tracking-wide text-white hover:bg-blue-500 transition transform active:scale-[0.98]">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                {{ __('SECURE LOG IN') }}
+            </button>
         </div>
     </form>
 </x-guest-layout>

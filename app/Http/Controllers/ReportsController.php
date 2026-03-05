@@ -74,16 +74,15 @@ class ReportsController extends Controller
             ->latest('id')
             ->paginate(25);
 
-        return view('issuance.pdf.regspi', ['rows' => $rows, 'asReport' => true]);
+        return view('reports.regspi', compact('rows'));
     }
 
     public function logs(): View
     {
-        $this->authorize('logs.view');
+        $this->authorize('reports.view');
 
-        return view('reports.index', [
-            'auditLogs' => AuditLog::latest('id')->paginate(20, ['*'], 'audit_page'),
-            'printLogs' => PrintLog::latest('id')->paginate(20, ['*'], 'print_page'),
+        return view('reports.logs', [
+            'logs' => AuditLog::latest('id')->paginate(50),
         ]);
     }
 }
