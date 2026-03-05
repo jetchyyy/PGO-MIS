@@ -4,33 +4,65 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'PGSO Property') }}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+    <title>{{ config('app.name', 'PGSO-SDN PMIS') }}</title>
+
+    {{-- Primary Meta Tags --}}
+    <meta name="title" content="PGSO Property MIS — Provincial Government of Surigao del Norte">
+    <meta name="description" content="Property Management & Inventory System of the Provincial General Services Office (PGSO), Provincial Government of Surigao del Norte.">
+    <meta name="keywords" content="PGSO, Property MIS, Surigao del Norte, Provincial Government, Property Management, Inventory System">
+    <meta name="author" content="Provincial Government of Surigao del Norte">
+    <meta name="theme-color" content="#0d47a1">
+
+    {{-- Open Graph / Facebook --}}
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="PGSO Property MIS — Provincial Government of Surigao del Norte">
+    <meta property="og:description" content="Property Management & Inventory System of the Provincial General Services Office (PGSO), Provincial Government of Surigao del Norte.">
+    <meta property="og:image" content="{{ asset('images/og-image.png') }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="PGSO Property MIS">
+    <meta property="og:locale" content="en_PH">
+
+    {{-- Twitter --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="{{ url()->current() }}">
+    <meta name="twitter:title" content="PGSO Property MIS — Provincial Government of Surigao del Norte">
+    <meta name="twitter:description" content="Property Management & Inventory System of the Provincial General Services Office (PGSO), Provincial Government of Surigao del Norte.">
+    <meta name="twitter:image" content="{{ asset('images/og-image.png') }}">
+
+    {{-- Favicon --}}
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/apple-touch-icon.png') }}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>[x-cloak]{display:none!important;}</style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-['DM_Sans'] antialiased bg-slate-50 text-slate-900">
-    <div class="min-h-screen">
+<body class="font-sans antialiased bg-[#f4f6f9] text-gray-800 text-sm">
+    <div class="min-h-screen flex flex-col">
         @include('layouts.navigation')
 
         @isset($header)
-            <header class="bg-white shadow">
-                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <header class="bg-white border-b border-gray-200 shadow-sm">
+                <div class="max-w-7xl mx-auto py-3 px-4 sm:px-6 lg:px-8">
                     {{ $header }}
                 </div>
             </header>
         @endisset
 
-        <main class="max-w-7xl mx-auto px-4 py-6">
+        <main class="flex-1 w-full max-w-7xl mx-auto px-4 py-5 sm:px-6 lg:px-8">
             @if(session('status') && !str_contains((string) session('status'), 'profile-'))
-                <div class="mb-4 rounded border border-emerald-200 bg-emerald-50 p-3 text-sm">{{ session('status') }}</div>
+                <div class="mb-4 border-l-4 border-green-500 bg-green-50 p-3 text-sm text-green-700">
+                    <i class="mr-1">&#10003;</i> {{ session('status') }}
+                </div>
             @endif
 
             @if($errors->any())
-                <div class="mb-4 rounded border border-red-200 bg-red-50 p-3 text-sm">
-                    <ul class="list-disc pl-5">
+                <div class="mb-4 border-l-4 border-red-500 bg-red-50 p-3 text-sm text-red-700">
+                    <ul class="list-disc pl-5 space-y-0.5">
                         @foreach($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
@@ -44,6 +76,10 @@
 
             @yield('content')
         </main>
+
+        <footer class="bg-white border-t border-gray-200 py-3 text-center text-xs text-gray-400">
+            &copy; {{ date('Y') }} <strong>PGSO Property MIS</strong> &mdash; Provincial Government of Surigao Del Norte. All rights reserved.
+        </footer>
     </div>
 </body>
 </html>

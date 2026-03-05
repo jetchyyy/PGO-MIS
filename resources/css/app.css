@@ -3,28 +3,7 @@
 @tailwind utilities;
 
 @layer base {
-    :root {
-        --gov-navy: 10 36 99;
-        --gov-blue: 30 64 175;
-        --gov-gold: 180 132 43;
-        --gov-ink: 15 23 42;
-    }
-
     body {
-        @apply bg-slate-100 text-slate-900;
-        background-image:
-            radial-gradient(circle at 15% 0%, rgba(191, 219, 254, 0.35), transparent 35%),
-            radial-gradient(circle at 85% 10%, rgba(252, 211, 77, 0.22), transparent 35%);
-        background-attachment: fixed;
-    }
-}
-
-@layer components {
-    .gov-card {
-        @apply rounded-xl border border-slate-200 bg-white shadow-sm;
-    }
-
-    .gov-section-title {
-        @apply text-sm font-semibold uppercase tracking-[0.14em] text-blue-900;
+        @apply bg-[#f4f6f9] text-gray-800;
     }
 }
