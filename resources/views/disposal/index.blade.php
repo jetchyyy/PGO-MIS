@@ -1,7 +1,76 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="flex items-center justify-between mb-4"><h1 class="text-xl font-semibold">Disposals</h1><a href="{{ route('disposal.create') }}" class="rounded bg-slate-900 px-4 py-2 text-sm text-white">New Disposal</a></div>
-<table class="min-w-full bg-white rounded shadow text-sm"><thead><tr class="border-b"><th class="p-2">Control #</th><th class="p-2">Officer</th><th class="p-2">Type</th><th class="p-2">Status</th><th></th></tr></thead><tbody>@foreach($disposals as $row)<tr class="border-b"><td class="p-2">{{ $row->control_no }}</td><td class="p-2">{{ $row->employee->name ?? '-' }}</td><td class="p-2">{{ $row->disposal_type }}</td><td class="p-2">{{ $row->status }}</td><td class="p-2"><a class="underline" href="{{ route('disposal.show', $row) }}">View</a></td></tr>@endforeach</tbody></table>
-<div class="mt-3">{{ $disposals->links() }}</div>
+<div class="min-h-screen bg-gray-100">
+
+    {{-- Government Page Banner --}}
+    <div class="bg-[#1a2c5b] border-b-4 border-[#c8a84b] shadow-lg">
+        <div class="w-full px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-start">
+            <div class="text-left">
+                <p class="text-xs font-semibold uppercase tracking-widest text-[#c8a84b]">Property Disposal</p>
+                <p class="text-white font-bold text-lg leading-tight mt-0.5">Disposal Records</p>
+                <p class="text-blue-200 text-[11px]">Provincial General Services Office &mdash; Surigao Del Norte</p>
+            </div>
+        </div>
+    </div>
+
+    {{-- Breadcrumb & Actions --}}
+    <div class="bg-white border-b border-gray-200 shadow-sm">
+        <div class="w-full px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between">
+            <div class="flex items-center gap-2 text-xs text-gray-500">
+                <a href="{{ route('dashboard') }}" class="hover:text-[#1a2c5b]">Home</a>
+                <span>&rsaquo;</span>
+                <span class="text-[#1a2c5b] font-semibold">Disposal</span>
+            </div>
+            <a href="{{ route('disposal.create') }}"
+               class="inline-flex items-center gap-2 rounded border border-[#1a2c5b] bg-[#1a2c5b] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#253d82] transition">
+                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                New Disposal
+            </a>
+        </div>
+    </div>
+
+    {{-- Table: Full-width seamless --}}
+    <div class="w-full px-4 pt-4 pb-8 sm:px-6 lg:px-8">
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="border-b-2 border-[#1a2c5b]">
+                        <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-widest text-[#1a2c5b]">Control #</th>
+                        <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-widest text-[#1a2c5b]">Officer</th>
+                        <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-widest text-[#1a2c5b]">Type</th>
+                        <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-widest text-[#1a2c5b]">Status</th>
+                        <th class="px-5 py-3"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                @forelse($disposals as $i => $row)
+                    <tr class="border-b border-gray-200 hover:bg-blue-50/50 transition {{ $i % 2 === 0 ? 'bg-white' : 'bg-gray-50/40' }}">
+                        <td class="px-5 py-4 font-mono font-bold text-[#1a2c5b] text-base">{{ $row->control_no }}</td>
+                        <td class="px-5 py-4 text-gray-700">{{ $row->employee->name ?? '-' }}</td>
+                        <td class="px-5 py-4 text-gray-700 capitalize">{{ str_replace('_', ' ', $row->disposal_type) }}</td>
+                        <td class="px-5 py-4">
+                            <span class="inline-block rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide border
+                                {{ $row->status === 'approved' ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : ($row->status === 'draft' ? 'border-gray-300 bg-gray-100 text-gray-500' : 'border-amber-300 bg-amber-50 text-amber-700') }}">
+                                {{ ucfirst($row->status) }}
+                            </span>
+                        </td>
+                        <td class="px-5 py-4 text-right">
+                            <a href="{{ route('disposal.show', $row) }}" class="inline-flex items-center gap-1 text-xs font-semibold text-[#1a2c5b] hover:text-[#253d82]">
+                                View <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            </a>
+                        </td>
+                    </tr>
+                @empty
+                    <tr><td colspan="5" class="px-5 py-12 text-center text-gray-400 italic">&mdash; No disposal records found &mdash;</td></tr>
+                @endforelse
+                </tbody>
+            </table>
+        </div>
+        @if($disposals->hasPages())
+        <div class="mt-4 px-2">{{ $disposals->links() }}</div>
+        @endif
+    </div>
+
+</div>
 @endsection
