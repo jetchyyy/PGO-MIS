@@ -66,9 +66,8 @@
                         <svg class="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                     </a>
                 @else
-                    <a href="{{ route('login') }}" class="group relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-white/30 bg-white/10 px-6 py-2 text-sm font-bold tracking-wide text-white transition hover:bg-white/20">
-                        <span>Sign In Securely</span>
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                    <a href="{{ route('login') }}" class="text-sm font-thin tracking-wide text-white/80 hover:text-white transition">
+                        Sign in
                     </a>
                 @endauth
             </div>
@@ -106,9 +105,8 @@
                     <span>Proceed to Dashboard</span>
                 </a>
             @else
-                <a href="{{ route('login') }}" class="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/20 bg-white/10 px-8 py-4 text-base font-bold tracking-wide text-white shadow-xl backdrop-blur-md transition hover:-translate-y-1 hover:bg-white/20">
-                    <svg class="h-6 w-6 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                    <span>Login to Portal</span>
+                <a href="{{ route('login') }}" class="text-sm font-thin tracking-wide text-white/80 hover:text-white transition">
+                    Login to portal
                 </a>
             @endauth
         </div>
@@ -117,34 +115,34 @@
         <div class="mt-24 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full text-center">
             
             <div class="rounded-2xl border border-white/10 bg-white/5 p-8 flex flex-col items-center backdrop-blur-xl transition hover:bg-white/10 hover:border-white/30 shadow-xl group">
-                <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-white/20 mb-5 group-hover:scale-110 group-hover:bg-white/20 transition-all">
-                    <svg class="h-7 w-7 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="3" width="16" height="18" rx="2" stroke-width="2"/><path stroke-width="2" stroke-linecap="round" d="M8 8h8M8 12h8M8 16h5"/></svg>
+                <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400 ring-1 ring-blue-500/20 mb-5 group-hover:scale-110 group-hover:bg-blue-500/20 transition-all">
+                    <svg class="h-7 w-7 opacity-90" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="3" width="16" height="18" rx="2" stroke-width="2"/><path stroke-width="2" stroke-linecap="round" d="M8 8h8M8 12h8M8 16h5"/></svg>
                 </div>
-                <h3 class="text-lg font-bold text-white mb-2">Issuance Tracking</h3>
+                <h3 class="text-lg font-bold text-blue-300 mb-2">Issuance Tracking</h3>
                 <p class="text-sm font-normal text-white/70 leading-relaxed">Manage and track Property Acknowledgement Receipts (PAR) and Inventory Custodian Slips (ICS).</p>
             </div>
 
             <div class="rounded-2xl border border-white/10 bg-white/5 p-8 flex flex-col items-center backdrop-blur-xl transition hover:bg-white/10 hover:border-white/30 shadow-xl group">
-                <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-white/20 mb-5 group-hover:scale-110 group-hover:bg-white/20 transition-all">
-                    <svg class="h-7 w-7 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20 mb-5 group-hover:scale-110 group-hover:bg-emerald-500/20 transition-all">
+                    <svg class="h-7 w-7 opacity-90" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
                 </div>
-                <h3 class="text-lg font-bold text-white mb-2">Property Transfers</h3>
+                <h3 class="text-lg font-bold text-emerald-300 mb-2">Property Transfers</h3>
                 <p class="text-sm font-normal text-white/70 leading-relaxed">Streamline Property Transfer Reports (PTR) securely between different offices and officers.</p>
             </div>
 
             <div class="rounded-2xl border border-white/10 bg-white/5 p-8 flex flex-col items-center backdrop-blur-xl transition hover:bg-white/10 hover:border-white/30 shadow-xl group">
-                <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-white/20 mb-5 group-hover:scale-110 group-hover:bg-white/20 transition-all">
-                    <svg class="h-7 w-7 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-rose-500/10 text-rose-400 ring-1 ring-rose-500/20 mb-5 group-hover:scale-110 group-hover:bg-rose-500/20 transition-all">
+                    <svg class="h-7 w-7 opacity-90" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 </div>
-                <h3 class="text-lg font-bold text-white mb-2">Disposal Logging</h3>
+                <h3 class="text-lg font-bold text-rose-300 mb-2">Disposal Logging</h3>
                 <p class="text-sm font-normal text-white/70 leading-relaxed">Record Inspection and Inventory Reports of Unserviceable Properties (IIRUP) compliance.</p>
             </div>
 
             <div class="rounded-2xl border border-white/10 bg-white/5 p-8 flex flex-col items-center backdrop-blur-xl transition hover:bg-white/10 hover:border-white/30 shadow-xl group">
-                <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-white/20 mb-5 group-hover:scale-110 group-hover:bg-white/20 transition-all">
-                    <svg class="h-7 w-7 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20 mb-5 group-hover:scale-110 group-hover:bg-amber-500/20 transition-all">
+                    <svg class="h-7 w-7 opacity-90" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 </div>
-                <h3 class="text-lg font-bold text-white mb-2">Audit & Reporting</h3>
+                <h3 class="text-lg font-bold text-amber-300 mb-2">Audit & Reporting</h3>
                 <p class="text-sm font-normal text-white/70 leading-relaxed">Generate printable Physical Count Reports, RegSPI, and full system activity audit logs instantly.</p>
             </div>
 

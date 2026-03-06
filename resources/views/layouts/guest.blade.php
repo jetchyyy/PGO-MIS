@@ -39,8 +39,8 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>[x-cloak]{display:none!important;}</style>
 </head>
-<body class="font-['DM_Sans'] text-slate-900 antialiased bg-slate-900">
-    <div class="relative min-h-screen w-full flex flex-col items-center justify-center p-4">
+<body class="font-['DM_Sans'] text-slate-900 antialiased bg-slate-900 overflow-hidden">
+    <div class="relative h-screen w-full flex flex-col items-center justify-center p-4">
         
         {{-- Background Image & Overlay --}}
         <div class="fixed inset-0 z-0">
@@ -52,9 +52,9 @@
         <div class="relative z-10 w-full max-w-md">
             
             {{-- Branding Header --}}
-            <div class="mb-8 text-center text-white">
-                <a href="/" class="inline-flex flex-col items-center gap-4 group">
-                    <div class="flex h-24 w-24 items-center justify-center rounded-full bg-white/10 p-2.5 ring-2 ring-white/20 shadow-2xl transition-transform duration-300 group-hover:scale-105 group-hover:bg-white/15">
+            <div class="mb-6 text-center text-white">
+                <a href="/" class="inline-flex flex-col items-center gap-2 group">
+                    <div class="flex h-20 w-20 items-center justify-center rounded-full bg-white/10 p-2 ring-2 ring-white/20 shadow-2xl transition-transform duration-300 group-hover:scale-105 group-hover:bg-white/15">
                         <img src="{{ asset('images/surigaodelnorte.png') }}" alt="Logo" class="h-full w-full object-contain drop-shadow-md">
                     </div>
                     <div>
@@ -70,7 +70,7 @@
             </div>
 
             {{-- Footer --}}
-            <p class="mt-8 text-center text-xs font-bold tracking-widest uppercase text-white/50">
+            <p class="mt-6 text-center text-[10px] font-bold tracking-widest uppercase text-white/50">
                 &copy; {{ date('Y') }} Provincial Government of Surigao Del Norte
             </p>
         </div>
