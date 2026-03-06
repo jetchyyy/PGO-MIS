@@ -1,7 +1,7 @@
 ﻿@extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-gray-100">
+<div class="min-h-screen bg-gray-100" x-data="disposalForm()">
 
     {{-- Government Page Banner --}}
     <div class="bg-[#1a2c5b] border-b-4 border-[#c8a84b] shadow-lg">
@@ -90,33 +90,93 @@
                 </div>
             </div>
 
-            {{-- Section 2: Line Item --}}
+            {{-- Section 2: Line Items --}}
             <div class="bg-white border border-gray-200 rounded shadow-sm overflow-hidden">
-                <div class="px-5 py-3 border-b border-gray-200 bg-[#1a2c5b] flex items-center gap-2">
-                    <span class="flex h-5 w-5 items-center justify-center rounded-full bg-[#c8a84b] text-[#1a2c5b] text-xs font-black">2</span>
-                    <h2 class="text-xs font-bold uppercase tracking-widest text-[#c8a84b]">Line Item</h2>
+                <div class="px-5 py-3 border-b border-gray-200 bg-[#1a2c5b] flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="flex h-5 w-5 items-center justify-center rounded-full bg-[#c8a84b] text-[#1a2c5b] text-xs font-black">2</span>
+                        <h2 class="text-xs font-bold uppercase tracking-widest text-[#c8a84b]">Line Items</h2>
+                    </div>
+                    <button type="button" @click="addLine()"
+                        class="inline-flex items-center gap-1.5 rounded border border-[#c8a84b] bg-transparent px-3 py-1 text-[11px] font-semibold text-[#c8a84b] hover:bg-[#c8a84b]/10 transition">
+                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        Add Line
+                    </button>
                 </div>
-                <div class="p-5 grid gap-4 md:grid-cols-3 lg:grid-cols-4">
-                    <div class="flex flex-col gap-1.5 md:col-span-2">
-                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Particulars</label>
-                        <input name="lines[0][particulars]" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="Item particulars" required>
+
+                <template x-for="(line, index) in lines" :key="index">
+                    <div class="p-5 border-b border-gray-100 last:border-b-0">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold text-gray-400">ITEM #<span x-text="index + 1"></span></span>
+                            <button type="button" x-show="lines.length > 1" @click="removeLine(index)"
+                                class="text-red-400 hover:text-red-600 text-xs font-semibold transition">&times; Remove</button>
+                        </div>
+                        <div class="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
+                            <div class="flex flex-col gap-1.5 md:col-span-2 relative" x-data="{ showSuggestions: false, suggestions: [] }" @click.outside="showSuggestions = false">
+                                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Particulars</label>
+                                <input :name="'lines['+index+'][particulars]'" x-model="line.particulars"
+                                    @input.debounce.300ms="
+                                        if (line.particulars.length >= 2) {
+                                            fetch('/items/search?q=' + encodeURIComponent(line.particulars))
+                                                .then(r => r.json())
+                                                .then(data => { suggestions = data; showSuggestions = data.length > 0; });
+                                        } else { showSuggestions = false; suggestions = []; }
+                                    "
+                                    @focus="if (suggestions.length > 0) showSuggestions = true"
+                                    autocomplete="off"
+                                    class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="Type to search catalog or enter manually" required>
+                                <div x-show="showSuggestions" x-cloak
+                                     class="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto">
+                                    <template x-for="(item, si) in suggestions" :key="item.id">
+                                        <button type="button"
+                                            @click="line.particulars = item.name + (item.description ? ' — ' + item.description : ''); line.unit_cost = parseFloat(item.unit_cost); showSuggestions = false;"
+                                            class="w-full text-left px-3 py-2 hover:bg-blue-50 border-b border-gray-100 last:border-b-0 transition">
+                                            <p class="text-sm font-semibold text-gray-800" x-text="item.name"></p>
+                                            <p class="text-[11px] text-gray-500">
+                                                <span x-text="item.category || 'Uncategorized'"></span> &bull;
+                                                ₱<span x-text="parseFloat(item.unit_cost).toLocaleString('en-PH', {minimumFractionDigits: 2})"></span>
+                                            </p>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Property No.</label>
+                                <input :name="'lines['+index+'][property_no]'" x-model="line.property_no"
+                                    class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="Optional">
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Quantity</label>
+                                <input :name="'lines['+index+'][quantity]'" type="number" min="1" x-model.number="line.quantity"
+                                    class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="0" required>
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Unit Cost</label>
+                                <input :name="'lines['+index+'][unit_cost]'" type="number" step="0.01" x-model.number="line.unit_cost"
+                                    class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="0.00" required>
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Accumulated Depreciation</label>
+                                <input :name="'lines['+index+'][accumulated_depreciation]'" type="number" step="0.01" x-model.number="line.accumulated_depreciation"
+                                    class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="0.00">
+                            </div>
+                        </div>
+                        {{-- Computed carrying amount --}}
+                        <div class="mt-3 flex items-center gap-4 text-sm">
+                            <div class="flex items-center gap-2 bg-gray-50 rounded px-3 py-1.5 border border-gray-200">
+                                <span class="text-gray-500 text-xs font-semibold">Total Cost:</span>
+                                <span class="font-bold text-gray-800" x-text="'₱' + ((line.quantity || 0) * (line.unit_cost || 0)).toLocaleString('en-PH', {minimumFractionDigits: 2})"></span>
+                            </div>
+                            <div class="flex items-center gap-2 bg-gray-50 rounded px-3 py-1.5 border border-gray-200">
+                                <span class="text-gray-500 text-xs font-semibold">Carrying Amount:</span>
+                                <span class="font-bold text-gray-800" x-text="'₱' + (((line.quantity || 0) * (line.unit_cost || 0)) - (line.accumulated_depreciation || 0)).toLocaleString('en-PH', {minimumFractionDigits: 2})"></span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Property No.</label>
-                        <input name="lines[0][property_no]" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="Optional">
-                    </div>
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Quantity</label>
-                        <input name="lines[0][quantity]" type="number" min="1" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="0" required>
-                    </div>
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Unit Cost</label>
-                        <input name="lines[0][unit_cost]" type="number" step="0.01" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="0.00" required>
-                    </div>
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Accumulated Depreciation</label>
-                        <input name="lines[0][accumulated_depreciation]" type="number" step="0.01" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="0.00">
-                    </div>
+                </template>
+
+                <div class="px-5 py-3 bg-gray-50 border-t border-gray-200">
+                    <span class="text-xs text-gray-500"><span x-text="lines.length"></span> item(s)</span>
                 </div>
             </div>
 
@@ -131,4 +191,18 @@
         </form>
     </div>
 </div>
+
+<script>
+function disposalForm() {
+    return {
+        lines: [{ particulars: '', property_no: '', quantity: 1, unit_cost: 0, accumulated_depreciation: 0 }],
+        addLine() {
+            this.lines.push({ particulars: '', property_no: '', quantity: 1, unit_cost: 0, accumulated_depreciation: 0 });
+        },
+        removeLine(index) {
+            if (this.lines.length > 1) this.lines.splice(index, 1);
+        }
+    };
+}
+</script>
 @endsection

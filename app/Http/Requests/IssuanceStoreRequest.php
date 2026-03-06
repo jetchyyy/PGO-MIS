@@ -27,6 +27,7 @@ class IssuanceStoreRequest extends FormRequest
             'lines.*.property_no' => ['nullable', 'string', 'max:255'],
             'lines.*.date_acquired' => ['nullable', 'date'],
             'lines.*.unit_cost' => ['required', 'numeric', 'min:0.01'],
+            'lines.*.estimated_useful_life' => ['nullable', 'string', 'max:100'],
             'lines.*.remarks' => ['nullable', 'string', 'max:500'],
         ];
     }

@@ -59,6 +59,7 @@ class ApprovalsController extends Controller
         return back()->with('status', 'Record approved.');
     }
 
+    // Return an approval for correction
     public function return(Approval $approval, Request $request): RedirectResponse
     {
         $this->authorize('approvals.manage');

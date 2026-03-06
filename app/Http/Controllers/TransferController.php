@@ -133,8 +133,10 @@ class TransferController extends Controller
 
         AuditLogger::log($request->user()->id, 'transfer.printed', $transfer, ['template' => $template, 'version' => $version], $request->ip(), $request->userAgent());
 
-        $transfer->load(['lines', 'fromEmployee', 'toEmployee']);
+        $transfer->load(['lines', 'fromEmployee', 'toEmployee', 'fundCluster']);
 
-        return Pdf::loadView('transfer.pdf.'.$template, compact('transfer', 'version'))->setPaper('a4')->stream($template.'-'.$transfer->control_no.'.pdf');
+        $sig = \App\Models\Signatory::where('is_active', true)->get()->keyBy('role_key');
+
+        return Pdf::loadView('transfer.pdf.'.$template, compact('transfer', 'version', 'sig'))->setPaper('a4')->stream($template.'-'.$transfer->control_no.'.pdf');
     }
 }

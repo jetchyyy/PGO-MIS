@@ -1,7 +1,7 @@
 ﻿@extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-gray-100">
+<div class="min-h-screen bg-gray-100" x-data="transferForm()">
 
     {{-- Government Page Banner --}}
     <div class="bg-[#1a2c5b] border-b-4 border-[#c8a84b] shadow-lg">
@@ -90,37 +90,88 @@
                 </div>
             </div>
 
-            {{-- Section 2: Line Item --}}
+            {{-- Section 2: Line Items --}}
             <div class="bg-white border border-gray-200 rounded shadow-sm overflow-hidden">
-                <div class="px-5 py-3 border-b border-gray-200 bg-[#1a2c5b] flex items-center gap-2">
-                    <span class="flex h-5 w-5 items-center justify-center rounded-full bg-[#c8a84b] text-[#1a2c5b] text-xs font-black">2</span>
-                    <h2 class="text-xs font-bold uppercase tracking-widest text-[#c8a84b]">Line Item</h2>
+                <div class="px-5 py-3 border-b border-gray-200 bg-[#1a2c5b] flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="flex h-5 w-5 items-center justify-center rounded-full bg-[#c8a84b] text-[#1a2c5b] text-xs font-black">2</span>
+                        <h2 class="text-xs font-bold uppercase tracking-widest text-[#c8a84b]">Line Items</h2>
+                    </div>
+                    <button type="button" @click="addLine()"
+                        class="inline-flex items-center gap-1.5 rounded border border-[#c8a84b] bg-transparent px-3 py-1 text-[11px] font-semibold text-[#c8a84b] hover:bg-[#c8a84b]/10 transition">
+                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        Add Line
+                    </button>
                 </div>
-                <div class="p-5 grid gap-4 md:grid-cols-3 lg:grid-cols-4">
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">PAR/ICS Reference</label>
-                        <input name="lines[0][reference_no]" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="Reference number" required>
+
+                <template x-for="(line, index) in lines" :key="index">
+                    <div class="p-5 border-b border-gray-100 last:border-b-0">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold text-gray-400">ITEM #<span x-text="index + 1"></span></span>
+                            <button type="button" x-show="lines.length > 1" @click="removeLine(index)"
+                                class="text-red-400 hover:text-red-600 text-xs font-semibold transition">&times; Remove</button>
+                        </div>
+                        <div class="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">PAR/ICS Reference</label>
+                                <input :name="'lines['+index+'][reference_no]'" x-model="line.reference_no"
+                                    class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="Reference number" required>
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Quantity</label>
+                                <input :name="'lines['+index+'][quantity]'" type="number" min="1" x-model.number="line.quantity"
+                                    class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="0" required>
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Unit</label>
+                                <input :name="'lines['+index+'][unit]'" x-model="line.unit"
+                                    class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="e.g. pcs" required>
+                            </div>
+                            <div class="flex flex-col gap-1.5 md:col-span-2 relative" x-data="{ showSuggestions: false, suggestions: [] }" @click.outside="showSuggestions = false">
+                                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</label>
+                                <input :name="'lines['+index+'][description]'" x-model="line.description"
+                                    @input.debounce.300ms="
+                                        if (line.description.length >= 2) {
+                                            fetch('/items/search?q=' + encodeURIComponent(line.description))
+                                                .then(r => r.json())
+                                                .then(data => { suggestions = data; showSuggestions = data.length > 0; });
+                                        } else { showSuggestions = false; suggestions = []; }
+                                    "
+                                    @focus="if (suggestions.length > 0) showSuggestions = true"
+                                    autocomplete="off"
+                                    class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="Type to search catalog or enter manually" required>
+                                <div x-show="showSuggestions" x-cloak
+                                     class="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto">
+                                    <template x-for="(item, si) in suggestions" :key="item.id">
+                                        <button type="button"
+                                            @click="line.description = item.name + (item.description ? ' — ' + item.description : ''); line.unit = item.unit; line.amount = parseFloat(item.unit_cost); showSuggestions = false;"
+                                            class="w-full text-left px-3 py-2 hover:bg-blue-50 border-b border-gray-100 last:border-b-0 transition">
+                                            <p class="text-sm font-semibold text-gray-800" x-text="item.name"></p>
+                                            <p class="text-[11px] text-gray-500">
+                                                <span x-text="item.category || 'Uncategorized'"></span> &bull;
+                                                <span x-text="item.unit"></span> &bull;
+                                                ₱<span x-text="parseFloat(item.unit_cost).toLocaleString('en-PH', {minimumFractionDigits: 2})"></span>
+                                            </p>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</label>
+                                <input :name="'lines['+index+'][amount]'" type="number" step="0.01" x-model.number="line.amount"
+                                    class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="0.00" required>
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Condition</label>
+                                <input :name="'lines['+index+'][condition]'" x-model="line.condition"
+                                    class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="Functional" required>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Quantity</label>
-                        <input name="lines[0][quantity]" type="number" min="1" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="0" required>
-                    </div>
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Unit</label>
-                        <input name="lines[0][unit]" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="e.g. pcs" required>
-                    </div>
-                    <div class="flex flex-col gap-1.5 md:col-span-2">
-                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</label>
-                        <input name="lines[0][description]" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="Item description" required>
-                    </div>
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</label>
-                        <input name="lines[0][amount]" type="number" step="0.01" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="0.00" required>
-                    </div>
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Condition</label>
-                        <input name="lines[0][condition]" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="Functional" value="Functional" required>
-                    </div>
+                </template>
+
+                <div class="px-5 py-3 bg-gray-50 border-t border-gray-200">
+                    <span class="text-xs text-gray-500"><span x-text="lines.length"></span> item(s)</span>
                 </div>
             </div>
 
@@ -135,4 +186,18 @@
         </form>
     </div>
 </div>
+
+<script>
+function transferForm() {
+    return {
+        lines: [{ reference_no: '', quantity: 1, unit: '', description: '', amount: 0, condition: 'Functional' }],
+        addLine() {
+            this.lines.push({ reference_no: '', quantity: 1, unit: '', description: '', amount: 0, condition: 'Functional' });
+        },
+        removeLine(index) {
+            if (this.lines.length > 1) this.lines.splice(index, 1);
+        }
+    };
+}
+</script>
 @endsection

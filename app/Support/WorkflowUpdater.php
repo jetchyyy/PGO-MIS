@@ -10,6 +10,7 @@ use App\Models\PropertyCard;
 use App\Models\PropertyCardEntry;
 use App\Models\PropertyTransaction;
 use App\Models\PropertyTransactionLine;
+use App\Models\RegSPIEntry;
 use App\Models\SemiExpendableCard;
 use App\Models\SemiExpendableCardEntry;
 use App\Models\Transfer;
@@ -90,6 +91,25 @@ class WorkflowUpdater
                 ]);
 
                 $card->update(['balance_qty' => $newQty, 'balance_amount' => $newAmount]);
+
+                // Log RegSPI entry for semi-expendable items
+                RegSPIEntry::create([
+                    'semi_expendable_card_id' => $card->id,
+                    'property_transaction_id' => $transaction->id,
+                    'property_transaction_line_id' => $line->id,
+                    'ics_no' => $transaction->control_no,
+                    'description' => $line->description,
+                    'employee_id' => $transaction->employee_id,
+                    'office_id' => $transaction->office_id,
+                    'fund_cluster_id' => $transaction->fund_cluster_id,
+                    'quantity_issued' => $line->quantity,
+                    'unit_cost' => $line->unit_cost,
+                    'total_cost' => $line->total_cost,
+                    'property_no' => $line->property_no,
+                    'issue_date' => $transaction->transaction_date,
+                    'classification' => $line->classification,
+                    'remarks' => 'Auto-generated on approval',
+                ]);
             }
 
             $header = AccountabilityHeader::firstOrCreate(

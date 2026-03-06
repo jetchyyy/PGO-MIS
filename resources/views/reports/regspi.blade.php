@@ -33,27 +33,63 @@
 
     <div class="w-full px-4 py-6 sm:px-6 lg:px-8 space-y-5">
 
+        {{-- Filters --}}
+        <div class="bg-white border border-gray-200 rounded shadow-sm overflow-hidden print:hidden">
+            <div class="px-4 py-2.5 bg-gray-50 border-b border-gray-200">
+                <h3 class="text-xs font-bold uppercase tracking-widest text-gray-600">Filters</h3>
+            </div>
+            <form method="GET" action="{{ route('reports.regspi') }}" class="p-4 flex flex-wrap items-end gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Office</label>
+                    <select name="office_id" class="rounded border border-gray-300 text-xs px-3 py-1.5 w-48">
+                        <option value="">All Offices</option>
+                        @foreach($offices as $office)
+                        <option value="{{ $office->id }}" {{ request('office_id') == $office->id ? 'selected' : '' }}>{{ $office->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Classification</label>
+                    <select name="classification" class="rounded border border-gray-300 text-xs px-3 py-1.5 w-36">
+                        <option value="">All</option>
+                        <option value="splv" {{ request('classification') === 'splv' ? 'selected' : '' }}>SPLV</option>
+                        <option value="sphv" {{ request('classification') === 'sphv' ? 'selected' : '' }}>SPHV</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Date From</label>
+                    <input type="date" name="from" value="{{ request('from') }}" class="rounded border border-gray-300 text-xs px-3 py-1.5">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Date To</label>
+                    <input type="date" name="to" value="{{ request('to') }}" class="rounded border border-gray-300 text-xs px-3 py-1.5">
+                </div>
+                <button type="submit" class="rounded bg-[#1a2c5b] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#253d82] transition">Filter</button>
+                <a href="{{ route('reports.regspi') }}" class="text-xs text-gray-500 hover:text-gray-700 underline">Clear</a>
+            </form>
+        </div>
+
         {{-- Summary Statistics --}}
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="bg-white border border-gray-200 rounded shadow-sm p-4 flex items-center gap-4">
                 <div class="h-10 w-1 rounded-full bg-[#1a2c5b]"></div>
                 <div>
                     <p class="text-2xl font-bold text-[#1a2c5b]">{{ $rows->total() }}</p>
-                    <p class="text-xs font-semibold uppercase tracking-widest text-gray-500 mt-0.5">Total Records</p>
+                    <p class="text-xs font-semibold uppercase tracking-widest text-gray-500 mt-0.5">Total Entries</p>
                 </div>
             </div>
             <div class="bg-white border border-gray-200 rounded shadow-sm p-4 flex items-center gap-4">
-                <div class="h-10 w-1 rounded-full bg-emerald-600"></div>
+                <div class="h-10 w-1 rounded-full bg-amber-500"></div>
                 <div>
-                    <p class="text-2xl font-bold text-[#1a2c5b]">{{ $rows->where('status','issued')->count() }}</p>
-                    <p class="text-xs font-semibold uppercase tracking-widest text-gray-500 mt-0.5">Issued</p>
+                    <p class="text-2xl font-bold text-[#1a2c5b]">{{ $rows->where('classification', 'sphv')->count() }}</p>
+                    <p class="text-xs font-semibold uppercase tracking-widest text-gray-500 mt-0.5">SPHV (High Value)</p>
                 </div>
             </div>
             <div class="bg-white border border-gray-200 rounded shadow-sm p-4 flex items-center gap-4">
-                <div class="h-10 w-1 rounded-full bg-[#c8a84b]"></div>
+                <div class="h-10 w-1 rounded-full bg-gray-400"></div>
                 <div>
-                    <p class="text-2xl font-bold text-[#1a2c5b]">{{ $rows->where('status','approved')->count() }}</p>
-                    <p class="text-xs font-semibold uppercase tracking-widest text-gray-500 mt-0.5">Pending / Approved</p>
+                    <p class="text-2xl font-bold text-[#1a2c5b]">{{ $rows->where('classification', 'splv')->count() }}</p>
+                    <p class="text-xs font-semibold uppercase tracking-widest text-gray-500 mt-0.5">SPLV (Low Value)</p>
                 </div>
             </div>
         </div>
@@ -68,40 +104,60 @@
                 <table class="min-w-full text-sm">
                     <thead class="bg-gray-100 border-b border-gray-300">
                         <tr>
-                            <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-widest text-gray-600 border-r border-gray-200">No.</th>
-                            <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-widest text-gray-600 border-r border-gray-200">Transaction No.</th>
-                            <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-widest text-gray-600 border-r border-gray-200">Accountable Officer</th>
-                            <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-widest text-gray-600 border-r border-gray-200">Office / Department</th>
-                            <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-widest text-gray-600 border-r border-gray-200">Date</th>
-                            <th class="px-4 py-2.5 text-center text-[11px] font-bold uppercase tracking-widest text-gray-600">Status</th>
+                            <th class="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-widest text-gray-600 border-r border-gray-200">No.</th>
+                            <th class="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-widest text-gray-600 border-r border-gray-200">ICS No.</th>
+                            <th class="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-widest text-gray-600 border-r border-gray-200">Description</th>
+                            <th class="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-widest text-gray-600 border-r border-gray-200">Property No.</th>
+                            <th class="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-widest text-gray-600 border-r border-gray-200">Accountable Officer</th>
+                            <th class="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-widest text-gray-600 border-r border-gray-200">Office</th>
+                            <th class="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-widest text-gray-600 border-r border-gray-200">Qty</th>
+                            <th class="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-widest text-gray-600 border-r border-gray-200">Unit Cost</th>
+                            <th class="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-widest text-gray-600 border-r border-gray-200">Total Cost</th>
+                            <th class="px-3 py-2.5 text-center text-[11px] font-bold uppercase tracking-widest text-gray-600 border-r border-gray-200">Class</th>
+                            <th class="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-widest text-gray-600">Date Issued</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($rows as $i => $row)
-                        @php $status = $row->status ?? 'draft'; @endphp
+                        @forelse($rows as $i => $entry)
                         <tr class="border-b border-gray-100 hover:bg-blue-50/40 transition {{ $i % 2 === 0 ? '' : 'bg-gray-50/50' }}">
-                            <td class="px-4 py-2.5 text-gray-400 font-semibold text-xs border-r border-gray-100">{{ $rows->firstItem() + $i }}</td>
-                            <td class="px-4 py-2.5 font-semibold text-gray-800 border-r border-gray-100 font-mono text-xs">{{ $row->transaction_no ?? $row->reference_no ?? ('SPI-' . str_pad($row->id, 5, '0', STR_PAD_LEFT)) }}</td>
-                            <td class="px-4 py-2.5 text-gray-700 border-r border-gray-100">{{ $row->employee->name ?? '—' }}</td>
-                            <td class="px-4 py-2.5 text-gray-600 border-r border-gray-100">{{ $row->office->name ?? '—' }}</td>
-                            <td class="px-4 py-2.5 text-gray-500 text-xs border-r border-gray-100">{{ $row->transaction_date ? \Carbon\Carbon::parse($row->transaction_date)->format('M d, Y') : '—' }}</td>
-                            <td class="px-4 py-2.5 text-center">
+                            <td class="px-3 py-2.5 text-gray-400 font-semibold text-xs border-r border-gray-100">{{ $rows->firstItem() + $i }}</td>
+                            <td class="px-3 py-2.5 font-semibold text-gray-800 border-r border-gray-100 font-mono text-xs">
+                                @if($entry->propertyTransaction)
+                                <a href="{{ route('issuance.show', $entry->property_transaction_id) }}" class="text-[#1a2c5b] hover:underline">{{ $entry->ics_no }}</a>
+                                @else
+                                {{ $entry->ics_no }}
+                                @endif
+                            </td>
+                            <td class="px-3 py-2.5 text-gray-700 border-r border-gray-100">{{ $entry->description }}</td>
+                            <td class="px-3 py-2.5 text-gray-600 font-mono text-xs border-r border-gray-100">{{ $entry->property_no ?? '—' }}</td>
+                            <td class="px-3 py-2.5 text-gray-700 border-r border-gray-100">{{ $entry->employee->name ?? '—' }}</td>
+                            <td class="px-3 py-2.5 text-gray-600 border-r border-gray-100">{{ $entry->office->name ?? '—' }}</td>
+                            <td class="px-3 py-2.5 text-right text-gray-700 border-r border-gray-100">{{ $entry->quantity_issued }}</td>
+                            <td class="px-3 py-2.5 text-right text-gray-700 border-r border-gray-100">{{ number_format($entry->unit_cost, 2) }}</td>
+                            <td class="px-3 py-2.5 text-right font-semibold text-gray-800 border-r border-gray-100">{{ number_format($entry->total_cost, 2) }}</td>
+                            <td class="px-3 py-2.5 text-center border-r border-gray-100">
                                 <span class="inline-block rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide border
-                                    @if($status === 'issued') border-emerald-300 bg-emerald-50 text-emerald-700
-                                    @elseif($status === 'approved') border-blue-300 bg-blue-50 text-blue-700
-                                    @elseif($status === 'pending') border-amber-300 bg-amber-50 text-amber-700
-                                    @else border-gray-300 bg-gray-100 text-gray-500
-                                    @endif">
-                                    {{ $status }}
+                                    {{ $entry->classification === 'sphv' ? 'border-amber-300 bg-amber-50 text-amber-700' : 'border-gray-300 bg-gray-100 text-gray-600' }}">
+                                    {{ strtoupper($entry->classification) }}
                                 </span>
                             </td>
+                            <td class="px-3 py-2.5 text-gray-500 text-xs">{{ $entry->issue_date ? \Carbon\Carbon::parse($entry->issue_date)->format('M d, Y') : '—' }}</td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-10 text-center text-gray-400 italic text-sm">— No RegSPI records found —</td>
+                            <td colspan="11" class="px-6 py-10 text-center text-gray-400 italic text-sm">— No RegSPI records found —</td>
                         </tr>
                         @endforelse
                     </tbody>
+                    @if($rows->count())
+                    <tfoot class="border-t-2 border-gray-300 bg-gray-50">
+                        <tr>
+                            <td colspan="8" class="px-3 py-2.5 text-right text-xs font-bold uppercase tracking-widest text-gray-500">Page Total</td>
+                            <td class="px-3 py-2.5 text-right font-extrabold text-[#1a2c5b]">₱{{ number_format($rows->sum('total_cost'), 2) }}</td>
+                            <td colspan="2"></td>
+                        </tr>
+                    </tfoot>
+                    @endif
                 </table>
             </div>
             @if($rows->hasPages())

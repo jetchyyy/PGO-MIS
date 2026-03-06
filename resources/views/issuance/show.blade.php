@@ -163,17 +163,17 @@
                             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                             Inventory Custodian Slip (ICS)
                         </a>
+                        <a href="{{ route('issuance.print', [$issuance, 'semi_property_card']) }}" target="_blank"
+                           class="flex items-center gap-2 rounded border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition">
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18M8 6h.01M8 18h.01"/></svg>
+                            Semi-Expendable Property Card
+                        </a>
                         <a href="{{ route('issuance.print', [$issuance, 'regspi']) }}" target="_blank"
                            class="flex items-center gap-2 rounded border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition">
                             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h7"/></svg>
                             Registry of Semi-Expendable (RegSPI)
                         </a>
                         @endif
-                        <a href="{{ route('issuance.print', [$issuance, 'property_card']) }}" target="_blank"
-                           class="flex items-center gap-2 rounded border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition">
-                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                            Physical Count Report (Appendix 73)
-                        </a>
                     </div>
                 </div>
                 @endif
@@ -194,6 +194,7 @@
                                     <th class="px-5 py-3 text-center text-xs font-bold uppercase tracking-widest text-[#1a2c5b]">Unit</th>
                                     <th class="px-5 py-3 text-right text-xs font-bold uppercase tracking-widest text-[#1a2c5b]">Unit Cost</th>
                                     <th class="px-5 py-3 text-right text-xs font-bold uppercase tracking-widest text-[#1a2c5b]">Total</th>
+                                    <th class="px-5 py-3 text-center text-xs font-bold uppercase tracking-widest text-[#1a2c5b]">Est. Useful Life</th>
                                     <th class="px-5 py-3 text-center text-xs font-bold uppercase tracking-widest text-[#1a2c5b]">Classification</th>
                                 </tr>
                             </thead>
@@ -213,6 +214,7 @@
                                     <td class="px-5 py-3 text-center text-gray-500">{{ $line->unit }}</td>
                                     <td class="px-5 py-3 text-right text-gray-700">{{ number_format($line->unit_cost, 2) }}</td>
                                     <td class="px-5 py-3 text-right font-semibold text-gray-800">{{ number_format($line->total_cost, 2) }}</td>
+                                    <td class="px-5 py-3 text-center text-gray-500 text-xs">{{ $line->estimated_useful_life ?? '—' }}</td>
                                     <td class="px-5 py-3 text-center">
                                         <span class="inline-block rounded px-2 py-0.5 text-[10px] font-bold uppercase border
                                             {{ $line->classification === 'ppe' ? 'border-blue-200 bg-blue-50 text-blue-700' : ($line->classification === 'sphv' ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-gray-200 bg-gray-50 text-gray-600') }}">
@@ -226,7 +228,7 @@
                                 <tr>
                                     <td colspan="4" class="px-5 py-3 text-right text-xs font-bold uppercase tracking-widest text-gray-500">Grand Total</td>
                                     <td class="px-5 py-3 text-right font-extrabold text-[#1a2c5b]">₱{{ number_format($issuance->lines->sum('total_cost'), 2) }}</td>
-                                    <td></td>
+                                    <td colspan="2"></td>
                                 </tr>
                             </tfoot>
                         </table>

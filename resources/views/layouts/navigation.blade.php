@@ -52,6 +52,13 @@
                     Reports
                 </a>
                 @endif
+
+                @if($user->hasRole(\App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_PROPERTY_STAFF))
+                <a href="{{ route('settings.index') }}"
+                   class="px-3 py-2 text-sm font-medium transition {{ request()->routeIs('settings.*', 'signatories.*', 'fund-clusters.*', 'items.*') ? 'text-white bg-[#007bff]' : 'text-gray-300 hover:text-white hover:bg-[#495057]' }}">
+                    Settings
+                </a>
+                @endif
             </div>
 
             {{-- Right: User dropdown --}}
@@ -110,6 +117,9 @@
             @endif
             @if($user->hasRole(\App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_AUDIT_VIEWER, \App\Models\User::ROLE_PROPERTY_STAFF))
             <a href="{{ route('reports.index') }}" class="block px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-[#495057]">Reports</a>
+            @endif
+            @if($user->hasRole(\App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_PROPERTY_STAFF))
+            <a href="{{ route('settings.index') }}" class="block px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-[#495057]">Settings</a>
             @endif
         </div>
         <div class="border-t border-[#4b545c] px-4 py-3">
