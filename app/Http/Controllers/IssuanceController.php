@@ -9,6 +9,7 @@ use App\Models\FundCluster;
 use App\Models\Office;
 use App\Models\PrintLog;
 use App\Models\PropertyTransaction;
+use App\Models\InventoryItem;
 use App\Models\Signatory;
 use App\Support\AuditLogger;
 use App\Support\NumberGenerator;
@@ -50,7 +51,9 @@ class IssuanceController extends Controller
 
         $issuance = DB::transaction(function () use ($request, $validated) {
             $classifications = collect($validated['lines'])->map(function (array $line): string {
-                $cost = (float) $line['unit_cost'];
+                $cost = !empty($line['inventory_item_id'])
+                    ? (float) InventoryItem::findOrFail((int) $line['inventory_item_id'])->unit_cost
+                    : (float) $line['unit_cost'];
                 if ($cost >= 50000) {
                     return 'ppe';
                 }
@@ -87,17 +90,30 @@ class IssuanceController extends Controller
             ]);
 
             foreach ($validated['lines'] as $line) {
-                $unitCost = (float) $line['unit_cost'];
+                $inventory = null;
+                if (! empty($line['inventory_item_id'])) {
+                    $inventory = InventoryItem::findOrFail((int) $line['inventory_item_id']);
+                    abort_if($inventory->status !== 'in_stock', 422, 'Selected inventory item is not available for issuance.');
+                }
+
+                $qty = $inventory ? 1 : (int) $line['quantity'];
+                $unit = $inventory?->unit ?? $line['unit'];
+                $description = $inventory?->description ?? $line['description'];
+                $propertyNo = $inventory?->property_no ?? ($line['property_no'] ?? null);
+                $dateAcquired = $inventory?->date_acquired ?? ($line['date_acquired'] ?? null);
+                $unitCost = $inventory ? (float) $inventory->unit_cost : (float) $line['unit_cost'];
                 $classificationPerLine = $unitCost >= 50000 ? 'ppe' : ($unitCost >= 5000 ? 'sphv' : 'splv');
 
                 $tx->lines()->create([
-                    'quantity' => (int) $line['quantity'],
-                    'unit' => $line['unit'],
-                    'description' => $line['description'],
-                    'property_no' => $line['property_no'] ?? null,
-                    'date_acquired' => $line['date_acquired'] ?? null,
+                    'item_id' => $inventory?->item_id ?? ($line['item_id'] ?? null),
+                    'inventory_item_id' => $inventory?->id ?? null,
+                    'quantity' => $qty,
+                    'unit' => $unit,
+                    'description' => $description,
+                    'property_no' => $propertyNo,
+                    'date_acquired' => $dateAcquired,
                     'unit_cost' => $unitCost,
-                    'total_cost' => (int) $line['quantity'] * $unitCost,
+                    'total_cost' => $qty * $unitCost,
                     'classification' => $classificationPerLine,
                     'estimated_useful_life' => $line['estimated_useful_life'] ?? null,
                     'remarks' => $line['remarks'] ?? null,
@@ -148,7 +164,7 @@ class IssuanceController extends Controller
     public function print(PropertyTransaction $issuance, string $template, Request $request)
     {
         $this->authorize('issuance.manage');
-        abort_unless(in_array($template, ['par', 'ics', 'property_card', 'semi_property_card', 'regspi'], true), 404);
+        abort_unless(in_array($template, ['par', 'ics', 'property_card', 'semi_property_card', 'regspi', 'sticker'], true), 404);
         abort_unless(in_array($issuance->status, ['approved', 'issued'], true), 422, 'Only approved transactions can be printed.');
 
         $version = (int) PrintLog::where('printable_type', PropertyTransaction::class)
@@ -173,11 +189,19 @@ class IssuanceController extends Controller
 
         $sig = Signatory::where('is_active', true)->get()->keyBy('role_key');
         $orientation = in_array($template, ['property_card', 'semi_property_card', 'regspi']) ? 'landscape' : 'portrait';
+        $inventoryByLine = InventoryItem::whereIn('property_transaction_line_id', $issuance->lines->pluck('id'))
+            ->orderBy('id')
+            ->get()
+            ->groupBy('property_transaction_line_id');
 
         return Pdf::loadView('issuance.pdf.'.$template, [
             'issuance' => $issuance,
             'version' => $version,
             'sig' => $sig,
+            'inventoryByLine' => $inventoryByLine,
+        ])->setOption([
+            'isRemoteEnabled' => true,
+            'isHtml5ParserEnabled' => true,
         ])->setPaper('a4', $orientation)->stream($template.'-'.$issuance->control_no.'.pdf');
     }
 }

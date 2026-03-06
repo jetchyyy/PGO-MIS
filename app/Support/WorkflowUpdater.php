@@ -18,7 +18,7 @@ use App\Models\TransferLine;
 
 class WorkflowUpdater
 {
-    public static function applyIssuance(PropertyTransaction $transaction): void
+    public static function applyIssuance(PropertyTransaction $transaction, ?int $actedBy = null): void
     {
         foreach ($transaction->lines as $line) {
             $isPpe = $line->classification === 'ppe';
@@ -136,13 +136,15 @@ class WorkflowUpdater
                 'amount' => $line->total_cost,
                 'status' => 'active',
             ]);
+
+            InventoryManager::recordIssuance($transaction, $line, $actedBy);
         }
     }
 
-    public static function applyTransfer(Transfer $transfer): void
+    public static function applyTransfer(Transfer $transfer, ?int $actedBy = null): void
     {
         foreach ($transfer->lines as $line) {
-            if ($line->sourceLine) {
+            if (!$line->inventory_item_id && $line->sourceLine) {
                 $status = $line->sourceLine->item_status;
                 if ($status === 'disposed') {
                     abort(422, 'Cannot transfer disposed items.');
@@ -186,17 +188,19 @@ class WorkflowUpdater
                 'amount' => $line->amount,
                 'status' => 'active',
             ]);
+
+            InventoryManager::recordTransfer($transfer, $line, $actedBy);
         }
     }
 
-    public static function applyDisposal(Disposal $disposal): void
+    public static function applyDisposal(Disposal $disposal, ?int $actedBy = null): void
     {
         foreach ($disposal->lines as $line) {
-            if ($line->sourceLine && $line->sourceLine->item_status !== 'active') {
+            if (!$line->inventory_item_id && $line->sourceLine && $line->sourceLine->item_status !== 'active') {
                 abort(422, 'Cannot dispose unissued or inactive items.');
             }
 
-            if ($line->sourceLine) {
+            if (!$line->inventory_item_id && $line->sourceLine) {
                 $line->sourceLine->update(['item_status' => 'disposed']);
             }
 
@@ -208,6 +212,8 @@ class WorkflowUpdater
                 ->where('description', $line->particulars)
                 ->where('status', 'active')
                 ->update(['status' => 'disposed']);
+
+            InventoryManager::recordDisposal($disposal, $line, $actedBy);
         }
     }
 }

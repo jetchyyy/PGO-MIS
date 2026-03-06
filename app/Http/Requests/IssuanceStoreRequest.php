@@ -21,6 +21,8 @@ class IssuanceStoreRequest extends FormRequest
             'transaction_date' => ['required', 'date'],
             'reference_no' => ['nullable', 'string', 'max:255'],
             'lines' => ['required', 'array', 'min:1'],
+            'lines.*.item_id' => ['nullable', 'exists:items,id'],
+            'lines.*.inventory_item_id' => ['nullable', 'exists:inventory_items,id'],
             'lines.*.quantity' => ['required', 'integer', 'min:1'],
             'lines.*.unit' => ['required', 'string', 'max:100'],
             'lines.*.description' => ['required', 'string', 'max:1000'],

@@ -5,10 +5,10 @@
 
             {{-- Left: Brand --}}
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3 shrink-0">
-                <img src="{{ asset('images/surigaodelnorte.png') }}" alt="Logo" class="h-8 w-8 object-contain">
+                <img src="{{ $whiteLabel['logo_url'] }}" alt="Logo" class="h-8 w-8 object-contain">
                 <div class="hidden sm:block">
-                    <span class="text-sm font-bold text-white leading-none">PGSO-PMIS</span>
-                    <span class="block text-[10px] text-gray-400 leading-tight">Surigao Del Norte</span>
+                    <span class="text-sm font-bold text-white leading-none">{{ $whiteLabel['nav_title'] }}</span>
+                    <span class="block text-[10px] text-gray-400 leading-tight">{{ $whiteLabel['nav_subtitle'] }}</span>
                 </div>
             </a>
 
@@ -21,10 +21,14 @@
                     <svg class="inline h-4 w-4 mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="1.8" d="M3 10.5 12 3l9 7.5V21H3V10.5Z"/><path stroke-width="1.8" d="M9 21v-6h6v6"/></svg>Dashboard
                 </a>
 
-                @if($user->hasRole(\App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_PROPERTY_STAFF, \App\Models\User::ROLE_ACCOUNTABLE_OFFICER))
+                @if($user->hasRole(\App\Models\User::ROLE_SUPER_ADMIN, \App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_PROPERTY_STAFF, \App\Models\User::ROLE_ACCOUNTABLE_OFFICER))
                 <a href="{{ route('issuance.index') }}"
                    class="px-3 py-2 text-sm font-medium transition {{ request()->routeIs('issuance.*') ? 'text-white bg-[#007bff]' : 'text-gray-300 hover:text-white hover:bg-[#495057]' }}">
                     Issuance
+                </a>
+                <a href="{{ route('inventory.index') }}"
+                   class="px-3 py-2 text-sm font-medium transition {{ request()->routeIs('inventory.*') ? 'text-white bg-[#007bff]' : 'text-gray-300 hover:text-white hover:bg-[#495057]' }}">
+                    Inventory
                 </a>
                 <a href="{{ route('transfer.index') }}"
                    class="px-3 py-2 text-sm font-medium transition {{ request()->routeIs('transfer.*') ? 'text-white bg-[#007bff]' : 'text-gray-300 hover:text-white hover:bg-[#495057]' }}">
@@ -32,31 +36,45 @@
                 </a>
                 @endif
 
-                @if($user->hasRole(\App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_PROPERTY_STAFF))
+                @if($user->hasRole(\App\Models\User::ROLE_SUPER_ADMIN, \App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_PROPERTY_STAFF))
                 <a href="{{ route('disposal.index') }}"
                    class="px-3 py-2 text-sm font-medium transition {{ request()->routeIs('disposal.*') ? 'text-white bg-[#007bff]' : 'text-gray-300 hover:text-white hover:bg-[#495057]' }}">
                     Disposal
                 </a>
                 @endif
 
-                @if($user->hasRole(\App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_APPROVING_OFFICIAL))
+                @if($user->hasRole(\App\Models\User::ROLE_SUPER_ADMIN, \App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_APPROVING_OFFICIAL))
                 <a href="{{ route('approvals.index') }}"
                    class="px-3 py-2 text-sm font-medium transition {{ request()->routeIs('approvals.*') ? 'text-white bg-[#007bff]' : 'text-gray-300 hover:text-white hover:bg-[#495057]' }}">
                     Approvals
                 </a>
                 @endif
 
-                @if($user->hasRole(\App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_AUDIT_VIEWER, \App\Models\User::ROLE_PROPERTY_STAFF))
+                @if($user->hasRole(\App\Models\User::ROLE_SUPER_ADMIN, \App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_AUDIT_VIEWER, \App\Models\User::ROLE_PROPERTY_STAFF))
                 <a href="{{ route('reports.index') }}"
                    class="px-3 py-2 text-sm font-medium transition {{ request()->routeIs('reports.*') ? 'text-white bg-[#007bff]' : 'text-gray-300 hover:text-white hover:bg-[#495057]' }}">
                     Reports
                 </a>
                 @endif
 
-                @if($user->hasRole(\App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_PROPERTY_STAFF))
+                @if($user->hasRole(\App\Models\User::ROLE_SUPER_ADMIN, \App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_PROPERTY_STAFF))
                 <a href="{{ route('settings.index') }}"
                    class="px-3 py-2 text-sm font-medium transition {{ request()->routeIs('settings.*', 'signatories.*', 'fund-clusters.*', 'items.*') ? 'text-white bg-[#007bff]' : 'text-gray-300 hover:text-white hover:bg-[#495057]' }}">
                     Settings
+                </a>
+                @endif
+
+                @if($user->hasRole(\App\Models\User::ROLE_SUPER_ADMIN, \App\Models\User::ROLE_SYSTEM_ADMIN))
+                <a href="{{ route('users.index') }}"
+                   class="px-3 py-2 text-sm font-medium transition {{ request()->routeIs('users.*') ? 'text-white bg-[#007bff]' : 'text-gray-300 hover:text-white hover:bg-[#495057]' }}">
+                    Users
+                </a>
+                @endif
+
+                @if($user->hasRole(\App\Models\User::ROLE_SUPER_ADMIN))
+                <a href="{{ route('white-label.edit') }}"
+                   class="px-3 py-2 text-sm font-medium transition {{ request()->routeIs('white-label.*') ? 'text-white bg-[#007bff]' : 'text-gray-300 hover:text-white hover:bg-[#495057]' }}">
+                    White Label
                 </a>
                 @endif
             </div>
@@ -105,21 +123,28 @@
         <div class="px-3 py-2 space-y-0.5">
             @php $user = auth()->user(); @endphp
             <a href="{{ route('dashboard') }}" class="block px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-[#495057]">Dashboard</a>
-            @if($user->hasRole(\App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_PROPERTY_STAFF, \App\Models\User::ROLE_ACCOUNTABLE_OFFICER))
+            @if($user->hasRole(\App\Models\User::ROLE_SUPER_ADMIN, \App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_PROPERTY_STAFF, \App\Models\User::ROLE_ACCOUNTABLE_OFFICER))
             <a href="{{ route('issuance.index') }}" class="block px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-[#495057]">Issuance</a>
+            <a href="{{ route('inventory.index') }}" class="block px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-[#495057]">Inventory</a>
             <a href="{{ route('transfer.index') }}" class="block px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-[#495057]">Transfer</a>
             @endif
-            @if($user->hasRole(\App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_PROPERTY_STAFF))
+            @if($user->hasRole(\App\Models\User::ROLE_SUPER_ADMIN, \App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_PROPERTY_STAFF))
             <a href="{{ route('disposal.index') }}" class="block px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-[#495057]">Disposal</a>
             @endif
-            @if($user->hasRole(\App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_APPROVING_OFFICIAL))
+            @if($user->hasRole(\App\Models\User::ROLE_SUPER_ADMIN, \App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_APPROVING_OFFICIAL))
             <a href="{{ route('approvals.index') }}" class="block px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-[#495057]">Approvals</a>
             @endif
-            @if($user->hasRole(\App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_AUDIT_VIEWER, \App\Models\User::ROLE_PROPERTY_STAFF))
+            @if($user->hasRole(\App\Models\User::ROLE_SUPER_ADMIN, \App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_AUDIT_VIEWER, \App\Models\User::ROLE_PROPERTY_STAFF))
             <a href="{{ route('reports.index') }}" class="block px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-[#495057]">Reports</a>
             @endif
-            @if($user->hasRole(\App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_PROPERTY_STAFF))
+            @if($user->hasRole(\App\Models\User::ROLE_SUPER_ADMIN, \App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_PROPERTY_STAFF))
             <a href="{{ route('settings.index') }}" class="block px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-[#495057]">Settings</a>
+            @endif
+            @if($user->hasRole(\App\Models\User::ROLE_SUPER_ADMIN, \App\Models\User::ROLE_SYSTEM_ADMIN))
+            <a href="{{ route('users.index') }}" class="block px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-[#495057]">Users</a>
+            @endif
+            @if($user->hasRole(\App\Models\User::ROLE_SUPER_ADMIN))
+            <a href="{{ route('white-label.edit') }}" class="block px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-[#495057]">White Label</a>
             @endif
         </div>
         <div class="border-t border-[#4b545c] px-4 py-3">

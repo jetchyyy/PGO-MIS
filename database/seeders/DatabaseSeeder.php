@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
         );
 
         $users = [
+            ['name' => 'Super Admin', 'email' => 'superadmin@example.com', 'role' => User::ROLE_SUPER_ADMIN, 'employee_id' => null],
             ['name' => 'System Admin', 'email' => 'admin@example.com', 'role' => User::ROLE_SYSTEM_ADMIN, 'employee_id' => null],
             ['name' => 'PGSO Property Staff', 'email' => 'property.staff@example.com', 'role' => User::ROLE_PROPERTY_STAFF, 'employee_id' => $staff->id],
             ['name' => 'Accountable Officer', 'email' => 'accountable@example.com', 'role' => User::ROLE_ACCOUNTABLE_OFFICER, 'employee_id' => $staff->id],
@@ -41,6 +42,7 @@ class DatabaseSeeder extends Seeder
                     'password' => Hash::make('password'),
                     'role' => $user['role'],
                     'employee_id' => $user['employee_id'],
+                    'is_active' => true,
                 ]
             );
         }

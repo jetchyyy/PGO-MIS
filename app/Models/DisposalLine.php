@@ -11,7 +11,7 @@ class DisposalLine extends Model
     use HasFactory;
 
     protected $fillable = [
-        'disposal_id', 'item_id', 'property_transaction_line_id', 'date_acquired', 'particulars', 'property_no', 'quantity',
+        'disposal_id', 'item_id', 'inventory_item_id', 'property_transaction_line_id', 'date_acquired', 'particulars', 'property_no', 'quantity',
         'unit_cost', 'total_cost', 'accumulated_depreciation', 'carrying_amount',
     ];
 
@@ -20,4 +20,5 @@ class DisposalLine extends Model
     public function disposal(): BelongsTo { return $this->belongsTo(Disposal::class); }
     public function sourceLine(): BelongsTo { return $this->belongsTo(PropertyTransactionLine::class, 'property_transaction_line_id'); }
     public function item(): BelongsTo { return $this->belongsTo(Item::class); }
+    public function inventoryItem(): BelongsTo { return $this->belongsTo(InventoryItem::class); }
 }
