@@ -124,6 +124,9 @@
         <td style="width:50%; padding:6px 10px; vertical-align:top;">
             <div style="font-weight:bold; font-size:9pt; margin-bottom:4px;">Certified Correct:</div>
             <div style="margin-top:28px; text-align:center;">
+                @if($pgso?->signature_full_path)
+                <div style="height:26px; margin-bottom:2px;"><img src="{{ $pgso->signature_full_path }}" alt="Signature" style="max-height:24px; max-width:180px;"></div>
+                @endif
                 <div style="font-weight:bold; font-size:10pt; text-decoration:underline;">{{ $pgso->name ?? '' }}</div>
                 <div style="font-size:9pt; font-style:italic;">{{ $pgso->designation ?? '' }}</div>
             </div>
@@ -133,6 +136,9 @@
         <td style="width:50%; padding:6px 10px; vertical-align:top;">
             <div style="font-weight:bold; font-size:9pt; margin-bottom:4px;">Disposal Approved:</div>
             <div style="margin-top:28px; text-align:center;">
+                @if($governor?->signature_full_path)
+                <div style="height:26px; margin-bottom:2px;"><img src="{{ $governor->signature_full_path }}" alt="Signature" style="max-height:24px; max-width:180px;"></div>
+                @endif
                 <div style="font-weight:bold; font-size:10pt; text-decoration:underline;">{{ $governor->name ?? '' }}</div>
                 <div style="font-size:9pt; font-style:italic;">{{ $governor->designation ?? '' }}</div>
             </div>
@@ -171,6 +177,9 @@
         <td style="width:50%; padding:6px 10px; vertical-align:top;">
             <div style="font-weight:bold; font-size:9pt; margin-bottom:4px;">Property Inspector:</div>
             <div style="margin-top:28px; text-align:center;">
+                @if($inspector?->signature_full_path)
+                <div style="height:26px; margin-bottom:2px;"><img src="{{ $inspector->signature_full_path }}" alt="Signature" style="max-height:24px; max-width:180px;"></div>
+                @endif
                 <div style="font-weight:bold; font-size:10pt; text-decoration:underline;">{{ $inspector->name ?? '' }}</div>
                 <div style="font-size:9pt; font-style:italic;">{{ $inspector->designation ?? '' }}</div>
             </div>
@@ -180,6 +189,9 @@
         <td style="width:50%; padding:6px 10px; vertical-align:top;">
             <div style="font-weight:bold; font-size:9pt; margin-bottom:4px;">Witness (COA Representative):</div>
             <div style="margin-top:28px; text-align:center;">
+                @if($coa?->signature_full_path)
+                <div style="height:26px; margin-bottom:2px;"><img src="{{ $coa->signature_full_path }}" alt="Signature" style="max-height:24px; max-width:180px;"></div>
+                @endif
                 <div style="font-weight:bold; font-size:10pt; text-decoration:underline;">{{ $coa->name ?? '' }}</div>
                 <div style="font-size:9pt; font-style:italic;">{{ $coa->designation ?? '' }}</div>
             </div>

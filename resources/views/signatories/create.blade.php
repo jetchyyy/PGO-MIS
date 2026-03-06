@@ -25,7 +25,7 @@
             <div class="px-5 py-3 border-b border-gray-200 bg-[#1a2c5b]">
                 <h2 class="text-xs font-bold uppercase tracking-widest text-[#c8a84b]">Signatory Details</h2>
             </div>
-            <form method="POST" action="{{ route('signatories.store') }}" class="p-5 space-y-4">
+            <form method="POST" action="{{ route('signatories.store') }}" enctype="multipart/form-data" class="p-5 space-y-4">
                 @csrf
 
                 <div>
@@ -59,6 +59,31 @@
                     @error('entity_name') <p class="text-xs text-rose-600 mt-1">{{ $message }}</p> @enderror
                 </div>
 
+                <div class="space-y-3 rounded border border-gray-200 bg-gray-50 p-4">
+                    <p class="text-xs font-bold uppercase tracking-widest text-gray-600">Digital Signature</p>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Upload Signature Image (optional)</label>
+                        <input type="file" name="signature_upload" accept=".png,.jpg,.jpeg,.webp" class="w-full rounded border border-gray-300 bg-white text-sm px-3 py-2">
+                        <p class="text-[11px] text-gray-500 mt-1">Transparent PNG is recommended for clean printed documents.</p>
+                        @error('signature_upload') <p class="text-xs text-rose-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Or Draw Signature</label>
+                        <div class="rounded border border-gray-300 bg-white p-2">
+                            <canvas id="signaturePad" width="700" height="180" class="w-full h-36 bg-white"></canvas>
+                        </div>
+                        <input type="hidden" name="signature_data" id="signatureData">
+                        @error('signature_data') <p class="text-xs text-rose-600 mt-1">{{ $message }}</p> @enderror
+                        <div class="mt-2 flex items-center gap-2">
+                            <button type="button" id="clearSignature" class="rounded border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100">Clear</button>
+                            <button type="button" id="useDrawnSignature" class="rounded border border-[#1a2c5b] bg-[#1a2c5b] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#253d82]">Use Drawn Signature</button>
+                            <span id="signatureState" class="text-[11px] text-gray-500">Not saved yet</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="flex items-center gap-2">
                     <input type="hidden" name="is_active" value="0">
                     <input type="checkbox" name="is_active" value="1" {{ old('is_active', '1') ? 'checked' : '' }}
@@ -73,5 +98,71 @@
             </form>
         </div>
     </div>
+    <script>
+(() => {
+    const canvas = document.getElementById('signaturePad');
+    const ctx = canvas.getContext('2d');
+    const dataInput = document.getElementById('signatureData');
+    const clearBtn = document.getElementById('clearSignature');
+    const useBtn = document.getElementById('useDrawnSignature');
+    const stateEl = document.getElementById('signatureState');
+    const fileInput = document.querySelector('input[name="signature_upload"]');
+    let drawing = false;
+    let dirty = false;
+
+    const getPoint = (event) => {
+        const rect = canvas.getBoundingClientRect();
+        const source = event.touches ? event.touches[0] : event;
+        return {
+            x: (source.clientX - rect.left) * (canvas.width / rect.width),
+            y: (source.clientY - rect.top) * (canvas.height / rect.height),
+        };
+    };
+
+    const start = (event) => {
+        drawing = true;
+        const p = getPoint(event);
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        event.preventDefault();
+    };
+
+    const draw = (event) => {
+        if (!drawing) return;
+        const p = getPoint(event);
+        ctx.lineTo(p.x, p.y);
+        ctx.strokeStyle = '#111827';
+        ctx.lineWidth = 2.2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+        dirty = true;
+        event.preventDefault();
+    };
+
+    const end = () => { drawing = false; };
+
+    clearBtn.addEventListener('click', () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        dataInput.value = '';
+        dirty = false;
+        stateEl.textContent = 'Not saved yet';
+    });
+
+    useBtn.addEventListener('click', () => {
+        if (!dirty) return;
+        dataInput.value = canvas.toDataURL('image/png');
+        if (fileInput) fileInput.value = '';
+        stateEl.textContent = 'Drawn signature ready';
+    });
+
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', draw);
+    window.addEventListener('mouseup', end);
+    canvas.addEventListener('touchstart', start, { passive: false });
+    canvas.addEventListener('touchmove', draw, { passive: false });
+    window.addEventListener('touchend', end);
+})();
+</script>
 </div>
 @endsection

@@ -9,7 +9,7 @@
     <meta name="description" content="{{ $whiteLabel['meta_description'] }}">
     <meta name="keywords" content="PGSO, Property MIS, Surigao del Norte, Provincial Government, Property Management, Inventory System">
     <meta name="author" content="Provincial Government of Surigao del Norte">
-    <meta name="theme-color" content="#0d47a1">
+    <meta name="theme-color" content="{{ $whiteLabel['primary_color'] }}">
 
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url('/') }}">
@@ -48,7 +48,7 @@
                     <img src="{{ $whiteLabel['logo_url'] }}" alt="Logo" class="h-full w-full object-contain">
                 </div>
                 <div class="hidden sm:block">
-                    <span class="block text-[10px] font-bold tracking-[0.2em] text-amber-400 uppercase">{{ $whiteLabel['nav_subtitle'] }}</span>
+                    <span class="block text-[10px] font-bold tracking-[0.2em] uppercase" style="color: {{ $whiteLabel['accent_color'] }}">{{ $whiteLabel['nav_subtitle'] }}</span>
                     <span class="block text-sm font-black text-white tracking-wide">{{ $whiteLabel['nav_title'] }}</span>
                 </div>
             </div>
@@ -73,9 +73,9 @@
             <img src="{{ $whiteLabel['logo_url'] }}" alt="Seal" class="h-full w-full object-contain drop-shadow-xl">
         </div>
 
-        <div class="inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-1.5 mb-6 backdrop-blur-md">
-            <span class="flex h-2 w-2 rounded-full bg-amber-400 animate-ping"></span>
-            <span class="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-300">{{ $whiteLabel['welcome_badge'] }}</span>
+        <div class="inline-flex items-center gap-2 rounded-full border px-4 py-1.5 mb-6 backdrop-blur-md" style="border-color: {{ $whiteLabel['accent_color'] }}66; background-color: {{ $whiteLabel['accent_color'] }}1a;">
+            <span class="flex h-2 w-2 rounded-full animate-ping" style="background-color: {{ $whiteLabel['accent_color'] }}"></span>
+            <span class="text-[11px] font-bold uppercase tracking-[0.2em]" style="color: {{ $whiteLabel['accent_color'] }}">{{ $whiteLabel['welcome_badge'] }}</span>
         </div>
 
         <h1 class="mx-auto max-w-4xl text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl drop-shadow-lg">
@@ -91,12 +91,12 @@
 
         <div class="mt-10 flex flex-col sm:flex-row gap-4">
             @auth
-                <a href="{{ url('/dashboard') }}" class="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/20 bg-white/10 px-8 py-4 text-base font-bold tracking-wide text-white shadow-xl backdrop-blur-md transition hover:-translate-y-1 hover:bg-white/20">
+                <a href="{{ url('/dashboard') }}" class="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/20 px-8 py-4 text-base font-bold tracking-wide shadow-xl backdrop-blur-md transition hover:-translate-y-1" style="background-color: {{ $whiteLabel['button_color'] }}; color: {{ $whiteLabel['button_text_color'] }};">
                     <svg class="h-6 w-6 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
                     <span>Proceed to Dashboard</span>
                 </a>
             @else
-                <a href="{{ route('login') }}" class="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/20 bg-white/10 px-8 py-4 text-base font-bold tracking-wide text-white shadow-xl backdrop-blur-md transition hover:-translate-y-1 hover:bg-white/20">
+                <a href="{{ route('login') }}" class="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/20 px-8 py-4 text-base font-bold tracking-wide shadow-xl backdrop-blur-md transition hover:-translate-y-1" style="background-color: {{ $whiteLabel['button_color'] }}; color: {{ $whiteLabel['button_text_color'] }};">
                     <svg class="h-6 w-6 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                     <span>Login to Portal</span>
                 </a>
@@ -138,7 +138,7 @@
         </div>
     </main>
 
-    <footer class="relative z-10 w-full flex flex-col items-center justify-center gap-2 border-t border-white/5 bg-slate-950/80 py-8 text-center backdrop-blur-md">
+    <footer class="relative z-10 w-full flex flex-col items-center justify-center gap-2 border-t border-white/5 py-8 text-center backdrop-blur-md" style="background-color: {{ $whiteLabel['secondary_color'] }}cc;">
         <p class="text-[11px] font-bold tracking-widest text-white/60 uppercase">
             &copy; {{ date('Y') }} {{ $whiteLabel['footer_text'] }}
         </p>

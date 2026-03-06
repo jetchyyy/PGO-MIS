@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Item;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class ItemController extends Controller
@@ -98,6 +100,7 @@ class ItemController extends Controller
     public function show(Item $item): View
     {
         $this->authorize('issuance.manage');
+        $this->ensureQrToken($item);
 
         $issuanceLines = $item->issuanceLines()
             ->with(['transaction.employee', 'transaction.office'])
@@ -119,6 +122,20 @@ class ItemController extends Controller
         return view('items.show', compact('item', 'issuanceLines', 'transferLines', 'disposalLines', 'totalIssuedQty'));
     }
 
+    public function printQr(Item $item)
+    {
+        $this->authorize('issuance.manage');
+        $this->ensureQrToken($item);
+
+        return Pdf::loadView('items.pdf.qr_label', compact('item'))
+            ->setOption([
+                'isRemoteEnabled' => true,
+                'isHtml5ParserEnabled' => true,
+            ])
+            ->setPaper('a4', 'portrait')
+            ->stream('item-qr-'.$item->id.'.pdf');
+    }
+
     /**
      * JSON search endpoint for Alpine.js autocomplete.
      * GET /items/search?q=keyboard&limit=10
@@ -135,5 +152,12 @@ class ItemController extends Controller
             ->get(['id', 'name', 'description', 'unit', 'unit_cost', 'classification', 'category', 'estimated_useful_life']);
 
         return response()->json($items);
+    }
+
+    private function ensureQrToken(Item $item): void
+    {
+        if (! $item->qr_token) {
+            $item->update(['qr_token' => (string) Str::uuid()]);
+        }
     }
 }

@@ -12,6 +12,7 @@ use App\Models\Transfer;
 use App\Models\TransferLine;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class InventoryManager
 {
@@ -81,8 +82,13 @@ class InventoryManager
     {
         if ($line->inventory_item_id) {
             $item = InventoryItem::findOrFail($line->inventory_item_id);
-            abort_if($item->status === 'disposed', 422, 'Cannot transfer disposed inventory item.');
-            abort_if((int) $item->current_employee_id !== (int) $transfer->from_employee_id, 422, 'Inventory item holder does not match transfer source.');
+            if ($item->status === 'disposed') {
+                self::validationError('Cannot transfer disposed inventory item.');
+            }
+
+            if ((int) $item->current_employee_id !== (int) $transfer->from_employee_id) {
+                self::validationError('Inventory item holder does not match transfer source.');
+            }
 
             $item->update([
                 'current_employee_id' => $transfer->to_employee_id,
@@ -99,16 +105,23 @@ class InventoryManager
                 'to_employee_id' => $transfer->to_employee_id,
                 'acted_by' => $actedBy,
                 'movement_date' => $transfer->transfer_date,
-                'remarks' => 'Transferred via '.$transfer->document_type.' '.$transfer->control_no,
+                'remarks' => 'Transferred via '.$transfer->document_type.' '.$transfer->control_no
+                    .($line->reference_no ? ' | Source Issuance: '.$line->reference_no : ''),
             ]);
 
             return;
         }
 
         $items = self::resolveItemsForTransfer($transfer, $line);
-        abort_if($items->count() < $line->quantity, 422, 'Not enough inventory units found for transfer line: '.$line->description);
+        if ($items->count() < $line->quantity) {
+            $requested = (int) $line->quantity;
+            $available = (int) $items->count();
+            self::validationError(
+                "Insufficient inventory for transfer line: {$line->description}. Requested {$requested}, available {$available}."
+            );
+        }
 
-        $items->take($line->quantity)->each(function (InventoryItem $item) use ($transfer, $actedBy): void {
+        $items->take($line->quantity)->each(function (InventoryItem $item) use ($transfer, $line, $actedBy): void {
             $item->update([
                 'current_employee_id' => $transfer->to_employee_id,
                 'accountable_name' => $transfer->toEmployee?->name,
@@ -124,7 +137,8 @@ class InventoryManager
                 'to_employee_id' => $transfer->to_employee_id,
                 'acted_by' => $actedBy,
                 'movement_date' => $transfer->transfer_date,
-                'remarks' => 'Transferred via '.$transfer->document_type.' '.$transfer->control_no,
+                'remarks' => 'Transferred via '.$transfer->document_type.' '.$transfer->control_no
+                    .($line->reference_no ? ' | Source Issuance: '.$line->reference_no : ''),
             ]);
         });
     }
@@ -133,7 +147,9 @@ class InventoryManager
     {
         if ($line->inventory_item_id) {
             $item = InventoryItem::findOrFail($line->inventory_item_id);
-            abort_if($item->status === 'disposed', 422, 'Inventory item already disposed.');
+            if ($item->status === 'disposed') {
+                self::validationError('Inventory item already disposed.');
+            }
 
             $item->update([
                 'status' => 'disposed',
@@ -157,7 +173,13 @@ class InventoryManager
         }
 
         $items = self::resolveItemsForDisposal($disposal, $line);
-        abort_if($items->count() < $line->quantity, 422, 'Not enough inventory units found for disposal line: '.$line->particulars);
+        if ($items->count() < $line->quantity) {
+            $requested = (int) $line->quantity;
+            $available = (int) $items->count();
+            self::validationError(
+                "Insufficient inventory for disposal line: {$line->particulars}. Requested {$requested}, available {$available}."
+            );
+        }
 
         $items->take($line->quantity)->each(function (InventoryItem $item) use ($disposal, $actedBy): void {
             $item->update([
@@ -228,5 +250,12 @@ class InventoryManager
         } while (InventoryItem::where('inventory_code', $code)->exists());
 
         return $code;
+    }
+
+    private static function validationError(string $message): never
+    {
+        throw ValidationException::withMessages([
+            'inventory' => $message,
+        ]);
     }
 }

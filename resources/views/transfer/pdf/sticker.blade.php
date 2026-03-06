@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Property Sticker - {{ $issuance->control_no }}</title>
+    <title>Transfer Sticker - {{ $transfer->control_no }}</title>
     <style>
         @page { size: A4 portrait; margin: 10mm; }
         body { font-family: DejaVu Sans, sans-serif; font-size: 7px; color: #111; }
@@ -131,56 +131,27 @@
 </head>
 <body>
 @php
-    $stickers = collect();
-    $fallbackInventoryByLine = [];
+    $entries = collect($stickerEntries ?? []);
     $cmsSignatory = $sig->first(function ($signatory): bool {
         $haystack = strtolower(($signatory->name ?? '').' '.($signatory->designation ?? '').' '.($signatory->role_key ?? ''));
         return str_contains($haystack, 'cms');
     }) ?? ($sig['property_inspector'] ?? null) ?? $sig->first(fn ($signatory) => !empty($signatory->signature_path));
-    foreach ($issuance->lines as $line) {
-        $inventoryRows = $inventoryByLine[$line->id] ?? collect();
-        if ($inventoryRows->isEmpty()) {
-            $fallbackQuery = \App\Models\InventoryItem::query()->where('status', 'issued');
-            if (!empty($line->property_no)) {
-                $fallbackQuery->where('property_no', $line->property_no);
-            } else {
-                $fallbackQuery->where('description', $line->description);
-            }
-            if (!empty($issuance->employee_id)) {
-                $fallbackQuery->where('current_employee_id', $issuance->employee_id);
-            }
-            $fallbackInventoryByLine[$line->id] = $fallbackQuery->latest('id')->first();
-        }
-        if ($inventoryRows->isNotEmpty()) {
-            foreach ($inventoryRows as $inv) {
-                $stickers->push(['line' => $line, 'inventory' => $inv]);
-            }
-        } else {
-            for ($i = 0; $i < (int) $line->quantity; $i++) {
-                $stickers->push(['line' => $line, 'inventory' => null]);
-            }
-        }
-    }
 @endphp
 
 <div class="sheet">
-@foreach($stickers as $entry)
+@foreach($entries as $entry)
     @php
         $line = $entry['line'];
-        $inventory = $entry['inventory'] ?? $line->inventoryItem ?? ($fallbackInventoryByLine[$line->id] ?? null);
-        $acqDate = optional($line->date_acquired)->format('M d, Y') ?? optional($issuance->transaction_date)->format('M d, Y');
-        $accountable = trim((string) ($inventory?->accountable_name ?? $inventory?->currentEmployee?->name ?? $issuance->employee->name ?? ''));
+        $inventory = $entry['inventory'];
+        $acqDate = optional($line->date_acquired)->format('M d, Y') ?? optional($transfer->transfer_date)->format('M d, Y');
+        $accountable = trim((string) ($inventory?->accountable_name ?? $inventory?->currentEmployee?->name ?? $transfer->toEmployee?->name ?? ''));
         $model = trim((string) ($inventory?->model ?? ''));
         $serial = trim((string) ($inventory?->serial_number ?? ''));
-        if ($accountable === '') {
-            $accountable = 'N/A';
-        }
-        if ($model === '') {
-            $model = 'N/A';
-        }
-        if ($serial === '') {
-            $serial = 'N/A';
-        }
+        if ($accountable === '') { $accountable = 'N/A'; }
+        if ($model === '') { $model = 'N/A'; }
+        if ($serial === '') { $serial = 'N/A'; }
+        $officeName = $inventory?->office?->name ?? $transfer->toEmployee?->office?->name ?? 'N/A';
+        $propertyNo = $inventory?->property_no ?? $line->sourceLine?->property_no ?? 'N/A';
     @endphp
     <div class="tag">
         <div class="header">
@@ -189,12 +160,12 @@
         </div>
 
         <div class="content">
-            <div class="row"><div class="label">Name of Office:</div><div class="value">{{ $issuance->office->name ?? 'N/A' }}</div></div>
+            <div class="row"><div class="label">Name of Office:</div><div class="value">{{ $officeName }}</div></div>
             <div class="row"><div class="label">Description:</div><div class="value description">{{ $line->description }}</div></div>
-            <div class="row"><div class="label">Property Number:</div><div class="value">{{ $line->property_no ?? 'N/A' }}</div></div>
+            <div class="row"><div class="label">Property Number:</div><div class="value">{{ $propertyNo }}</div></div>
             <div class="row"><div class="label">Model:</div><div class="value">{{ $model }}</div></div>
             <div class="row"><div class="label">Serial Number:</div><div class="value">{{ $serial }}</div></div>
-            <div class="row"><div class="label">Acq. Cost/Date:</div><div class="value">Php {{ number_format((float) $line->unit_cost, 2) }} - {{ $acqDate }}</div></div>
+            <div class="row"><div class="label">Acq. Cost/Date:</div><div class="value">Php {{ number_format((float) $line->amount, 2) }} - {{ $acqDate }}</div></div>
             <div class="row"><div class="label">Person Accountable:</div><div class="value">{{ $accountable }}</div></div>
         </div>
 

@@ -1,12 +1,14 @@
 <?php
 
 use App\Http\Controllers\ApprovalsController;
+use App\Http\Controllers\AccountableOfficerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DisposalController;
 use App\Http\Controllers\FundClusterController;
 use App\Http\Controllers\IssuanceController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\OfficeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\SettingsController;
@@ -90,11 +92,24 @@ Route::middleware(['auth'])->group(function (): void {
         Route::delete('/{fundCluster}', [FundClusterController::class, 'destroy'])->name('destroy');
     });
 
+    Route::prefix('offices')->name('offices.')->group(function (): void {
+        Route::get('/', [OfficeController::class, 'index'])->name('index');
+        Route::post('/', [OfficeController::class, 'store'])->name('store');
+        Route::delete('/{office}', [OfficeController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('accountable-officers')->name('accountable-officers.')->group(function (): void {
+        Route::get('/', [AccountableOfficerController::class, 'index'])->name('index');
+        Route::post('/', [AccountableOfficerController::class, 'store'])->name('store');
+        Route::delete('/{employee}', [AccountableOfficerController::class, 'destroy'])->name('destroy');
+    });
+
     Route::prefix('items')->name('items.')->group(function (): void {
         Route::get('/search', [ItemController::class, 'search'])->name('search');
         Route::get('/', [ItemController::class, 'index'])->name('index');
         Route::get('/create', [ItemController::class, 'create'])->name('create');
         Route::post('/', [ItemController::class, 'store'])->name('store');
+        Route::get('/{item}/print-qr', [ItemController::class, 'printQr'])->name('print_qr');
         Route::get('/{item}', [ItemController::class, 'show'])->name('show');
         Route::get('/{item}/edit', [ItemController::class, 'edit'])->name('edit');
         Route::put('/{item}', [ItemController::class, 'update'])->name('update');

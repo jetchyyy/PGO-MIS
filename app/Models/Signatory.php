@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Signatory extends Model
 {
     protected $fillable = [
-        'role_key', 'name', 'designation', 'entity_name', 'is_active',
+        'role_key', 'name', 'designation', 'entity_name', 'signature_path', 'is_active',
     ];
 
     protected $casts = [
@@ -46,4 +47,22 @@ class Signatory extends Model
         self::ROLE_PROVINCIAL_ACCOUNTANT => 'Provincial Accountant',
         self::ROLE_COA_REPRESENTATIVE => 'COA Representative',
     ];
+
+    public function getSignatureUrlAttribute(): ?string
+    {
+        if (! $this->signature_path || ! Storage::disk('public')->exists($this->signature_path)) {
+            return null;
+        }
+
+        return Storage::url($this->signature_path);
+    }
+
+    public function getSignatureFullPathAttribute(): ?string
+    {
+        if (! $this->signature_path || ! Storage::disk('public')->exists($this->signature_path)) {
+            return null;
+        }
+
+        return storage_path('app/public/'.$this->signature_path);
+    }
 }

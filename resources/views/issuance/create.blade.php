@@ -164,13 +164,13 @@
                                         @click="
                                             browseOpen = !browseOpen;
                                             if (browseOpen) {
-                                                fetch('/inventory/search?mode=issuance&q=' + encodeURIComponent(browseQuery))
+                                                fetch('/items/search?q=' + encodeURIComponent(browseQuery) + '&limit=25')
                                                     .then(r => r.json())
                                                     .then(data => browseItems = data);
                                             }
                                         "
                                         class="rounded border border-gray-300 px-2 py-1 text-[10px] font-semibold text-gray-600 hover:bg-gray-50">
-                                        View Inventory
+                                        View Item Catalog
                                     </button>
                                 </div>
                                 <input type="hidden" :name="'lines['+index+'][item_id]'" x-model="line.item_id">
@@ -179,27 +179,26 @@
                                     @input.debounce.300ms="
                                         line.inventory_item_id = '';
                                         if (line.description.length >= 2) {
-                                            fetch('/inventory/search?mode=issuance&q=' + encodeURIComponent(line.description))
+                                            fetch('/items/search?q=' + encodeURIComponent(line.description))
                                                 .then(r => r.json())
                                                 .then(data => { suggestions = data; showSuggestions = data.length > 0; });
                                         } else { showSuggestions = false; suggestions = []; }
                                     "
                                     @focus="if (suggestions.length > 0) showSuggestions = true"
                                     autocomplete="off"
-                                    class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="Search by inventory code, property no, model, serial" required>
+                                    class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="Search item catalog" required>
                                 {{-- Autocomplete dropdown --}}
                                 <div x-show="showSuggestions" x-cloak
                                      class="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto">
                                     <template x-for="(item, si) in suggestions" :key="item.id">
                                         <button type="button"
-                                            @click="line.inventory_item_id = item.id; line.item_id = item.item_id || ''; line.description = item.description; line.property_no = item.property_no || ''; line.date_acquired = item.date_acquired || ''; line.unit = item.unit || ''; line.quantity = 1; line.unit_cost = parseFloat(item.unit_cost); showSuggestions = false;"
+                                            @click="line.inventory_item_id = ''; line.item_id = item.id; line.description = item.name + (item.description ? ' — ' + item.description : ''); line.property_no = ''; line.date_acquired = ''; line.unit = item.unit || ''; line.quantity = line.quantity || 1; line.unit_cost = parseFloat(item.unit_cost); line.estimated_useful_life = item.estimated_useful_life || ''; showSuggestions = false;"
                                             class="w-full text-left px-3 py-2 hover:bg-blue-50 border-b border-gray-100 last:border-b-0 transition">
                                             <p class="text-sm font-semibold text-gray-800">
-                                                <span x-text="item.inventory_code"></span> -
-                                                <span x-text="item.description"></span>
+                                                <span x-text="item.name"></span>
                                             </p>
                                             <p class="text-[11px] text-gray-500">
-                                                <span x-text="item.property_no || 'No Property No.'"></span> &bull;
+                                                <span x-text="item.category || 'Uncategorized'"></span> &bull;
                                                 <span x-text="item.unit || 'unit'"></span> &bull;
                                                 ₱<span x-text="parseFloat(item.unit_cost).toLocaleString('en-PH', {minimumFractionDigits: 2})"></span>
                                                 <span class="ml-1 uppercase font-bold" x-text="item.classification || ''"></span>
@@ -214,7 +213,7 @@
                                             class="w-full rounded border border-gray-300 px-2 py-1 text-xs">
                                         <button type="button"
                                             @click="
-                                                fetch('/inventory/search?mode=issuance&q=' + encodeURIComponent(browseQuery))
+                                                fetch('/items/search?q=' + encodeURIComponent(browseQuery) + '&limit=25')
                                                     .then(r => r.json())
                                                     .then(data => browseItems = data);
                                             "
@@ -225,11 +224,10 @@
                                     <div class="max-h-44 overflow-y-auto border border-gray-100">
                                         <template x-for="inv in browseItems" :key="'browse-'+inv.id">
                                             <button type="button"
-                                                @click="line.inventory_item_id = inv.id; line.item_id = inv.item_id || ''; line.description = inv.description; line.property_no = inv.property_no || ''; line.date_acquired = inv.date_acquired || ''; line.unit = inv.unit || ''; line.quantity = 1; line.unit_cost = parseFloat(inv.unit_cost); browseOpen = false;"
+                                                @click="line.inventory_item_id = ''; line.item_id = inv.id; line.description = inv.name + (inv.description ? ' — ' + inv.description : ''); line.property_no = ''; line.date_acquired = ''; line.unit = inv.unit || ''; line.quantity = line.quantity || 1; line.unit_cost = parseFloat(inv.unit_cost); line.estimated_useful_life = inv.estimated_useful_life || ''; browseOpen = false;"
                                                 class="block w-full border-b border-gray-100 px-2 py-1.5 text-left text-xs hover:bg-blue-50">
-                                                <span class="font-semibold" x-text="inv.inventory_code"></span>
-                                                <span x-text="' - ' + inv.description"></span>
-                                                <span class="text-gray-500" x-text="' (' + (inv.property_no || 'No Property No.') + ')'"></span>
+                                                <span class="font-semibold" x-text="inv.name"></span>
+                                                <span class="text-gray-500" x-text="' (' + (inv.category || 'Uncategorized') + ')'"></span>
                                             </button>
                                         </template>
                                     </div>

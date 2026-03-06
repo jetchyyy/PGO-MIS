@@ -15,6 +15,7 @@ use App\Models\SemiExpendableCard;
 use App\Models\SemiExpendableCardEntry;
 use App\Models\Transfer;
 use App\Models\TransferLine;
+use Illuminate\Validation\ValidationException;
 
 class WorkflowUpdater
 {
@@ -147,7 +148,9 @@ class WorkflowUpdater
             if (!$line->inventory_item_id && $line->sourceLine) {
                 $status = $line->sourceLine->item_status;
                 if ($status === 'disposed') {
-                    abort(422, 'Cannot transfer disposed items.');
+                    throw ValidationException::withMessages([
+                        'inventory' => 'Cannot transfer disposed items.',
+                    ]);
                 }
                 $line->sourceLine->update(['item_status' => 'transferred']);
             }
@@ -197,7 +200,9 @@ class WorkflowUpdater
     {
         foreach ($disposal->lines as $line) {
             if (!$line->inventory_item_id && $line->sourceLine && $line->sourceLine->item_status !== 'active') {
-                abort(422, 'Cannot dispose unissued or inactive items.');
+                throw ValidationException::withMessages([
+                    'inventory' => 'Cannot dispose unissued or inactive items.',
+                ]);
             }
 
             if (!$line->inventory_item_id && $line->sourceLine) {

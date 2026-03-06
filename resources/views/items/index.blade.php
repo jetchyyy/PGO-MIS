@@ -131,6 +131,7 @@
                         <td class="px-4 py-2.5 text-right">
                             <div class="flex items-center justify-end gap-2">
                                 <a href="{{ route('items.show', $item) }}" class="text-blue-600 hover:underline text-xs font-semibold">View</a>
+                                <a href="{{ route('items.print_qr', $item) }}" target="_blank" class="text-emerald-600 hover:underline text-xs font-semibold">QR</a>
                                 <a href="{{ route('items.edit', $item) }}" class="text-[#1a2c5b] hover:underline text-xs font-semibold">Edit</a>
                                 <form method="POST" action="{{ route('items.destroy', $item) }}" onsubmit="return confirm('Remove this item from catalog?')">
                                     @csrf @method('DELETE')

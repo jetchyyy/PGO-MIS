@@ -47,6 +47,7 @@
                             <option value="">Select Officer</option>
                             @foreach($employees as $e)<option value="{{ $e->id }}">{{ $e->name }}</option>@endforeach
                         </select>
+                        <p class="text-[11px] text-gray-500">Disposal items are fetched from the latest assigned holder based on issuance and transfer history.</p>
                     </div>
                     <div class="flex flex-col gap-1.5">
                         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Designation</label>
@@ -114,19 +115,19 @@
                         <div class="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
                             <div class="flex flex-col gap-1.5 md:col-span-2 relative" x-data="{ showSuggestions: false, suggestions: [], browseOpen: false, browseItems: [], browseQuery: '' }" @click.outside="showSuggestions = false">
                                 <div class="flex items-center justify-between gap-2">
-                                    <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Particulars</label>
+                                    <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Particulars (Issued Inventory)</label>
                                     <button type="button"
                                         @click="
-                                            if (!employeeId) { return; }
                                             browseOpen = !browseOpen;
                                             if (browseOpen) {
-                                                fetch('/inventory/search?mode=disposal&employee_id=' + encodeURIComponent(employeeId) + '&q=' + encodeURIComponent(browseQuery))
+                                                if (!employeeId) { browseItems = []; return; }
+                                                fetch('/inventory/search?mode=disposal&employee_id=' + encodeURIComponent(employeeId) + '&q=' + encodeURIComponent(browseQuery) + '&limit=25')
                                                     .then(r => r.json())
                                                     .then(data => browseItems = data);
                                             }
                                         "
                                         class="rounded border border-gray-300 px-2 py-1 text-[10px] font-semibold text-gray-600 hover:bg-gray-50">
-                                        View Inventory
+                                        View Issued Items
                                     </button>
                                 </div>
                                 <input type="hidden" :name="'lines['+index+'][item_id]'" x-model="line.item_id">
@@ -135,8 +136,9 @@
                                 <input :name="'lines['+index+'][particulars]'" x-model="line.particulars"
                                     @input.debounce.300ms="
                                         line.inventory_item_id = '';
+                                        line.property_transaction_line_id = '';
+                                        if (!employeeId) { showSuggestions = false; suggestions = []; return; }
                                         if (line.particulars.length >= 2) {
-                                            if (!employeeId) { suggestions = []; showSuggestions = false; return; }
                                             fetch('/inventory/search?mode=disposal&employee_id=' + encodeURIComponent(employeeId) + '&q=' + encodeURIComponent(line.particulars))
                                                 .then(r => r.json())
                                                 .then(data => { suggestions = data; showSuggestions = data.length > 0; });
@@ -144,31 +146,33 @@
                                     "
                                     @focus="if (suggestions.length > 0) showSuggestions = true"
                                     autocomplete="off"
-                                    class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="Search by inventory code, property no, model, serial" required>
+                                    class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="Search from issued inventory" required>
                                 <div x-show="showSuggestions" x-cloak
                                      class="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto">
-                                    <template x-for="(item, si) in suggestions" :key="item.id">
+                                    <template x-for="(inv, si) in suggestions" :key="inv.id">
                                         <button type="button"
-                                            @click="line.inventory_item_id = item.id; line.item_id = item.item_id || ''; line.property_transaction_line_id = item.property_transaction_line_id || ''; line.particulars = item.description; line.property_no = item.property_no || ''; line.quantity = 1; line.unit_cost = parseFloat(item.unit_cost); showSuggestions = false;"
+                                            @click="line.inventory_item_id = inv.id; line.item_id = inv.item_id || ''; line.property_transaction_line_id = inv.property_transaction_line_id || ''; line.particulars = inv.description || ''; line.property_no = inv.property_no || ''; line.quantity = 1; line.unit_cost = parseFloat(inv.unit_cost || 0); line.accumulated_depreciation = line.accumulated_depreciation || 0; showSuggestions = false;"
                                             class="w-full text-left px-3 py-2 hover:bg-blue-50 border-b border-gray-100 last:border-b-0 transition">
                                             <p class="text-sm font-semibold text-gray-800">
-                                                <span x-text="item.inventory_code"></span> -
-                                                <span x-text="item.description"></span>
+                                                <span x-text="inv.description"></span>
                                             </p>
                                             <p class="text-[11px] text-gray-500">
-                                                <span x-text="item.holder || 'N/A'"></span> &bull;
-                                                ₱<span x-text="parseFloat(item.unit_cost).toLocaleString('en-PH', {minimumFractionDigits: 2})"></span>
+                                                <span x-text="inv.inventory_code || 'N/A'"></span> &bull;
+                                                <span x-text="inv.holder || 'N/A'"></span> &bull;
+                                                <span x-text="inv.reference_no || 'No issuance ref'"></span> &bull;
+                                                ₱<span x-text="parseFloat(inv.unit_cost || 0).toLocaleString('en-PH', {minimumFractionDigits: 2})"></span>
                                             </p>
                                         </button>
                                     </template>
                                 </div>
                                 <div x-show="browseOpen" x-cloak class="mt-2 rounded border border-gray-200 bg-white p-2">
                                     <div class="mb-2 flex gap-2">
-                                        <input type="text" x-model="browseQuery" placeholder="Search inventory list"
+                                        <input type="text" x-model="browseQuery" placeholder="Search issued inventory"
                                             class="w-full rounded border border-gray-300 px-2 py-1 text-xs">
                                         <button type="button"
                                             @click="
-                                                fetch('/inventory/search?mode=disposal&employee_id=' + encodeURIComponent(employeeId) + '&q=' + encodeURIComponent(browseQuery))
+                                                if (!employeeId) { browseItems = []; return; }
+                                                fetch('/inventory/search?mode=disposal&employee_id=' + encodeURIComponent(employeeId) + '&q=' + encodeURIComponent(browseQuery) + '&limit=25')
                                                     .then(r => r.json())
                                                     .then(data => browseItems = data);
                                             "
@@ -176,14 +180,14 @@
                                             Search
                                         </button>
                                     </div>
+                                    <p x-show="!employeeId" class="mb-2 text-[11px] text-amber-600">Select Accountable Officer first to load latest issued items.</p>
                                     <div class="max-h-44 overflow-y-auto border border-gray-100">
                                         <template x-for="inv in browseItems" :key="'browse-'+inv.id">
                                             <button type="button"
-                                                @click="line.inventory_item_id = inv.id; line.item_id = inv.item_id || ''; line.property_transaction_line_id = inv.property_transaction_line_id || ''; line.particulars = inv.description; line.property_no = inv.property_no || ''; line.quantity = 1; line.unit_cost = parseFloat(inv.unit_cost); browseOpen = false;"
+                                                @click="line.inventory_item_id = inv.id; line.item_id = inv.item_id || ''; line.property_transaction_line_id = inv.property_transaction_line_id || ''; line.particulars = inv.description || ''; line.property_no = inv.property_no || ''; line.quantity = 1; line.unit_cost = parseFloat(inv.unit_cost || 0); line.accumulated_depreciation = line.accumulated_depreciation || 0; browseOpen = false;"
                                                 class="block w-full border-b border-gray-100 px-2 py-1.5 text-left text-xs hover:bg-blue-50">
-                                                <span class="font-semibold" x-text="inv.inventory_code"></span>
-                                                <span x-text="' - ' + inv.description"></span>
-                                                <span class="text-gray-500" x-text="' (' + (inv.holder || 'N/A') + ')'"></span>
+                                                <span class="font-semibold" x-text="inv.description"></span>
+                                                <span class="text-gray-500" x-text="' [' + (inv.inventory_code || 'N/A') + '] - ' + (inv.holder || 'N/A')"></span>
                                             </button>
                                         </template>
                                     </div>
@@ -246,6 +250,15 @@ function disposalForm() {
     return {
         employeeId: '',
         lines: [{ item_id: '', inventory_item_id: '', property_transaction_line_id: '', particulars: '', property_no: '', quantity: 1, unit_cost: 0, accumulated_depreciation: 0 }],
+        init() {
+            this.$watch('employeeId', () => {
+                this.lines = this.lines.map(line => ({
+                    ...line,
+                    inventory_item_id: '',
+                    property_transaction_line_id: '',
+                }));
+            });
+        },
         addLine() {
             this.lines.push({ item_id: '', inventory_item_id: '', property_transaction_line_id: '', particulars: '', property_no: '', quantity: 1, unit_cost: 0, accumulated_depreciation: 0 });
         },

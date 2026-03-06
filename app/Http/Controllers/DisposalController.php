@@ -15,6 +15,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class DisposalController extends Controller
@@ -67,14 +68,42 @@ class DisposalController extends Controller
                 $inventory = null;
                 if (!empty($line['inventory_item_id'])) {
                     $inventory = InventoryItem::findOrFail((int) $line['inventory_item_id']);
-                    abort_if($inventory->status !== 'issued', 422, 'Selected inventory item is not currently issued.');
-                    abort_if((int) $inventory->current_employee_id !== (int) $validated['employee_id'], 422, 'Selected item does not belong to the selected accountable officer.');
+                    if ($inventory->status !== 'issued') {
+                        throw ValidationException::withMessages([
+                            'inventory' => 'Selected inventory item is not currently issued.',
+                        ]);
+                    }
+                    if ((int) $inventory->current_employee_id !== (int) $validated['employee_id']) {
+                        throw ValidationException::withMessages([
+                            'inventory' => 'Selected item does not belong to the selected accountable officer.',
+                        ]);
+                    }
                 }
 
                 if (!$inventory && !empty($line['property_transaction_line_id'])) {
                     $source = PropertyTransactionLine::with('transaction')->findOrFail($line['property_transaction_line_id']);
-                    abort_if($source->item_status === 'disposed', 422, 'Item already disposed.');
-                    abort_if(!in_array($source->transaction->status, ['approved', 'issued'], true), 422, 'Cannot dispose unissued items.');
+                    if ($source->item_status === 'disposed') {
+                        throw ValidationException::withMessages([
+                            'inventory' => 'Item already disposed.',
+                        ]);
+                    }
+                    if (!in_array($source->transaction->status, ['approved', 'issued'], true)) {
+                        throw ValidationException::withMessages([
+                            'inventory' => 'Cannot dispose unissued items.',
+                        ]);
+                    }
+
+                    $requestedQty = (int) ($line['quantity'] ?? 1);
+                    $availableQty = InventoryItem::query()
+                        ->where('status', 'issued')
+                        ->where('property_transaction_line_id', (int) $line['property_transaction_line_id'])
+                        ->where('current_employee_id', (int) $validated['employee_id'])
+                        ->count();
+                    if ($availableQty < $requestedQty) {
+                        throw ValidationException::withMessages([
+                            'inventory' => "Insufficient quantity with selected accountable officer. Requested {$requestedQty}, available {$availableQty}.",
+                        ]);
+                    }
                 }
 
                 $qty = $inventory ? 1 : (int) $line['quantity'];
