@@ -107,9 +107,21 @@
                         @forelse($rows as $i => $row)
                         <tr class="border-b border-gray-100 hover:bg-blue-50/40 transition {{ $i % 2 === 0 ? '' : 'bg-gray-50/50' }}">
                             <td class="px-4 py-2.5 text-gray-400 font-semibold text-xs border-r border-gray-100">{{ $i + 1 }}</td>
-                            <td class="px-4 py-2.5 font-semibold text-gray-800 border-r border-gray-100">{{ $row->office->name ?? '—' }}</td>
-                            <td class="px-4 py-2.5 text-gray-600 border-r border-gray-100">{{ $row->fundCluster->code ?? '—' }}</td>
-                            <td class="px-4 py-2.5 text-right font-bold text-gray-800">{{ number_format($row->qty ?? 0) }}</td>
+                            <td class="px-4 py-2.5 font-semibold text-gray-800 border-r border-gray-100">{{ $row->office_name ?? '-' }}</td>
+                            <td class="px-4 py-2.5 text-gray-600 border-r border-gray-100">{{ $row->fund_cluster_code ?? '-' }}</td>
+                            <td class="px-4 py-2.5 text-right font-bold text-gray-800">
+                                <button
+                                    type="button"
+                                    class="js-open-breakdown inline-flex items-center gap-1 rounded border border-[#1a2c5b] px-2 py-1 text-xs font-semibold text-[#1a2c5b] hover:bg-[#1a2c5b] hover:text-white transition"
+                                    data-office-id="{{ $row->office_id }}"
+                                    data-fund-cluster-id="{{ $row->fund_cluster_id }}"
+                                    data-office-name="{{ $row->office_name ?? '-' }}"
+                                    data-fund-cluster-code="{{ $row->fund_cluster_code ?? '-' }}"
+                                >
+                                    {{ number_format($row->qty ?? 0) }}
+                                    <span class="opacity-80">(View)</span>
+                                </button>
+                            </td>
                         </tr>
                         @empty
                         <tr>
@@ -136,4 +148,106 @@
 
     </div>
 </div>
+
+<div id="breakdown-modal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/50 js-close-breakdown"></div>
+    <div class="relative mx-auto mt-10 w-[95%] max-w-7xl rounded bg-white shadow-2xl">
+        <div class="flex items-center justify-between border-b border-gray-200 px-4 py-3">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-widest text-gray-500">Office Breakdown</p>
+                <p id="breakdown-title" class="text-sm font-bold text-[#1a2c5b]">Loading...</p>
+            </div>
+            <button type="button" class="js-close-breakdown rounded border border-gray-300 px-2 py-1 text-xs font-semibold text-gray-600 hover:bg-gray-100">Close</button>
+        </div>
+        <div id="breakdown-content" class="max-h-[75vh] overflow-auto p-4 text-sm text-gray-600">
+            Loading breakdown data...
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('breakdown-modal');
+    const content = document.getElementById('breakdown-content');
+    const title = document.getElementById('breakdown-title');
+    if (!modal || !content || !title) return;
+
+    const endpoint = @json(route('reports.breakdown'));
+
+    const openModal = function () { modal.classList.remove('hidden'); };
+    const closeModal = function () { modal.classList.add('hidden'); };
+
+    document.querySelectorAll('.js-close-breakdown').forEach(function (el) {
+        el.addEventListener('click', closeModal);
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') closeModal();
+    });
+
+    const buildUrl = function (params) {
+        const url = new URL(endpoint, window.location.origin);
+        Object.keys(params).forEach(function (key) {
+            if (params[key] !== null && params[key] !== undefined && params[key] !== '') {
+                url.searchParams.set(key, params[key]);
+            }
+        });
+        return url.toString();
+    };
+
+    const loadBreakdown = function (url) {
+        content.innerHTML = 'Loading breakdown data...';
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (response) { return response.text(); })
+            .then(function (html) { content.innerHTML = html; })
+            .catch(function () { content.innerHTML = '<p class="text-red-600">Failed to load breakdown data.</p>'; });
+    };
+
+    document.querySelectorAll('.js-open-breakdown').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const params = {
+                asset_type: 'ppe',
+                office_id: button.dataset.officeId,
+                fund_cluster_id: button.dataset.fundClusterId,
+                from: document.querySelector('input[name="from"]')?.value || '',
+                to: document.querySelector('input[name="to"]')?.value || ''
+            };
+
+            title.textContent = (button.dataset.officeName || '-') + ' / ' + (button.dataset.fundClusterCode || '-');
+            openModal();
+            loadBreakdown(buildUrl(params));
+        });
+    });
+
+    content.addEventListener('click', function (event) {
+        const link = event.target.closest('.js-breakdown-pagination a');
+        if (!link) return;
+        event.preventDefault();
+        loadBreakdown(link.href);
+    });
+
+    content.addEventListener('submit', function (event) {
+        const form = event.target.closest('.js-breakdown-search-form');
+        if (!form) return;
+        event.preventDefault();
+        const url = new URL(form.action, window.location.origin);
+        const params = new URLSearchParams(new FormData(form));
+        url.search = params.toString();
+        loadBreakdown(url.toString());
+    });
+
+    content.addEventListener('click', function (event) {
+        const clearButton = event.target.closest('.js-breakdown-clear');
+        if (!clearButton) return;
+        const form = content.querySelector('.js-breakdown-search-form');
+        if (!form) return;
+        const input = form.querySelector('input[name="q"]');
+        if (input) input.value = '';
+        const url = new URL(form.action, window.location.origin);
+        const params = new URLSearchParams(new FormData(form));
+        url.search = params.toString();
+        loadBreakdown(url.toString());
+    });
+});
+</script>
 @endsection

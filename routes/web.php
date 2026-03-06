@@ -68,6 +68,7 @@ Route::middleware(['auth'])->group(function (): void {
         Route::get('/', [ReportsController::class, 'index'])->name('index');
         Route::get('/ppe-count', [ReportsController::class, 'ppeCount'])->name('ppe_count');
         Route::get('/semi-count', [ReportsController::class, 'semiCount'])->name('semi_count');
+        Route::get('/breakdown', [ReportsController::class, 'breakdown'])->name('breakdown');
         Route::get('/regspi', [ReportsController::class, 'regspi'])->name('regspi');
         Route::get('/logs', [ReportsController::class, 'logs'])->name('logs');
     });
