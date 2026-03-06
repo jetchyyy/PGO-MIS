@@ -9,6 +9,7 @@ use App\Models\FundCluster;
 use App\Models\Office;
 use App\Models\PrintLog;
 use App\Models\PropertyTransaction;
+use App\Models\Signatory;
 use App\Support\AuditLogger;
 use App\Support\NumberGenerator;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -98,6 +99,7 @@ class IssuanceController extends Controller
                     'unit_cost' => $unitCost,
                     'total_cost' => (int) $line['quantity'] * $unitCost,
                     'classification' => $classificationPerLine,
+                    'estimated_useful_life' => $line['estimated_useful_life'] ?? null,
                     'remarks' => $line['remarks'] ?? null,
                     'item_status' => 'active',
                 ]);
@@ -169,9 +171,13 @@ class IssuanceController extends Controller
 
         $issuance->load(['lines', 'office', 'employee', 'fundCluster']);
 
+        $sig = Signatory::where('is_active', true)->get()->keyBy('role_key');
+        $orientation = in_array($template, ['property_card', 'semi_property_card', 'regspi']) ? 'landscape' : 'portrait';
+
         return Pdf::loadView('issuance.pdf.'.$template, [
             'issuance' => $issuance,
             'version' => $version,
-        ])->setPaper('a4')->stream($template.'-'.$issuance->control_no.'.pdf');
+            'sig' => $sig,
+        ])->setPaper('a4', $orientation)->stream($template.'-'.$issuance->control_no.'.pdf');
     }
 }

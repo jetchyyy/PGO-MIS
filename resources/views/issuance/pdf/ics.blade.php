@@ -4,89 +4,92 @@
 <meta charset="UTF-8">
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: Arial, Helvetica, sans-serif; font-size: 10pt; color: #000; background: #fff; }
-    @page { size: A4 portrait; margin: 12mm 15mm; }
+    @page { size: A4 portrait; margin: 0; }
+    body { font-family: Arial, Helvetica, sans-serif; font-size: 10pt; color: #000; background: #fff; margin: 0; padding: 15mm 18mm !important; }
 
-    .annex { font-size: 8pt; text-align: right; }
-    .doc-title { font-size: 15pt; font-weight: bold; text-align: center; margin: 4px 0 2px 0; letter-spacing: 1px; }
-    .doc-subtitle { font-size: 9pt; text-align: center; margin-bottom: 5px; }
-
-    .header-table { width: 100%; border-collapse: collapse; margin-bottom: 0; }
-    .header-table td { border: 1px solid #000; padding: 3px 6px; font-size: 9pt; }
+    .annex { font-size: 8pt; text-align: right; font-style: italic; }
+    .doc-title { font-size: 15pt; font-weight: bold; text-align: center; letter-spacing: 1px; }
 
     table { width: 100%; border-collapse: collapse; }
-    th, td { border: 1px solid #000; padding: 3px 4px; font-size: 9pt; vertical-align: top; }
+    th, td { border: 1px solid #000; padding: 2px 4px; font-size: 9pt; vertical-align: top; }
     th { background: #f5f5f5; font-weight: bold; text-align: center; font-size: 8pt; }
     td.numeric { text-align: right; }
     td.center { text-align: center; }
-    .total-row td { font-weight: bold; }
-    .item-rows td { height: 20px; }
+    .item-rows td { min-height: 18px; }
 
-    .sig-section { display: flex; margin-top: 8px; }
-    .sig-box { flex: 1; border: 1px solid #000; padding: 6px 10px; }
-    .sig-box + .sig-box { border-left: none; }
-    .sig-label { font-weight: bold; font-size: 9pt; margin-bottom: 8px; }
-    .sig-line { border-top: 1px solid #000; margin: 22px 30px 2px 30px; }
-    .sig-name { text-align: center; font-weight: bold; font-size: 9pt; }
-    .sig-position { text-align: center; font-size: 8.5pt; }
-    .sig-date-line { border-top: 1px solid #000; margin: 18px 30px 2px 30px; }
+    .sig-box { border: 1px solid #000; padding: 6px 10px; }
+    .sig-label { font-weight: bold; font-size: 9pt; margin-bottom: 6px; }
+    .sig-line { border-top: 1px solid #000; margin: 26px auto 2px auto; width: 200px; }
+    .sig-name { text-align: center; font-weight: bold; font-size: 10pt; text-decoration: underline; }
+    .sig-position { text-align: center; font-size: 9pt; font-style: italic; }
+    .sig-date-line { border-top: 1px solid #000; margin: 20px auto 2px auto; width: 160px; }
     .sig-date-label { text-align: center; font-size: 9pt; }
-    .instructions { font-size: 7.5pt; margin-top: 6px; }
+
+    .instructions { font-size: 7.5pt; margin-top: 4px; line-height: 1.5; }
 </style>
 </head>
 <body>
 
-<div class="annex">Annex A.2 (COA)</div>
+@php
+    $pgso = $sig['pgso_head'] ?? null;
+@endphp
+
+<div class="annex">Annex A.3</div>
 
 {{-- Header with Logo + Title --}}
-<table style="border:none; margin-bottom:4px;">
+<table style="border:none; margin-bottom:2px;">
     <tr>
         <td style="border:none; width:55px; vertical-align:middle; text-align:center;">
             @if(file_exists(public_path('images/surigaodelnorte.png')))
-            <img src="{{ public_path('images/surigaodelnorte.png') }}" style="width:48px; height:48px; object-fit:contain;" alt="Seal">
+            <img src="{{ public_path('images/surigaodelnorte.png') }}" style="width:50px; height:50px; object-fit:contain;" alt="Seal">
             @endif
         </td>
         <td style="border:none; vertical-align:middle;">
             <div class="doc-title">INVENTORY CUSTODIAN SLIP</div>
-            <div class="doc-subtitle">(Semi-Expendable Property)</div>
         </td>
     </tr>
 </table>
 
-{{-- LGU Line --}}
-<div style="border:1px solid #000; padding:3px 6px; font-weight:bold; font-size:10pt; margin-bottom:0;">
-    LGU:&nbsp;&nbsp; PROVINCIAL GOVERNMENT OF SURIGAO DEL NORTE
-</div>
-
-{{-- Fund / Office / ICS No row --}}
-<div style="display:flex;">
-    <div style="flex:1; border:1px solid #000; border-top:none; border-right:none; padding:2px 5px; font-size:9pt;">
-        <span style="font-weight:bold;">Fund Cluster:</span>&nbsp; {{ $issuance->fundCluster->code ?? '' }}
-    </div>
-    <div style="flex:0 0 220px; border:1px solid #000; border-top:none; padding:2px 8px; text-align:center;">
-        <div style="font-size:14pt; font-weight:bold; color:#cc0000; padding:5px 0;">{{ $issuance->control_no }}</div>
-    </div>
-</div>
-<div style="display:flex; margin-bottom:0;">
-    <div style="flex:1; border:1px solid #000; border-top:none; border-right:none; padding:2px 5px; font-size:9pt;">
-        <span style="font-weight:bold;">Office:</span>&nbsp; {{ $issuance->office->name ?? '' }}
-    </div>
-    <div style="flex:1; border:1px solid #000; border-top:none; padding:2px 5px; font-size:9pt;">
-        <span style="font-weight:bold;">Accountable Officer:</span>&nbsp; {{ $issuance->employee->name ?? '' }}
-    </div>
-</div>
+{{-- Header Info --}}
+<table style="margin-bottom:0;">
+    <tr>
+        <td colspan="5" style="font-size:10pt; padding:3px 6px;">
+            <span style="font-weight:bold;">Entity Name:</span>&nbsp;
+            <span style="font-size:12pt; font-weight:bold;">PROVINCE OF SURIGAO DEL NORTE</span>
+        </td>
+        <td colspan="3" style="font-size:12pt; font-weight:bold; color:#cc0000; text-align:center; padding:4px 6px;">
+            {{ $issuance->control_no }}
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3" style="font-size:9pt; padding:2px 6px;">
+            <span style="font-weight:bold;">Fund Cluster:</span>&nbsp; {{ $issuance->fundCluster->code ?? '' }}
+        </td>
+        <td colspan="2" style="font-size:9pt; padding:2px 6px;">
+            <span style="font-weight:bold;">Office/RC:</span>&nbsp;
+            <span style="font-size:11pt; font-weight:bold;">{{ $issuance->office->name ?? '' }}</span>
+        </td>
+        <td colspan="3" style="font-size:9pt; padding:2px 6px;">
+            <span style="font-weight:bold;">Date:</span>&nbsp;
+            {{ $issuance->transaction_date ? \Carbon\Carbon::parse($issuance->transaction_date)->format('M. d, Y') : '' }}
+        </td>
+    </tr>
+</table>
 
 {{-- Items Table --}}
 <table>
     <thead>
         <tr>
-            <th style="width:8%">Quantity</th>
-            <th style="width:8%">Unit</th>
-            <th style="width:30%">DESCRIPTION</th>
-            <th style="width:15%">Property Number</th>
-            <th style="width:12%">Date Acquired</th>
-            <th style="width:12%">Unit Cost</th>
-            <th style="width:15%">Total Cost</th>
+            <th rowspan="2" style="width:7%">Quantity</th>
+            <th rowspan="2" style="width:7%">Unit</th>
+            <th colspan="2" style="width:20%">Amount</th>
+            <th rowspan="2" style="width:28%">Description</th>
+            <th rowspan="2" style="width:14%">Item No.</th>
+            <th rowspan="2" style="width:11%">Estimated<br>Useful Life</th>
+        </tr>
+        <tr>
+            <th style="width:10%">Unit Cost</th>
+            <th style="width:10%">Total Cost</th>
         </tr>
     </thead>
     <tbody>
@@ -94,60 +97,77 @@
         <tr class="item-rows">
             <td class="center">{{ $line->quantity }}</td>
             <td class="center">{{ $line->unit }}</td>
-            <td>{{ $line->description }}</td>
-            <td class="center">{{ $line->property_no ?? '' }}</td>
-            <td class="center">{{ $line->date_acquired ? \Carbon\Carbon::parse($line->date_acquired)->format('m/d/Y') : '' }}</td>
             <td class="numeric">{{ number_format($line->unit_cost, 2) }}</td>
             <td class="numeric">{{ number_format($line->total_cost, 2) }}</td>
+            <td>{{ $line->description }}</td>
+            <td class="center" style="color:#cc0000;">{{ $line->property_no ?? '' }}</td>
+            <td class="center">{{ $line->estimated_useful_life ?? '' }}</td>
         </tr>
         @endforeach
-        @for($i = $issuance->lines->count(); $i < 10; $i++)
+        {{-- Blank filler rows --}}
+        @for($i = $issuance->lines->count(); $i < 12; $i++)
         <tr class="item-rows">
             <td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td>
         </tr>
         @endfor
-        <tr class="total-row">
-            <td colspan="5" style="text-align:right; padding-right:8px;">TOTAL &gt;&gt;&gt;&gt;</td>
-            <td class="numeric">{{ number_format($issuance->lines->sum('unit_cost'), 2) }}</td>
-            <td class="numeric">{{ number_format($issuance->lines->sum('total_cost'), 2) }}</td>
-        </tr>
     </tbody>
 </table>
 
+{{-- Supplier / PO / Date Acquired --}}
+<table style="margin-bottom:0;">
+    <tr>
+        <td colspan="7" style="font-size:8pt; padding:2px 4px; border-top:none;">
+            <span style="font-weight:bold;">Supplier:</span>&nbsp; {{ $issuance->entity_name ?? '' }}
+        </td>
+    </tr>
+    <tr>
+        <td colspan="7" style="font-size:8pt; padding:2px 4px;">
+            <span style="font-weight:bold;">P.O. No.:</span>&nbsp; {{ $issuance->reference_no ?? '' }}
+        </td>
+    </tr>
+    <tr>
+        <td colspan="7" style="font-size:8pt; padding:2px 4px;">
+            <span style="font-weight:bold;">Date Acquired:</span>&nbsp;
+            @if($issuance->lines->first() && $issuance->lines->first()->date_acquired)
+                {{ \Carbon\Carbon::parse($issuance->lines->first()->date_acquired)->format('m/d/Y') }}
+            @endif
+        </td>
+    </tr>
+</table>
+
 {{-- Signature Section --}}
-<div class="sig-section" style="margin-top:8px;">
-    <div class="sig-box">
-        <div class="sig-label">Received by:</div>
-        <div class="sig-line"></div>
-        <div class="sig-name">{{ $issuance->employee->name ?? '' }}</div>
-        <div class="sig-position">Name</div>
-        <div class="sig-date-line"></div>
-        <div class="sig-position">Position</div>
-        <div class="sig-date-line"></div>
-        <div class="sig-date-label">Date</div>
-    </div>
-    <div class="sig-box" style="border-left:none;">
-        <div class="sig-label">Issued by:</div>
-        <div class="sig-line"></div>
-        <div class="sig-name">CHARLITO G. DE LA COSTA</div>
-        <div class="sig-position">Name</div>
-        <div class="sig-date-line"></div>
-        <div class="sig-position">OIC-Provincial General Services Office</div>
-        <div class="sig-date-line"></div>
-        <div class="sig-date-label">Date</div>
-    </div>
-</div>
+<table style="margin-bottom:0;">
+    <tr>
+        <td style="width:50%; padding:6px 10px; vertical-align:top;">
+            <div style="font-weight:bold; font-size:9pt; margin-bottom:6px;">RECEIVED FROM:</div>
+            <div style="margin-top:30px; text-align:center;">
+                <div style="font-weight:bold; font-size:10pt; text-decoration:underline;">{{ $pgso->name ?? '' }}</div>
+                <div style="font-size:9pt; font-style:italic;">{{ $pgso->designation ?? '' }}</div>
+            </div>
+            <div style="border-top:1px solid #000; margin:20px auto 2px auto; width:180px;"></div>
+            <div style="text-align:center; font-size:9pt;">Date</div>
+        </td>
+        <td style="width:50%; padding:6px 10px; vertical-align:top;">
+            <div style="font-weight:bold; font-size:9pt; margin-bottom:6px;">RECEIVED BY:</div>
+            <div style="margin-top:30px; text-align:center;">
+                <div style="font-weight:bold; font-size:10pt; text-decoration:underline;">{{ $issuance->employee->name ?? '' }}</div>
+                <div style="font-size:9pt; font-style:italic;">{{ $issuance->employee->designation ?? $issuance->employee->position ?? '' }}</div>
+            </div>
+            <div style="border-top:1px solid #000; margin:20px auto 2px auto; width:180px;"></div>
+            <div style="text-align:center; font-size:9pt;">Date</div>
+        </td>
+    </tr>
+</table>
 
-<div class="instructions" style="margin-top:6px;">
-    <p><strong>Instruction:</strong> To be prepared by Provincial General Services Office in three (3) copies.</p>
-    <p>Original Copy: To be filed by Provincial General Services Office</p>
-    <p>Duplicate Copy: To be attached to Disbursement Voucher</p>
-    <p>Third Copy: For Office concerned</p>
+{{-- Instructions --}}
+<div class="instructions">
+    <p><strong><em>Instructions:</em></strong></p>
+    <p><em>To be prepared by Office concerned in four copies</em></p>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Original Copy: To be Filed by Office concerned</em></p>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Duplicate Copy: To be attached to Disbursement Voucher and marked copy on file by PGSO</em></p>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Third Copy: To be filed by end-user</em></p>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Fourth Copy: To be filed by PGSO</em></p>
 </div>
-
-@if(($version ?? 1) > 1)
-<div style="margin-top:5px; font-size:8pt; text-align:right; color:#666;">Print Version: {{ $version }}</div>
-@endif
 
 </body>
 </html>

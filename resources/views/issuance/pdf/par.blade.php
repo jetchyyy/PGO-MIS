@@ -4,55 +4,33 @@
 <meta charset="UTF-8">
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: Arial, Helvetica, sans-serif; font-size: 10pt; color: #000; background: #fff; }
-    @page { size: A4 portrait; margin: 12mm 15mm 12mm 15mm; }
+    @page { size: A4 portrait; margin: 0; }
+    body { font-family: Arial, Helvetica, sans-serif; font-size: 10pt; color: #000; background: #fff; margin: 0; padding: 15mm 18mm !important; }
 
-    .annex { font-size: 8pt; text-align: right; }
-    .doc-title { font-size: 16pt; font-weight: bold; text-align: center; margin: 6px 0 2px 0; letter-spacing: 1px; }
-    .lgu-line { font-size: 10pt; font-weight: bold; margin-bottom: 6px; border: 1px solid #000; padding: 3px 6px; display: flex; align-items: center; gap: 8px; }
-    .logo-area { display: inline-block; width: 40px; height: 40px; vertical-align: middle; margin-right: 8px; }
-    .header-row { display: flex; gap: 0; margin-bottom: 0; }
-    .header-left { flex: 1; border: 1px solid #000; border-right: none; }
-    .header-right { flex: 0 0 200px; border: 1px solid #000; }
-    .hfield { padding: 2px 5px; border-bottom: 1px solid #000; font-size: 9pt; min-height: 18px; }
-    .hfield:last-child { border-bottom: none; }
-    .hfield label { font-weight: bold; font-size: 8pt; }
-    .par-no { font-size: 14pt; font-weight: bold; color: #cc0000; text-align: center; padding: 8px 5px; }
+    .doc-title { font-size: 15pt; font-weight: bold; text-align: center; letter-spacing: 1px; }
 
-    table { width: 100%; border-collapse: collapse; margin-top: 0; }
-    th, td { border: 1px solid #000; padding: 3px 4px; font-size: 9pt; vertical-align: top; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #000; padding: 2px 4px; font-size: 9pt; vertical-align: top; }
     th { background: #f5f5f5; font-weight: bold; text-align: center; font-size: 8pt; }
     td.numeric { text-align: right; }
     td.center { text-align: center; }
     .total-row td { font-weight: bold; background: #f9f9f9; }
-    .total-label { text-align: right; padding-right: 8px; }
-
-    .sig-section { display: flex; margin-top: 10px; gap: 0; }
-    .sig-box { flex: 1; border: 1px solid #000; padding: 6px 10px; }
-    .sig-box + .sig-box { border-left: none; }
-    .sig-label { font-weight: bold; font-size: 9pt; margin-bottom: 8px; }
-    .sig-line { border-top: 1px solid #000; margin: 22px 30px 2px 30px; }
-    .sig-name { text-align: center; font-weight: bold; font-size: 9pt; }
-    .sig-position { text-align: center; font-size: 9pt; }
-    .sig-date-line { border-top: 1px solid #000; margin: 18px 30px 2px 30px; }
-    .sig-date-label { text-align: center; font-size: 9pt; }
-
-    .instructions { font-size: 7.5pt; margin-top: 6px; }
-    .instructions p { margin-bottom: 2px; }
-
-    .item-rows td { min-height: 18px; height: 20px; }
+    .item-rows td { min-height: 18px; }
+    .instructions { font-size: 7.5pt; margin-top: 4px; line-height: 1.5; }
 </style>
 </head>
 <body>
 
-<div class="annex">Annex A.1</div>
+@php
+    $pgso = $sig['pgso_head'] ?? null;
+@endphp
 
 {{-- Header with Logo + Title --}}
-<table style="border:none; margin-bottom:4px;">
+<table style="border:none; margin-bottom:2px;">
     <tr>
         <td style="border:none; width:55px; vertical-align:middle; text-align:center;">
             @if(file_exists(public_path('images/surigaodelnorte.png')))
-            <img src="{{ public_path('images/surigaodelnorte.png') }}" style="width:48px; height:48px; object-fit:contain;" alt="Seal">
+            <img src="{{ public_path('images/surigaodelnorte.png') }}" style="width:50px; height:50px; object-fit:contain;" alt="Seal">
             @endif
         </td>
         <td style="border:none; vertical-align:middle;">
@@ -62,34 +40,42 @@
 </table>
 
 {{-- LGU Line --}}
-<div style="border:1px solid #000; padding:3px 6px; font-weight:bold; font-size:10pt; margin-bottom:0;">
-    LGU:&nbsp;&nbsp; PROVINCIAL GOVERNMENT OF SURIGAO DEL NORTE
-</div>
+<table style="margin-bottom:0;">
+    <tr>
+        <td colspan="7" style="font-size:10pt; padding:3px 6px;">
+            <span style="font-weight:bold;">LGU:</span>&nbsp;
+            <span style="font-size:12pt; font-weight:bold;">PROVINCIAL GOVERNMENT OF SURIGAO DEL NORTE</span>
+        </td>
+    </tr>
+</table>
 
 {{-- Fund / Office / PAR No row --}}
-<div style="display:flex;">
-    <div style="flex:1; border:1px solid #000; border-top:none; border-right:none; padding:2px 5px; font-size:9pt;">
-        <span style="font-weight:bold;">Fund:</span>&nbsp; {{ $issuance->fundCluster->code ?? '' }}
-    </div>
-    <div style="flex:0 0 220px; border:1px solid #000; border-top:none; padding:4px 8px; text-align:center;">
-        <div class="par-no">{{ $issuance->control_no }}</div>
-    </div>
-</div>
-<div style="border:1px solid #000; border-top:none; padding:2px 5px; font-size:9pt; margin-bottom:0;">
-    <span style="font-weight:bold;">Office:</span>&nbsp; {{ $issuance->office->name ?? '' }}
-</div>
+<table style="margin-bottom:0;">
+    <tr>
+        <td colspan="3" style="font-size:9pt; padding:2px 6px;">
+            <span style="font-weight:bold;">Fund:</span>&nbsp; {{ $issuance->fundCluster->code ?? '' }}
+        </td>
+        <td colspan="2" style="font-size:9pt; padding:2px 6px;">
+            <span style="font-weight:bold;">Office:</span>&nbsp;
+            <span style="font-size:11pt; font-weight:bold;">{{ $issuance->office->name ?? '' }}</span>
+        </td>
+        <td colspan="2" style="text-align:center; padding:4px 6px;">
+            <span style="font-size:12pt; font-weight:bold; color:#cc0000;">{{ $issuance->control_no }}</span>
+        </td>
+    </tr>
+</table>
 
 {{-- Items Table --}}
 <table>
     <thead>
         <tr>
-            <th style="width:8%">Quantity</th>
-            <th style="width:8%">Unit</th>
+            <th style="width:7%">Quantity</th>
+            <th style="width:7%">Unit</th>
             <th style="width:30%">DESCRIPTION</th>
-            <th style="width:15%">Property Number</th>
+            <th style="width:14%">Property Number</th>
             <th style="width:12%">Date Acquired</th>
             <th style="width:12%">Unit Cost</th>
-            <th style="width:15%">Amount</th>
+            <th style="width:13%">Amount</th>
         </tr>
     </thead>
     <tbody>
@@ -104,14 +90,13 @@
             <td class="numeric">{{ number_format($line->total_cost, 2) }}</td>
         </tr>
         @endforeach
-        {{-- Blank filler rows --}}
-        @for($i = $issuance->lines->count(); $i < 10; $i++)
+        @for($i = $issuance->lines->count(); $i < 12; $i++)
         <tr class="item-rows">
             <td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td>
         </tr>
         @endfor
         <tr class="total-row">
-            <td colspan="5" class="total-label">TOTAL &gt;&gt;&gt;&gt;</td>
+            <td colspan="5" style="text-align:right; padding-right:8px;">TOTAL &gt;&gt;&gt;&gt;</td>
             <td class="numeric">{{ number_format($issuance->lines->sum('unit_cost'), 2) }}</td>
             <td class="numeric">{{ number_format($issuance->lines->sum('total_cost'), 2) }}</td>
         </tr>
@@ -119,41 +104,37 @@
 </table>
 
 {{-- Signature Section --}}
-<div class="sig-section" style="margin-top:8px;">
-    <div class="sig-box">
-        <div class="sig-label">Received by:</div>
-        <div class="sig-line"></div>
-        <div class="sig-name">{{ $issuance->employee->name ?? '' }}</div>
-        <div class="sig-position" style="font-size:8pt;">Name</div>
-        <div class="sig-date-line"></div>
-        <div class="sig-position" style="font-size:8pt;">Position</div>
-        <div class="sig-date-line"></div>
-        <div class="sig-date-label">Date</div>
-    </div>
-    <div class="sig-box" style="border-left:none;">
-        <div class="sig-label">Issued by:</div>
-        <div class="sig-line"></div>
-        <div class="sig-name">CHARLITO G. DE LA COSTA</div>
-        <div class="sig-position" style="font-size:8pt;">Name</div>
-        <div class="sig-date-line"></div>
-        <div class="sig-position" style="font-size:8pt;">OIC-Provincial General Services Office</div>
-        <div class="sig-date-line"></div>
-        <div class="sig-date-label">Date</div>
-    </div>
-</div>
+<table style="margin-bottom:0;">
+    <tr>
+        <td style="width:50%; padding:6px 10px; vertical-align:top;">
+            <div style="font-weight:bold; font-size:9pt; margin-bottom:6px;">Received by:</div>
+            <div style="margin-top:30px; text-align:center;">
+                <div style="font-weight:bold; font-size:10pt; text-decoration:underline;">{{ $issuance->employee->name ?? '' }}</div>
+                <div style="font-size:9pt; font-style:italic;">{{ $issuance->employee->designation ?? $issuance->employee->position ?? '' }}</div>
+            </div>
+            <div style="border-top:1px solid #000; margin:20px auto 2px auto; width:180px;"></div>
+            <div style="text-align:center; font-size:9pt;">Date</div>
+        </td>
+        <td style="width:50%; padding:6px 10px; vertical-align:top;">
+            <div style="font-weight:bold; font-size:9pt; margin-bottom:6px;">Issued by:</div>
+            <div style="margin-top:30px; text-align:center;">
+                <div style="font-weight:bold; font-size:10pt; text-decoration:underline;">{{ $pgso->name ?? '' }}</div>
+                <div style="font-size:9pt; font-style:italic;">{{ $pgso->designation ?? '' }}</div>
+            </div>
+            <div style="border-top:1px solid #000; margin:20px auto 2px auto; width:180px;"></div>
+            <div style="text-align:center; font-size:9pt;">Date</div>
+        </td>
+    </tr>
+</table>
 
 {{-- Instructions --}}
-<div class="instructions" style="margin-top:6px;">
-    <p><strong>Instruction:</strong></p>
-    <p>To be prepared by Provincial General Services Office in three (3) copies.</p>
-    <p>Original Copy: &nbsp;&nbsp;&nbsp; To be filed by Provincial General Services Office</p>
-    <p>Duplicate Copy: To be attached to Disbursement Voucher and marked copy in file by Provincial General Services Office</p>
-    <p>Third Copy: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; For Office concerned</p>
+<div class="instructions">
+    <p><strong><em>Instructions:</em></strong></p>
+    <p><em>To be prepared by Provincial General Services Office in three (3) copies.</em></p>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Original Copy: To be filed by Provincial General Services Office</em></p>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Duplicate Copy: To be attached to Disbursement Voucher and marked copy on file by PGSO</em></p>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Third Copy: For Office concerned</em></p>
 </div>
-
-@if(($version ?? 1) > 1)
-<div style="margin-top:5px; font-size:8pt; text-align:right; color:#666;">Print Version: {{ $version }}</div>
-@endif
 
 </body>
 </html>

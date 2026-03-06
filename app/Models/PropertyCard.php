@@ -10,7 +10,7 @@ class PropertyCard extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['card_no', 'property_no', 'description', 'office_id', 'fund_cluster_id', 'balance_qty', 'balance_amount'];
+    protected $fillable = ['card_no', 'property_no', 'description', 'uacs_object_code', 'office_id', 'fund_cluster_id', 'balance_qty', 'balance_amount'];
 
     public function entries(): HasMany
     {

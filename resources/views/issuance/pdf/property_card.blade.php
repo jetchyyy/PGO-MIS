@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: Arial, Helvetica, sans-serif; font-size: 9pt; color: #000; background: #fff; }
-    @page { size: A4 landscape; margin: 10mm 12mm; }
+    @page { size: A4 landscape; margin: 0; }
+    body { font-family: Arial, Helvetica, sans-serif; font-size: 9pt; color: #000; background: #fff; margin: 0; padding: 12mm 15mm !important; }
 
     .doc-title { font-size: 14pt; font-weight: bold; text-align: center; letter-spacing: 2px; margin-bottom: 4px; }
     .appendix { font-size: 8pt; text-align: right; }

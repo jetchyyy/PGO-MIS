@@ -7,6 +7,7 @@ use App\Models\FundCluster;
 use App\Models\Office;
 use App\Models\PrintLog;
 use App\Models\PropertyTransaction;
+use App\Models\RegSPIEntry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -65,16 +66,30 @@ class ReportsController extends Controller
         return view('reports.semi_count', compact('rows'));
     }
 
-    public function regspi(): View
+    public function regspi(Request $request): View
     {
         $this->authorize('reports.view');
 
-        $rows = PropertyTransaction::with(['employee', 'office'])
-            ->where('asset_type', 'semi_expendable')
-            ->latest('id')
-            ->paginate(25);
+        $query = RegSPIEntry::with(['employee', 'office', 'fundCluster', 'semiExpendableCard', 'propertyTransaction'])
+            ->latest('id');
 
-        return view('reports.regspi', compact('rows'));
+        if ($request->filled('office_id')) {
+            $query->where('office_id', $request->integer('office_id'));
+        }
+        if ($request->filled('classification')) {
+            $query->where('classification', $request->input('classification'));
+        }
+        if ($request->filled('from') && $request->filled('to')) {
+            $query->whereBetween('issue_date', [$request->date('from'), $request->date('to')]);
+        }
+
+        $rows = $query->paginate(25)->withQueryString();
+
+        return view('reports.regspi', [
+            'rows' => $rows,
+            'offices' => Office::orderBy('name')->get(),
+            'totalCost' => RegSPIEntry::sum('total_cost'),
+        ]);
     }
 
     public function logs(): View

@@ -11,7 +11,7 @@ class TransferLine extends Model
     use HasFactory;
 
     protected $fillable = [
-        'transfer_id', 'property_transaction_line_id', 'date_acquired', 'reference_no', 'quantity',
+        'transfer_id', 'item_id', 'property_transaction_line_id', 'date_acquired', 'reference_no', 'quantity',
         'unit', 'description', 'amount', 'condition',
     ];
 
@@ -19,4 +19,5 @@ class TransferLine extends Model
 
     public function transfer(): BelongsTo { return $this->belongsTo(Transfer::class); }
     public function sourceLine(): BelongsTo { return $this->belongsTo(PropertyTransactionLine::class, 'property_transaction_line_id'); }
+    public function item(): BelongsTo { return $this->belongsTo(Item::class); }
 }

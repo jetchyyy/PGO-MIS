@@ -26,6 +26,7 @@ class Transfer extends Model
     public function lines(): HasMany { return $this->hasMany(TransferLine::class); }
     public function fromEmployee(): BelongsTo { return $this->belongsTo(Employee::class, 'from_employee_id'); }
     public function toEmployee(): BelongsTo { return $this->belongsTo(Employee::class, 'to_employee_id'); }
+    public function fundCluster(): BelongsTo { return $this->belongsTo(FundCluster::class); }
     public function approvals(): MorphMany { return $this->morphMany(Approval::class, 'approvable'); }
     public function printLogs(): MorphMany { return $this->morphMany(PrintLog::class, 'printable'); }
 }

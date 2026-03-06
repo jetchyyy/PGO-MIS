@@ -3,9 +3,13 @@
 use App\Http\Controllers\ApprovalsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DisposalController;
+use App\Http\Controllers\FundClusterController;
 use App\Http\Controllers\IssuanceController;
+use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportsController;
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\SignatoryController;
 use App\Http\Controllers\TransferController;
 use Illuminate\Support\Facades\Route;
 
@@ -59,6 +63,37 @@ Route::middleware(['auth'])->group(function (): void {
         Route::get('/semi-count', [ReportsController::class, 'semiCount'])->name('semi_count');
         Route::get('/regspi', [ReportsController::class, 'regspi'])->name('regspi');
         Route::get('/logs', [ReportsController::class, 'logs'])->name('logs');
+    });
+
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+
+    Route::prefix('signatories')->name('signatories.')->group(function (): void {
+        Route::get('/', [SignatoryController::class, 'index'])->name('index');
+        Route::get('/create', [SignatoryController::class, 'create'])->name('create');
+        Route::post('/', [SignatoryController::class, 'store'])->name('store');
+        Route::get('/{signatory}/edit', [SignatoryController::class, 'edit'])->name('edit');
+        Route::put('/{signatory}', [SignatoryController::class, 'update'])->name('update');
+        Route::delete('/{signatory}', [SignatoryController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('fund-clusters')->name('fund-clusters.')->group(function (): void {
+        Route::get('/', [FundClusterController::class, 'index'])->name('index');
+        Route::get('/create', [FundClusterController::class, 'create'])->name('create');
+        Route::post('/', [FundClusterController::class, 'store'])->name('store');
+        Route::get('/{fundCluster}/edit', [FundClusterController::class, 'edit'])->name('edit');
+        Route::put('/{fundCluster}', [FundClusterController::class, 'update'])->name('update');
+        Route::delete('/{fundCluster}', [FundClusterController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('items')->name('items.')->group(function (): void {
+        Route::get('/search', [ItemController::class, 'search'])->name('search');
+        Route::get('/', [ItemController::class, 'index'])->name('index');
+        Route::get('/create', [ItemController::class, 'create'])->name('create');
+        Route::post('/', [ItemController::class, 'store'])->name('store');
+        Route::get('/{item}', [ItemController::class, 'show'])->name('show');
+        Route::get('/{item}/edit', [ItemController::class, 'edit'])->name('edit');
+        Route::put('/{item}', [ItemController::class, 'update'])->name('update');
+        Route::delete('/{item}', [ItemController::class, 'destroy'])->name('destroy');
     });
 });
 

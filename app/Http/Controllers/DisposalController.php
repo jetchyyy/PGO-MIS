@@ -143,6 +143,8 @@ class DisposalController extends Controller
 
         $disposal->load(['lines', 'employee']);
 
-        return Pdf::loadView('disposal.pdf.'.$template, compact('disposal', 'version'))->setPaper('a4')->stream($template.'-'.$disposal->control_no.'.pdf');
+        $sig = \App\Models\Signatory::where('is_active', true)->get()->keyBy('role_key');
+
+        return Pdf::loadView('disposal.pdf.'.$template, compact('disposal', 'version', 'sig'))->setPaper('a4')->stream($template.'-'.$disposal->control_no.'.pdf');
     }
 }
