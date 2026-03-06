@@ -10,7 +10,7 @@
     <meta name="description" content="{{ $whiteLabel['meta_description'] }}">
     <meta name="keywords" content="PGSO, Property MIS, Surigao del Norte, Provincial Government, Property Management, Inventory System">
     <meta name="author" content="Provincial Government of Surigao del Norte">
-    <meta name="theme-color" content="#0d47a1">
+    <meta name="theme-color" content="{{ $whiteLabel['primary_color'] }}">
 
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url()->current() }}">

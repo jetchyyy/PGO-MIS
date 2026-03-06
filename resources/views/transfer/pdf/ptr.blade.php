@@ -144,6 +144,9 @@
         <td style="width:34%; padding:6px 8px; vertical-align:top;">
             <div style="font-weight:bold; font-size:9pt; margin-bottom:4px;">Approved by:</div>
             <div style="margin-top:28px; text-align:center;">
+                @if($governor?->signature_full_path)
+                <div style="height:26px; margin-bottom:2px;"><img src="{{ $governor->signature_full_path }}" alt="Signature" style="max-height:24px; max-width:150px;"></div>
+                @endif
                 <div style="font-weight:bold; font-size:10pt; text-decoration:underline;">{{ $governor->name ?? '' }}</div>
                 <div style="font-size:9pt; font-style:italic;">{{ $governor->designation ?? '' }}</div>
             </div>
@@ -153,6 +156,9 @@
         <td style="width:33%; padding:6px 8px; vertical-align:top;">
             <div style="font-weight:bold; font-size:9pt; margin-bottom:4px;">Released / Issued by:</div>
             <div style="margin-top:28px; text-align:center;">
+                @if($pgso?->signature_full_path)
+                <div style="height:26px; margin-bottom:2px;"><img src="{{ $pgso->signature_full_path }}" alt="Signature" style="max-height:24px; max-width:150px;"></div>
+                @endif
                 <div style="font-weight:bold; font-size:10pt; text-decoration:underline;">{{ $pgso->name ?? '' }}</div>
                 <div style="font-size:9pt; font-style:italic;">{{ $pgso->designation ?? '' }}</div>
             </div>

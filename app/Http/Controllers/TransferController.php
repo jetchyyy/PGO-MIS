@@ -6,8 +6,11 @@ use App\Http\Requests\TransferStoreRequest;
 use App\Models\Employee;
 use App\Models\FundCluster;
 use App\Models\InventoryItem;
+use App\Models\InventoryMovement;
 use App\Models\PrintLog;
+use App\Models\PropertyTransaction;
 use App\Models\PropertyTransactionLine;
+use App\Models\Signatory;
 use App\Models\Transfer;
 use App\Support\AuditLogger;
 use App\Support\NumberGenerator;
@@ -15,6 +18,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class TransferController extends Controller
@@ -28,13 +32,64 @@ class TransferController extends Controller
         return view('transfer.index', compact('transfers'));
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         $this->authorize('transfer.manage');
+
+        $prefill = null;
+        $issuanceId = (int) $request->input('issuance_id');
+        if ($issuanceId > 0) {
+            $issuance = PropertyTransaction::with(['lines', 'employee', 'fundCluster'])
+                ->findOrFail($issuanceId);
+
+            $lineIds = $issuance->lines->pluck('id')->all();
+            $inventoryRows = InventoryItem::query()
+                ->whereIn('property_transaction_line_id', $lineIds)
+                ->where('status', 'issued')
+                ->where('current_employee_id', $issuance->employee_id)
+                ->selectRaw('property_transaction_line_id, COUNT(*) as qty')
+                ->groupBy('property_transaction_line_id')
+                ->pluck('qty', 'property_transaction_line_id');
+
+            $lines = $issuance->lines
+                ->map(function (PropertyTransactionLine $line) use ($issuance, $inventoryRows): array {
+                    $quantity = (int) ($inventoryRows[$line->id] ?? $line->quantity);
+                    return [
+                        'property_transaction_line_id' => (int) $line->id,
+                        'reference_no' => (string) $issuance->control_no,
+                        'quantity' => max(1, $quantity),
+                        'unit' => (string) ($line->unit ?? ''),
+                        'description' => (string) ($line->description ?? ''),
+                        'amount' => (float) ($line->unit_cost * max(1, $quantity)),
+                        'condition' => 'Functional',
+                    ];
+                })
+                ->filter(fn (array $line): bool => $line['quantity'] > 0)
+                ->values()
+                ->all();
+
+            $prefill = [
+                'entity_name' => $issuance->entity_name,
+                'from_employee_id' => (string) $issuance->employee_id,
+                'fund_cluster_id' => (string) $issuance->fund_cluster_id,
+                'transfer_type' => 'reassignment_recall',
+                'document_type' => $issuance->document_type === 'PAR' ? 'PTR' : 'ITR',
+                'transfer_date' => now()->toDateString(),
+                'lines' => $lines,
+            ];
+        }
 
         return view('transfer.create', [
             'employees' => Employee::orderBy('name')->get(),
             'fundClusters' => FundCluster::orderBy('code')->get(),
+            'issuanceOptions' => PropertyTransaction::query()
+                ->with('employee:id,name')
+                ->whereIn('status', ['approved', 'issued'])
+                ->latest('id')
+                ->limit(200)
+                ->get(['id', 'control_no', 'employee_id', 'document_type', 'status']),
+            'prefill' => $prefill,
+            'selectedIssuanceId' => $issuanceId > 0 ? (string) $issuanceId : '',
         ]);
     }
 
@@ -65,14 +120,30 @@ class TransferController extends Controller
                 $inventory = null;
                 if (!empty($line['inventory_item_id'])) {
                     $inventory = InventoryItem::with(['sourceLine.transaction'])->findOrFail((int) $line['inventory_item_id']);
-                    abort_if($inventory->status !== 'issued', 422, 'Selected inventory item is not currently issued.');
-                    abort_if((int) $inventory->current_employee_id !== (int) $validated['from_employee_id'], 422, 'Selected item does not belong to transfer origin employee.');
+                    if ($inventory->status !== 'issued') {
+                        throw ValidationException::withMessages([
+                            'inventory' => 'Selected inventory item is not currently issued.',
+                        ]);
+                    }
+                    if ((int) $inventory->current_employee_id !== (int) $validated['from_employee_id']) {
+                        throw ValidationException::withMessages([
+                            'inventory' => 'Selected item does not belong to transfer origin employee.',
+                        ]);
+                    }
                 }
 
                 if (!$inventory && !empty($line['property_transaction_line_id'])) {
                     $source = PropertyTransactionLine::with('transaction')->findOrFail($line['property_transaction_line_id']);
-                    abort_if($source->item_status === 'disposed', 422, 'Cannot transfer disposed items.');
-                    abort_if(!in_array($source->transaction->status, ['approved', 'issued'], true), 422, 'Cannot transfer unissued items.');
+                    if ($source->item_status === 'disposed') {
+                        throw ValidationException::withMessages([
+                            'inventory' => 'Cannot transfer disposed items.',
+                        ]);
+                    }
+                    if (!in_array($source->transaction->status, ['approved', 'issued'], true)) {
+                        throw ValidationException::withMessages([
+                            'inventory' => 'Cannot transfer unissued items.',
+                        ]);
+                    }
                 }
 
                 $transfer->lines()->create([
@@ -122,7 +193,7 @@ class TransferController extends Controller
     public function print(Transfer $transfer, string $template, Request $request)
     {
         $this->authorize('transfer.manage');
-        abort_unless(in_array($template, ['ptr', 'itr'], true), 404);
+        abort_unless(in_array($template, ['ptr', 'itr', 'sticker'], true), 404);
         abort_unless(in_array($transfer->status, ['approved', 'issued'], true), 422);
 
         $version = (int) PrintLog::where('printable_type', Transfer::class)
@@ -143,10 +214,56 @@ class TransferController extends Controller
 
         AuditLogger::log($request->user()->id, 'transfer.printed', $transfer, ['template' => $template, 'version' => $version], $request->ip(), $request->userAgent());
 
-        $transfer->load(['lines', 'fromEmployee', 'toEmployee', 'fundCluster']);
+        $transfer->load(['lines.sourceLine', 'fromEmployee', 'toEmployee.office', 'fundCluster']);
 
-        $sig = \App\Models\Signatory::where('is_active', true)->get()->keyBy('role_key');
+        $sig = Signatory::where('is_active', true)->get()->keyBy('role_key');
 
-        return Pdf::loadView('transfer.pdf.'.$template, compact('transfer', 'version', 'sig'))->setPaper('a4')->stream($template.'-'.$transfer->control_no.'.pdf');
+        $stickerEntries = collect();
+        if ($template === 'sticker') {
+            $movedItemIds = InventoryMovement::query()
+                ->where('reference_type', Transfer::class)
+                ->where('reference_id', $transfer->id)
+                ->pluck('inventory_item_id')
+                ->filter()
+                ->unique()
+                ->values();
+
+            $pool = InventoryItem::with(['currentEmployee', 'office'])
+                ->whereIn('id', $movedItemIds)
+                ->orderBy('id')
+                ->get();
+
+            foreach ($transfer->lines as $line) {
+                $needed = max(1, (int) $line->quantity);
+
+                $candidates = $pool->filter(function (InventoryItem $item) use ($line): bool {
+                    if ($line->inventory_item_id) {
+                        return (int) $item->id === (int) $line->inventory_item_id;
+                    }
+                    if ($line->property_transaction_line_id) {
+                        return (int) $item->property_transaction_line_id === (int) $line->property_transaction_line_id;
+                    }
+
+                    return trim((string) $item->description) === trim((string) $line->description);
+                })->take($needed)->values();
+
+                foreach ($candidates as $item) {
+                    $stickerEntries->push(['line' => $line, 'inventory' => $item]);
+                }
+
+                if ($candidates->isNotEmpty()) {
+                    $usedIds = $candidates->pluck('id')->all();
+                    $pool = $pool->reject(fn (InventoryItem $item): bool => in_array($item->id, $usedIds, true))->values();
+                }
+
+                for ($i = $candidates->count(); $i < $needed; $i++) {
+                    $stickerEntries->push(['line' => $line, 'inventory' => null]);
+                }
+            }
+        }
+
+        return Pdf::loadView('transfer.pdf.'.$template, compact('transfer', 'version', 'sig', 'stickerEntries'))
+            ->setPaper('a4')
+            ->stream($template.'-'.$transfer->control_no.'.pdf');
     }
 }

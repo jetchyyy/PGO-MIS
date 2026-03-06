@@ -27,6 +27,14 @@
 
     {{-- Form --}}
     <div class="w-full px-4 py-5 sm:px-6 lg:px-8">
+        @php
+            $defaultLine = ['item_id' => '', 'inventory_item_id' => '', 'property_transaction_line_id' => '', 'reference_no' => '', 'quantity' => 1, 'unit' => '', 'description' => '', 'amount' => 0, 'condition' => 'Functional'];
+            $initialLines = old('lines', $prefill['lines'] ?? [$defaultLine]);
+            if (empty($initialLines)) {
+                $initialLines = [$defaultLine];
+            }
+            $initialFromEmployeeId = (string) old('from_employee_id', $prefill['from_employee_id'] ?? '');
+        @endphp
         <form method="POST" action="{{ route('transfer.store') }}" class="space-y-4">
             @csrf
 
@@ -37,54 +45,68 @@
                     <h2 class="text-xs font-bold uppercase tracking-widest text-[#c8a84b]">Header Details</h2>
                 </div>
                 <div class="p-5 grid gap-4 md:grid-cols-3 lg:grid-cols-4">
+                    <div class="flex flex-col gap-1.5 md:col-span-3 lg:col-span-4">
+                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Source Issuance (Optional)</label>
+                        <select x-model="selectedIssuanceId" @change="loadIssuancePrefill()" class="rounded border border-indigo-300 bg-indigo-50 px-3 py-2 text-sm focus:border-indigo-600 focus:bg-white focus:outline-none focus:ring-1 focus:ring-indigo-600">
+                            <option value="">Manual transfer entry</option>
+                            @foreach($issuanceOptions as $issuance)
+                            <option value="{{ $issuance->id }}">
+                                {{ $issuance->control_no }} - {{ $issuance->employee?->name ?? 'N/A' }} ({{ strtoupper($issuance->document_type) }})
+                            </option>
+                            @endforeach
+                        </select>
+                        <p class="text-[11px] text-gray-500">Selecting an issuance auto-fills the transfer details and line items from issued inventory.</p>
+                    </div>
                     <div class="flex flex-col gap-1.5">
                         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Entity Name</label>
-                        <input name="entity_name" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="Entity name" required>
+                        <input name="entity_name" value="{{ old('entity_name', $prefill['entity_name'] ?? '') }}" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="Entity name" required>
                     </div>
                     <div class="flex flex-col gap-1.5">
                         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Transfer From</label>
                         <select name="from_employee_id" x-model="fromEmployeeId" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" required>
                             <option value="">Select Employee</option>
-                            @foreach($employees as $e)<option value="{{ $e->id }}">{{ $e->name }}</option>@endforeach
+                            @foreach($employees as $e)<option value="{{ $e->id }}" {{ (string) $e->id === $initialFromEmployeeId ? 'selected' : '' }}>{{ $e->name }}</option>@endforeach
                         </select>
                     </div>
                     <div class="flex flex-col gap-1.5">
                         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Transfer To</label>
                         <select name="to_employee_id" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" required>
                             <option value="">Select Employee</option>
-                            @foreach($employees as $e)<option value="{{ $e->id }}">{{ $e->name }}</option>@endforeach
+                            @foreach($employees as $e)<option value="{{ $e->id }}" {{ (string) $e->id === (string) old('to_employee_id') ? 'selected' : '' }}>{{ $e->name }}</option>@endforeach
                         </select>
                     </div>
                     <div class="flex flex-col gap-1.5">
                         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Fund Cluster</label>
                         <select name="fund_cluster_id" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" required>
                             <option value="">Select Fund Cluster</option>
-                            @foreach($fundClusters as $f)<option value="{{ $f->id }}">{{ $f->code }}</option>@endforeach
+                            @foreach($fundClusters as $f)<option value="{{ $f->id }}" {{ (string) $f->id === (string) old('fund_cluster_id', $prefill['fund_cluster_id'] ?? '') ? 'selected' : '' }}>{{ $f->code }}</option>@endforeach
                         </select>
                     </div>
                     <div class="flex flex-col gap-1.5">
                         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Transfer Type</label>
                         <select name="transfer_type" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" required>
-                            <option value="donation">Donation</option>
-                            <option value="reassignment_recall">Reassignment-Recall</option>
-                            <option value="relocate">Relocate</option>
-                            <option value="retirement_resignation">Retirement-Resignation</option>
-                            <option value="others">Others</option>
+                            @php($selectedType = old('transfer_type', $prefill['transfer_type'] ?? 'donation'))
+                            <option value="donation" {{ $selectedType === 'donation' ? 'selected' : '' }}>Donation</option>
+                            <option value="reassignment_recall" {{ $selectedType === 'reassignment_recall' ? 'selected' : '' }}>Reassignment-Recall</option>
+                            <option value="relocate" {{ $selectedType === 'relocate' ? 'selected' : '' }}>Relocate</option>
+                            <option value="retirement_resignation" {{ $selectedType === 'retirement_resignation' ? 'selected' : '' }}>Retirement-Resignation</option>
+                            <option value="others" {{ $selectedType === 'others' ? 'selected' : '' }}>Others</option>
                         </select>
                     </div>
                     <div class="flex flex-col gap-1.5">
                         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Specify Others</label>
-                        <input name="transfer_type_other" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="If others">
+                        <input name="transfer_type_other" value="{{ old('transfer_type_other', $prefill['transfer_type_other'] ?? '') }}" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="If others">
                     </div>
                     <div class="flex flex-col gap-1.5">
                         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Transfer Date</label>
-                        <input type="date" name="transfer_date" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" required>
+                        <input type="date" name="transfer_date" value="{{ old('transfer_date', $prefill['transfer_date'] ?? now()->toDateString()) }}" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" required>
                     </div>
                     <div class="flex flex-col gap-1.5">
                         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Document Type</label>
                         <select name="document_type" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" required>
-                            <option value="PTR">PTR</option>
-                            <option value="ITR">ITR</option>
+                            @php($selectedDoc = old('document_type', $prefill['document_type'] ?? 'PTR'))
+                            <option value="PTR" {{ $selectedDoc === 'PTR' ? 'selected' : '' }}>PTR</option>
+                            <option value="ITR" {{ $selectedDoc === 'ITR' ? 'selected' : '' }}>ITR</option>
                         </select>
                     </div>
                 </div>
@@ -133,16 +155,15 @@
                                     <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</label>
                                     <button type="button"
                                         @click="
-                                            if (!fromEmployeeId) { return; }
                                             browseOpen = !browseOpen;
                                             if (browseOpen) {
-                                                fetch('/inventory/search?mode=transfer&from_employee_id=' + encodeURIComponent(fromEmployeeId) + '&q=' + encodeURIComponent(browseQuery))
+                                                fetch('/items/search?q=' + encodeURIComponent(browseQuery) + '&limit=25')
                                                     .then(r => r.json())
                                                     .then(data => browseItems = data);
                                             }
                                         "
                                         class="rounded border border-gray-300 px-2 py-1 text-[10px] font-semibold text-gray-600 hover:bg-gray-50">
-                                        View Inventory
+                                        View Item Catalog
                                     </button>
                                 </div>
                                 <input type="hidden" :name="'lines['+index+'][item_id]'" x-model="line.item_id">
@@ -150,28 +171,27 @@
                                 <input :name="'lines['+index+'][description]'" x-model="line.description"
                                     @input.debounce.300ms="
                                         line.inventory_item_id = '';
+                                        line.property_transaction_line_id = '';
                                         if (line.description.length >= 2) {
-                                            if (!fromEmployeeId) { suggestions = []; showSuggestions = false; return; }
-                                            fetch('/inventory/search?mode=transfer&from_employee_id=' + encodeURIComponent(fromEmployeeId) + '&q=' + encodeURIComponent(line.description))
+                                            fetch('/items/search?q=' + encodeURIComponent(line.description))
                                                 .then(r => r.json())
                                                 .then(data => { suggestions = data; showSuggestions = data.length > 0; });
                                         } else { showSuggestions = false; suggestions = []; }
                                     "
                                     @focus="if (suggestions.length > 0) showSuggestions = true"
                                     autocomplete="off"
-                                    class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="Search by inventory code, property no, model, serial" required>
+                                    class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="Search item catalog" required>
                                 <div x-show="showSuggestions" x-cloak
                                      class="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto">
                                     <template x-for="(item, si) in suggestions" :key="item.id">
                                         <button type="button"
-                                            @click="line.inventory_item_id = item.id; line.item_id = item.item_id || ''; line.property_transaction_line_id = item.property_transaction_line_id || ''; line.reference_no = item.reference_no || ''; line.description = item.description; line.unit = item.unit || ''; line.quantity = 1; line.amount = parseFloat(item.unit_cost); showSuggestions = false;"
+                                            @click="line.inventory_item_id = ''; line.item_id = item.id; line.property_transaction_line_id = ''; line.reference_no = line.reference_no || ''; line.description = item.name + (item.description ? ' — ' + item.description : ''); line.unit = item.unit || ''; line.quantity = line.quantity || 1; line.amount = parseFloat(item.unit_cost); showSuggestions = false;"
                                             class="w-full text-left px-3 py-2 hover:bg-blue-50 border-b border-gray-100 last:border-b-0 transition">
                                             <p class="text-sm font-semibold text-gray-800">
-                                                <span x-text="item.inventory_code"></span> -
-                                                <span x-text="item.description"></span>
+                                                <span x-text="item.name"></span>
                                             </p>
                                             <p class="text-[11px] text-gray-500">
-                                                <span x-text="item.holder || 'N/A'"></span> &bull;
+                                                <span x-text="item.category || 'Uncategorized'"></span> &bull;
                                                 <span x-text="item.unit || 'unit'"></span> &bull;
                                                 ₱<span x-text="parseFloat(item.unit_cost).toLocaleString('en-PH', {minimumFractionDigits: 2})"></span>
                                             </p>
@@ -184,7 +204,7 @@
                                             class="w-full rounded border border-gray-300 px-2 py-1 text-xs">
                                         <button type="button"
                                             @click="
-                                                fetch('/inventory/search?mode=transfer&from_employee_id=' + encodeURIComponent(fromEmployeeId) + '&q=' + encodeURIComponent(browseQuery))
+                                                fetch('/items/search?q=' + encodeURIComponent(browseQuery) + '&limit=25')
                                                     .then(r => r.json())
                                                     .then(data => browseItems = data);
                                             "
@@ -195,11 +215,10 @@
                                     <div class="max-h-44 overflow-y-auto border border-gray-100">
                                         <template x-for="inv in browseItems" :key="'browse-'+inv.id">
                                             <button type="button"
-                                                @click="line.inventory_item_id = inv.id; line.item_id = inv.item_id || ''; line.property_transaction_line_id = inv.property_transaction_line_id || ''; line.reference_no = inv.reference_no || ''; line.description = inv.description; line.unit = inv.unit || ''; line.quantity = 1; line.amount = parseFloat(inv.unit_cost); browseOpen = false;"
+                                                @click="line.inventory_item_id = ''; line.item_id = inv.id; line.property_transaction_line_id = ''; line.reference_no = line.reference_no || ''; line.description = inv.name + (inv.description ? ' — ' + inv.description : ''); line.unit = inv.unit || ''; line.quantity = line.quantity || 1; line.amount = parseFloat(inv.unit_cost); browseOpen = false;"
                                                 class="block w-full border-b border-gray-100 px-2 py-1.5 text-left text-xs hover:bg-blue-50">
-                                                <span class="font-semibold" x-text="inv.inventory_code"></span>
-                                                <span x-text="' - ' + inv.description"></span>
-                                                <span class="text-gray-500" x-text="' (' + (inv.holder || 'N/A') + ')'"></span>
+                                                <span class="font-semibold" x-text="inv.name"></span>
+                                                <span class="text-gray-500" x-text="' (' + (inv.category || 'Uncategorized') + ')'"></span>
                                             </button>
                                         </template>
                                     </div>
@@ -238,11 +257,24 @@
 
 <script>
 function transferForm() {
+    const blankLine = { item_id: '', inventory_item_id: '', property_transaction_line_id: '', reference_no: '', quantity: 1, unit: '', description: '', amount: 0, condition: 'Functional' };
     return {
-        fromEmployeeId: '',
-        lines: [{ item_id: '', inventory_item_id: '', property_transaction_line_id: '', reference_no: '', quantity: 1, unit: '', description: '', amount: 0, condition: 'Functional' }],
+        fromEmployeeId: @json($initialFromEmployeeId),
+        selectedIssuanceId: @json($selectedIssuanceId ?? ''),
+        lines: @json($initialLines),
+        init() {
+            this.lines = (this.lines || []).map((line) => ({ ...blankLine, ...line }));
+            if (this.lines.length === 0) this.lines = [{ ...blankLine }];
+        },
+        loadIssuancePrefill() {
+            const baseUrl = @json(route('transfer.create'));
+            const next = this.selectedIssuanceId
+                ? `${baseUrl}?issuance_id=${encodeURIComponent(this.selectedIssuanceId)}`
+                : baseUrl;
+            window.location.href = next;
+        },
         addLine() {
-            this.lines.push({ item_id: '', inventory_item_id: '', property_transaction_line_id: '', reference_no: '', quantity: 1, unit: '', description: '', amount: 0, condition: 'Functional' });
+            this.lines.push({ ...blankLine });
         },
         removeLine(index) {
             if (this.lines.length > 1) this.lines.splice(index, 1);

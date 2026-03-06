@@ -48,6 +48,7 @@
                             <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-widest text-gray-600">Name</th>
                             <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-widest text-gray-600">Designation</th>
                             <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-widest text-gray-600">Entity</th>
+                            <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-widest text-gray-600">Signature</th>
                             <th class="px-4 py-2.5 text-center text-[11px] font-bold uppercase tracking-widest text-gray-600">Status</th>
                             <th class="px-4 py-2.5 text-center text-[11px] font-bold uppercase tracking-widest text-gray-600">Actions</th>
                         </tr>
@@ -63,6 +64,13 @@
                             <td class="px-4 py-2.5 font-semibold text-gray-800">{{ $sig->name }}</td>
                             <td class="px-4 py-2.5 text-gray-600">{{ $sig->designation }}</td>
                             <td class="px-4 py-2.5 text-gray-500 text-xs">{{ $sig->entity_name }}</td>
+                            <td class="px-4 py-2.5">
+                                @if($sig->signature_url)
+                                <img src="{{ $sig->signature_url }}" alt="Signature" class="h-9 object-contain">
+                                @else
+                                <span class="text-[11px] text-gray-400">No signature</span>
+                                @endif
+                            </td>
                             <td class="px-4 py-2.5 text-center">
                                 @if($sig->is_active)
                                 <span class="inline-block rounded px-2 py-0.5 text-[10px] font-bold uppercase border border-emerald-200 bg-emerald-50 text-emerald-700">Active</span>
@@ -82,7 +90,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-10 text-center text-gray-400 italic">No signatories configured yet.</td>
+                            <td colspan="7" class="px-6 py-10 text-center text-gray-400 italic">No signatories configured yet.</td>
                         </tr>
                         @endforelse
                     </tbody>

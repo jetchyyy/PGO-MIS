@@ -12,6 +12,10 @@
                 <p class="text-blue-200 text-[11px]">Provincial General Services Office &mdash; Surigao Del Norte</p>
             </div>
             <div class="flex items-center gap-2">
+                <a href="{{ route('items.print_qr', $item) }}" target="_blank"
+                   class="inline-flex items-center gap-1 rounded border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition">
+                    QR Label
+                </a>
                 <a href="{{ route('items.edit', $item) }}"
                    class="inline-flex items-center gap-1 rounded border border-[#c8a84b] bg-[#c8a84b]/10 px-3 py-1.5 text-xs font-semibold text-[#c8a84b] hover:bg-[#c8a84b]/20 transition">
                     <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -95,6 +99,16 @@
                     <p class="text-gray-600 text-xs leading-relaxed">{{ $item->description }}</p>
                 </div>
                 @endif
+                <div class="md:col-span-3 pt-2">
+                    <label class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">QR Code Preview</label>
+                    <div class="mt-2 flex items-center gap-4">
+                        <img src="{{ $item->qrDataUri(200) }}" alt="Item QR" class="h-24 w-24 border border-gray-300 p-1 bg-white">
+                        <div class="text-xs text-gray-500">
+                            <p>Scan to view encoded catalog item details.</p>
+                            <a href="{{ route('items.print_qr', $item) }}" target="_blank" class="text-emerald-700 hover:underline font-semibold">Print QR Label</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 

@@ -25,5 +25,10 @@ class BrandingSetting extends Model
         'login_bg_path',
         'og_image_path',
         'favicon_path',
+        'primary_color',
+        'secondary_color',
+        'accent_color',
+        'button_color',
+        'button_text_color',
     ];
 }

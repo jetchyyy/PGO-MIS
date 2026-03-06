@@ -8,7 +8,7 @@
 
     <meta name="title" content="{{ $whiteLabel['meta_title'] }}">
     <meta name="description" content="{{ $whiteLabel['meta_description'] }}">
-    <meta name="theme-color" content="#0d47a1">
+    <meta name="theme-color" content="{{ $whiteLabel['primary_color'] }}">
 
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url()->current() }}">
@@ -49,7 +49,7 @@
                         <img src="{{ $whiteLabel['logo_url'] }}" alt="Logo" class="h-full w-full object-contain drop-shadow-md">
                     </div>
                     <div>
-                        <span class="block text-xs font-medium tracking-[0.25em] text-white/70 uppercase drop-shadow-sm">{{ $whiteLabel['nav_subtitle'] }}</span>
+                        <span class="block text-xs font-medium tracking-[0.25em] uppercase drop-shadow-sm" style="color: {{ $whiteLabel['accent_color'] }}">{{ $whiteLabel['nav_subtitle'] }}</span>
                         <span class="block text-2xl font-semibold tracking-wide text-white mt-1 drop-shadow-md">{{ $whiteLabel['nav_title'] }}</span>
                     </div>
                 </a>

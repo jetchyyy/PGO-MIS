@@ -17,6 +17,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class IssuanceController extends Controller
@@ -61,7 +62,11 @@ class IssuanceController extends Controller
                 return $cost >= 5000 ? 'sphv' : 'splv';
             })->unique();
 
-            abort_if($classifications->count() > 1, 422, 'Mixed classifications are not allowed in one transaction.');
+            if ($classifications->count() > 1) {
+                throw ValidationException::withMessages([
+                    'lines' => 'Mixed classifications are not allowed in one transaction.',
+                ]);
+            }
 
             $classification = $classifications->first();
             $assetType = $classification === 'ppe' ? 'ppe' : 'semi_expendable';
@@ -93,7 +98,11 @@ class IssuanceController extends Controller
                 $inventory = null;
                 if (! empty($line['inventory_item_id'])) {
                     $inventory = InventoryItem::findOrFail((int) $line['inventory_item_id']);
-                    abort_if($inventory->status !== 'in_stock', 422, 'Selected inventory item is not available for issuance.');
+                    if ($inventory->status !== 'in_stock') {
+                        throw ValidationException::withMessages([
+                            'inventory' => 'Selected inventory item is not available for issuance.',
+                        ]);
+                    }
                 }
 
                 $qty = $inventory ? 1 : (int) $line['quantity'];
@@ -185,11 +194,12 @@ class IssuanceController extends Controller
 
         AuditLogger::log($request->user()->id, 'issuance.printed', $issuance, ['template' => $template, 'version' => $version], $request->ip(), $request->userAgent());
 
-        $issuance->load(['lines', 'office', 'employee', 'fundCluster']);
+        $issuance->load(['lines.inventoryItem.currentEmployee', 'lines.inventoryItem.office', 'office', 'employee', 'fundCluster']);
 
         $sig = Signatory::where('is_active', true)->get()->keyBy('role_key');
         $orientation = in_array($template, ['property_card', 'semi_property_card', 'regspi']) ? 'landscape' : 'portrait';
-        $inventoryByLine = InventoryItem::whereIn('property_transaction_line_id', $issuance->lines->pluck('id'))
+        $inventoryByLine = InventoryItem::with(['currentEmployee', 'office'])
+            ->whereIn('property_transaction_line_id', $issuance->lines->pluck('id'))
             ->orderBy('id')
             ->get()
             ->groupBy('property_transaction_line_id');

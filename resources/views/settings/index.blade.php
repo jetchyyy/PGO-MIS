@@ -89,6 +89,72 @@
                 </div>
             </a>
 
+            {{-- Offices Card --}}
+            <a href="{{ route('offices.index') }}" class="group bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md hover:border-[#1a2c5b]/30 transition overflow-hidden">
+                <div class="px-5 py-3 border-b border-gray-200 bg-[#1a2c5b]">
+                    <h2 class="text-xs font-bold uppercase tracking-widest text-[#c8a84b]">Offices</h2>
+                </div>
+                <div class="p-5">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="flex-shrink-0 h-12 w-12 rounded-lg bg-cyan-50 border border-cyan-200 flex items-center justify-center">
+                            <svg class="h-6 w-6 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 21h18M5 21V7l7-4 7 4v14M9 10h.01M15 10h.01M9 14h.01M15 14h.01"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-2xl font-bold text-gray-800">{{ $offices->count() }}</p>
+                            <p class="text-xs text-gray-500">configured offices</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">Manage office values used in issuance and inventory records.</p>
+                    <div class="flex flex-wrap gap-1.5">
+                        @foreach($offices->take(4) as $office)
+                        <span class="inline-block rounded px-2 py-0.5 text-[10px] font-semibold border border-cyan-200 bg-cyan-50 text-cyan-700">{{ $office->name }}</span>
+                        @endforeach
+                        @if($offices->count() > 4)
+                        <span class="inline-block rounded px-2 py-0.5 text-[10px] text-gray-400">+{{ $offices->count() - 4 }} more</span>
+                        @endif
+                    </div>
+                </div>
+                <div class="px-5 py-2.5 bg-gray-50 border-t border-gray-100 text-xs font-semibold text-[#1a2c5b] group-hover:text-blue-700 flex items-center gap-1">
+                    Manage Offices
+                    <svg class="h-3 w-3 transition group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </div>
+            </a>
+
+            {{-- Accountable Officers Card --}}
+            <a href="{{ route('accountable-officers.index') }}" class="group bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md hover:border-[#1a2c5b]/30 transition overflow-hidden">
+                <div class="px-5 py-3 border-b border-gray-200 bg-[#1a2c5b]">
+                    <h2 class="text-xs font-bold uppercase tracking-widest text-[#c8a84b]">Accountable Officers</h2>
+                </div>
+                <div class="p-5">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="flex-shrink-0 h-12 w-12 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center">
+                            <svg class="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5V9H2v11h5m10 0v-2a4 4 0 10-8 0v2m8 0H9m4-8a3 3 0 110-6 3 3 0 010 6z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-2xl font-bold text-gray-800">{{ $employees->count() }}</p>
+                            <p class="text-xs text-gray-500">accountable officers</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">Manage accountable officers shown in Issuance, Transfer, and Disposal dropdowns.</p>
+                    <div class="flex flex-wrap gap-1.5">
+                        @foreach($employees->take(4) as $employee)
+                        <span class="inline-block rounded px-2 py-0.5 text-[10px] font-semibold border border-amber-200 bg-amber-50 text-amber-700">{{ $employee->name }}</span>
+                        @endforeach
+                        @if($employees->count() > 4)
+                        <span class="inline-block rounded px-2 py-0.5 text-[10px] text-gray-400">+{{ $employees->count() - 4 }} more</span>
+                        @endif
+                    </div>
+                </div>
+                <div class="px-5 py-2.5 bg-gray-50 border-t border-gray-100 text-xs font-semibold text-[#1a2c5b] group-hover:text-blue-700 flex items-center gap-1">
+                    Manage Accountable Officers
+                    <svg class="h-3 w-3 transition group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </div>
+            </a>
+
             {{-- Item Catalog Card --}}
             <a href="{{ route('items.index') }}" class="group bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md hover:border-[#1a2c5b]/30 transition overflow-hidden">
                 <div class="px-5 py-3 border-b border-gray-200 bg-[#1a2c5b]">
@@ -189,10 +255,10 @@
                         </div>
                         <div>
                             <p class="text-2xl font-bold text-gray-800">Brand</p>
-                            <p class="text-xs text-gray-500">text and media customization</p>
+                            <p class="text-xs text-gray-500">text, media, and color customization</p>
                         </div>
                     </div>
-                    <p class="text-sm text-gray-600">Customize website name, public text, logos, backgrounds, Open Graph image, and favicon from one screen.</p>
+                    <p class="text-sm text-gray-600">Customize website name, public text, colors, logos, backgrounds, Open Graph image, and favicon from one screen.</p>
                 </div>
                 <div class="px-5 py-2.5 bg-gray-50 border-t border-gray-100 text-xs font-semibold text-[#1a2c5b] group-hover:text-blue-700 flex items-center gap-1">
                     Manage Branding

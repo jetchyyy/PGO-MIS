@@ -58,6 +58,11 @@ class AppServiceProvider extends ServiceProvider
             'login_bg_url' => asset('images/sdncapitollongshot.jpg'),
             'og_image_url' => asset('images/og-image.png'),
             'favicon_url' => asset('favicon.ico'),
+            'primary_color' => '#1a2c5b',
+            'secondary_color' => '#343a40',
+            'accent_color' => '#c8a84b',
+            'button_color' => '#2563eb',
+            'button_text_color' => '#ffffff',
         ];
 
         if (!Schema::hasTable('branding_settings')) {
@@ -89,6 +94,11 @@ class AppServiceProvider extends ServiceProvider
             'login_bg_url' => $branding->login_bg_path ? asset('storage/'.$branding->login_bg_path) : $defaults['login_bg_url'],
             'og_image_url' => $branding->og_image_path ? asset('storage/'.$branding->og_image_path) : $defaults['og_image_url'],
             'favicon_url' => $branding->favicon_path ? asset('storage/'.$branding->favicon_path) : $defaults['favicon_url'],
+            'primary_color' => $branding->primary_color ?: $defaults['primary_color'],
+            'secondary_color' => $branding->secondary_color ?: $defaults['secondary_color'],
+            'accent_color' => $branding->accent_color ?: $defaults['accent_color'],
+            'button_color' => $branding->button_color ?: $defaults['button_color'],
+            'button_text_color' => $branding->button_text_color ?: $defaults['button_text_color'],
         ];
     }
 }
