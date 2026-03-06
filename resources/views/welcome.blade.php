@@ -3,35 +3,31 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>PGSO-SDN PMIS</title>
+    <title>{{ $whiteLabel['app_name'] }}</title>
 
-    {{-- Primary Meta Tags --}}
-    <meta name="title" content="PGSO Property MIS — Provincial Government of Surigao del Norte">
-    <meta name="description" content="Property Management & Inventory System of the Provincial General Services Office (PGSO), Provincial Government of Surigao del Norte.">
+    <meta name="title" content="{{ $whiteLabel['meta_title'] }}">
+    <meta name="description" content="{{ $whiteLabel['meta_description'] }}">
     <meta name="keywords" content="PGSO, Property MIS, Surigao del Norte, Provincial Government, Property Management, Inventory System">
     <meta name="author" content="Provincial Government of Surigao del Norte">
     <meta name="theme-color" content="#0d47a1">
 
-    {{-- Open Graph / Facebook --}}
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url('/') }}">
-    <meta property="og:title" content="PGSO Property MIS — Provincial Government of Surigao del Norte">
-    <meta property="og:description" content="Property Management & Inventory System of the Provincial General Services Office (PGSO), Provincial Government of Surigao del Norte.">
-    <meta property="og:image" content="{{ asset('images/og-image.png') }}">
+    <meta property="og:title" content="{{ $whiteLabel['meta_title'] }}">
+    <meta property="og:description" content="{{ $whiteLabel['meta_description'] }}">
+    <meta property="og:image" content="{{ $whiteLabel['og_image_url'] }}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:site_name" content="PGSO Property MIS">
+    <meta property="og:site_name" content="{{ $whiteLabel['app_name'] }}">
     <meta property="og:locale" content="en_PH">
 
-    {{-- Twitter --}}
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="{{ url('/') }}">
-    <meta name="twitter:title" content="PGSO Property MIS — Provincial Government of Surigao del Norte">
-    <meta name="twitter:description" content="Property Management & Inventory System of the Provincial General Services Office (PGSO), Provincial Government of Surigao del Norte.">
-    <meta name="twitter:image" content="{{ asset('images/og-image.png') }}">
+    <meta name="twitter:title" content="{{ $whiteLabel['meta_title'] }}">
+    <meta name="twitter:description" content="{{ $whiteLabel['meta_description'] }}">
+    <meta name="twitter:image" content="{{ $whiteLabel['og_image_url'] }}">
 
-    {{-- Favicon --}}
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" type="image/x-icon" href="{{ $whiteLabel['favicon_url'] }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/apple-touch-icon.png') }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -40,23 +36,20 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-['Montserrat'] text-slate-900 antialiased bg-slate-900 selection:bg-white/30 selection:text-white overflow-x-hidden">
-    
-    {{-- Fixed Background --}}
     <div class="fixed inset-0 z-0 h-full w-full">
-        <img src="{{ asset('images/sdncapitollongshot.jpg') }}" alt="Surigao del Norte Capitol" class="h-full w-full object-cover object-center scale-105 opacity-40 blur-[2px]">
+        <img src="{{ $whiteLabel['welcome_bg_url'] }}" alt="Background" class="h-full w-full object-cover object-center scale-105 opacity-40 blur-[2px]">
         <div class="absolute inset-0 bg-gradient-to-br from-slate-950/90 via-slate-900/80 to-slate-950/90"></div>
     </div>
 
-    {{-- Top Navigation --}}
     <nav class="relative z-50 w-full border-b border-white/10 bg-slate-900/40 backdrop-blur-md">
         <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
             <div class="flex items-center gap-4">
                 <div class="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 p-1 ring-1 ring-white/20">
-                    <img src="{{ asset('images/surigaodelnorte.png') }}" alt="Logo" class="h-full w-full object-contain">
+                    <img src="{{ $whiteLabel['logo_url'] }}" alt="Logo" class="h-full w-full object-contain">
                 </div>
                 <div class="hidden sm:block">
-                    <span class="block text-[10px] font-bold tracking-[0.2em] text-amber-400 uppercase">Provincial Government</span>
-                    <span class="block text-sm font-black text-white tracking-wide">Surigao Del Norte</span>
+                    <span class="block text-[10px] font-bold tracking-[0.2em] text-amber-400 uppercase">{{ $whiteLabel['nav_subtitle'] }}</span>
+                    <span class="block text-sm font-black text-white tracking-wide">{{ $whiteLabel['nav_title'] }}</span>
                 </div>
             </div>
             <div>
@@ -74,28 +67,25 @@
         </div>
     </nav>
 
-    {{-- Main Content --}}
     <main class="relative z-10 mx-auto max-w-7xl px-6 pt-16 pb-24 lg:pt-24 flex flex-col items-center text-center">
-        
-        {{-- Hero Section --}}
         <div class="flex h-32 w-32 items-center justify-center rounded-full bg-white/10 p-4 ring-2 ring-white/20 shadow-2xl backdrop-blur-sm mb-8 animate-[pulse_5s_ease-in-out_infinite]">
-            <img src="{{ asset('images/surigaodelnorte.png') }}" alt="Provincial Seal" class="h-full w-full object-contain drop-shadow-xl">
+            <img src="{{ $whiteLabel['logo_url'] }}" alt="Seal" class="h-full w-full object-contain drop-shadow-xl">
         </div>
-        
+
         <div class="inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-1.5 mb-6 backdrop-blur-md">
             <span class="flex h-2 w-2 rounded-full bg-amber-400 animate-ping"></span>
-            <span class="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-300">Official Government Portal</span>
+            <span class="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-300">{{ $whiteLabel['welcome_badge'] }}</span>
         </div>
 
         <h1 class="mx-auto max-w-4xl text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl drop-shadow-lg">
-            Provincial General Services Office
+            {{ $whiteLabel['welcome_title'] }}
         </h1>
         <h2 class="mt-4 text-2xl font-bold tracking-wide text-white/80 sm:text-3xl lg:text-4xl drop-shadow-md">
-            Property Management System
+            {{ $whiteLabel['welcome_subtitle'] }}
         </h2>
-        
+
         <p class="mx-auto mt-6 max-w-2xl text-base font-normal leading-relaxed text-white/70 sm:text-lg">
-            A centralized digital platform for managing, tracking, and auditing government properties, equipment, and issuances across all offices of Surigao Del Norte.
+            {{ $whiteLabel['welcome_description'] }}
         </p>
 
         <div class="mt-10 flex flex-col sm:flex-row gap-4">
@@ -111,9 +101,7 @@
             @endauth
         </div>
 
-        {{-- Feature Cards --}}
         <div class="mt-24 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full text-center">
-            
             <div class="rounded-2xl border border-white/10 bg-white/5 p-8 flex flex-col items-center backdrop-blur-xl transition hover:bg-white/10 hover:border-white/30 shadow-xl group">
                 <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400 ring-1 ring-blue-500/20 mb-5 group-hover:scale-110 group-hover:bg-blue-500/20 transition-all">
                     <svg class="h-7 w-7 opacity-90" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="3" width="16" height="18" rx="2" stroke-width="2"/><path stroke-width="2" stroke-linecap="round" d="M8 8h8M8 12h8M8 16h5"/></svg>
@@ -145,19 +133,16 @@
                 <h3 class="text-lg font-bold text-amber-300 mb-2">Audit & Reporting</h3>
                 <p class="text-sm font-normal text-white/70 leading-relaxed">Generate printable Physical Count Reports, RegSPI, and full system activity audit logs instantly.</p>
             </div>
-
         </div>
     </main>
 
-    {{-- Footer --}}
     <footer class="relative z-10 w-full flex flex-col items-center justify-center gap-2 border-t border-white/5 bg-slate-950/80 py-8 text-center backdrop-blur-md">
         <p class="text-[11px] font-bold tracking-widest text-white/60 uppercase">
-            &copy; {{ date('Y') }} Provincial Government of Surigao Del Norte &mdash; PGSO Property Management System
+            &copy; {{ date('Y') }} {{ $whiteLabel['footer_text'] }}
         </p>
         <p class="text-[10px] font-medium tracking-widest text-white/40 uppercase">
-            This system is built by New Zenith Datacom OPC (D.A.G, rocs, JM, dnkn - iykyk 😉)
+            {{ $whiteLabel['footer_subtext'] }}
         </p>
     </footer>
-
 </body>
 </html>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\TransferStoreRequest;
 use App\Models\Employee;
 use App\Models\FundCluster;
+use App\Models\InventoryItem;
 use App\Models\PrintLog;
 use App\Models\PropertyTransactionLine;
 use App\Models\Transfer;
@@ -61,20 +62,29 @@ class TransferController extends Controller
             ]);
 
             foreach ($validated['lines'] as $line) {
-                if (!empty($line['property_transaction_line_id'])) {
+                $inventory = null;
+                if (!empty($line['inventory_item_id'])) {
+                    $inventory = InventoryItem::with(['sourceLine.transaction'])->findOrFail((int) $line['inventory_item_id']);
+                    abort_if($inventory->status !== 'issued', 422, 'Selected inventory item is not currently issued.');
+                    abort_if((int) $inventory->current_employee_id !== (int) $validated['from_employee_id'], 422, 'Selected item does not belong to transfer origin employee.');
+                }
+
+                if (!$inventory && !empty($line['property_transaction_line_id'])) {
                     $source = PropertyTransactionLine::with('transaction')->findOrFail($line['property_transaction_line_id']);
                     abort_if($source->item_status === 'disposed', 422, 'Cannot transfer disposed items.');
                     abort_if(!in_array($source->transaction->status, ['approved', 'issued'], true), 422, 'Cannot transfer unissued items.');
                 }
 
                 $transfer->lines()->create([
-                    'property_transaction_line_id' => $line['property_transaction_line_id'] ?? null,
-                    'date_acquired' => $line['date_acquired'] ?? null,
-                    'reference_no' => $line['reference_no'],
-                    'quantity' => $line['quantity'],
-                    'unit' => $line['unit'],
-                    'description' => $line['description'],
-                    'amount' => $line['amount'],
+                    'item_id' => $inventory?->item_id ?? ($line['item_id'] ?? null),
+                    'inventory_item_id' => $inventory?->id ?? null,
+                    'property_transaction_line_id' => $inventory?->property_transaction_line_id ?? ($line['property_transaction_line_id'] ?? null),
+                    'date_acquired' => $inventory?->date_acquired ?? ($line['date_acquired'] ?? null),
+                    'reference_no' => $inventory?->sourceLine?->transaction?->control_no ?? $line['reference_no'],
+                    'quantity' => $inventory ? 1 : $line['quantity'],
+                    'unit' => $inventory?->unit ?? $line['unit'],
+                    'description' => $inventory?->description ?? $line['description'],
+                    'amount' => $inventory ? (float) $inventory->unit_cost : $line['amount'],
                     'condition' => $line['condition'],
                 ]);
             }

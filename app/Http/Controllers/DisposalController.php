@@ -6,6 +6,7 @@ use App\Http\Requests\DisposalStoreRequest;
 use App\Models\Disposal;
 use App\Models\Employee;
 use App\Models\FundCluster;
+use App\Models\InventoryItem;
 use App\Models\PrintLog;
 use App\Models\PropertyTransactionLine;
 use App\Support\AuditLogger;
@@ -63,22 +64,31 @@ class DisposalController extends Controller
             $disposal->update(['control_no' => NumberGenerator::next($disposal->document_type, now()->year, $disposal->id)]);
 
             foreach ($validated['lines'] as $line) {
-                if (!empty($line['property_transaction_line_id'])) {
+                $inventory = null;
+                if (!empty($line['inventory_item_id'])) {
+                    $inventory = InventoryItem::findOrFail((int) $line['inventory_item_id']);
+                    abort_if($inventory->status !== 'issued', 422, 'Selected inventory item is not currently issued.');
+                    abort_if((int) $inventory->current_employee_id !== (int) $validated['employee_id'], 422, 'Selected item does not belong to the selected accountable officer.');
+                }
+
+                if (!$inventory && !empty($line['property_transaction_line_id'])) {
                     $source = PropertyTransactionLine::with('transaction')->findOrFail($line['property_transaction_line_id']);
                     abort_if($source->item_status === 'disposed', 422, 'Item already disposed.');
                     abort_if(!in_array($source->transaction->status, ['approved', 'issued'], true), 422, 'Cannot dispose unissued items.');
                 }
 
-                $qty = (int) $line['quantity'];
-                $unitCost = (float) $line['unit_cost'];
+                $qty = $inventory ? 1 : (int) $line['quantity'];
+                $unitCost = $inventory ? (float) $inventory->unit_cost : (float) $line['unit_cost'];
                 $total = $qty * $unitCost;
                 $depr = (float) ($line['accumulated_depreciation'] ?? 0);
 
                 $disposal->lines()->create([
-                    'property_transaction_line_id' => $line['property_transaction_line_id'] ?? null,
-                    'date_acquired' => $line['date_acquired'] ?? null,
-                    'particulars' => $line['particulars'],
-                    'property_no' => $line['property_no'] ?? null,
+                    'item_id' => $inventory?->item_id ?? ($line['item_id'] ?? null),
+                    'inventory_item_id' => $inventory?->id ?? null,
+                    'property_transaction_line_id' => $inventory?->property_transaction_line_id ?? ($line['property_transaction_line_id'] ?? null),
+                    'date_acquired' => $inventory?->date_acquired ?? ($line['date_acquired'] ?? null),
+                    'particulars' => $inventory?->description ?? $line['particulars'],
+                    'property_no' => $inventory?->property_no ?? ($line['property_no'] ?? null),
                     'quantity' => $qty,
                     'unit_cost' => $unitCost,
                     'total_cost' => $total,

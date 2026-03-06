@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\FundCluster;
 use App\Models\Item;
 use App\Models\Signatory;
+use App\Models\User;
 use Illuminate\View\View;
 
 class SettingsController extends Controller
@@ -16,7 +17,8 @@ class SettingsController extends Controller
         $signatories = Signatory::orderBy('role_key')->get();
         $fundClusters = FundCluster::orderBy('code')->get();
         $items = Item::orderBy('name')->get();
+        $userCount = User::count();
 
-        return view('settings.index', compact('signatories', 'fundClusters', 'items'));
+        return view('settings.index', compact('signatories', 'fundClusters', 'items', 'userCount'));
     }
 }

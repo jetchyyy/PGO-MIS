@@ -1,0 +1,232 @@
+<?php
+
+namespace App\Support;
+
+use App\Models\Disposal;
+use App\Models\DisposalLine;
+use App\Models\InventoryItem;
+use App\Models\InventoryMovement;
+use App\Models\PropertyTransaction;
+use App\Models\PropertyTransactionLine;
+use App\Models\Transfer;
+use App\Models\TransferLine;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
+
+class InventoryManager
+{
+    public static function recordIssuance(PropertyTransaction $transaction, PropertyTransactionLine $line, ?int $actedBy = null): void
+    {
+        if ($line->inventory_item_id) {
+            $inventory = InventoryItem::findOrFail($line->inventory_item_id);
+            $inventory->update([
+                'item_id' => $line->item_id ?: $inventory->item_id,
+                'property_transaction_line_id' => $line->id,
+                'office_id' => $transaction->office_id,
+                'fund_cluster_id' => $transaction->fund_cluster_id,
+                'current_employee_id' => $transaction->employee_id,
+                'accountable_name' => $transaction->employee?->name,
+                'status' => 'issued',
+                'issued_at' => $transaction->transaction_date,
+            ]);
+
+            InventoryMovement::create([
+                'inventory_item_id' => $inventory->id,
+                'movement_type' => 'issued',
+                'reference_type' => PropertyTransaction::class,
+                'reference_id' => $transaction->id,
+                'to_employee_id' => $transaction->employee_id,
+                'acted_by' => $actedBy,
+                'movement_date' => $transaction->transaction_date,
+                'remarks' => 'Issued from inventory via '.$transaction->control_no,
+            ]);
+
+            return;
+        }
+
+        for ($i = 0; $i < (int) $line->quantity; $i++) {
+            $inventory = InventoryItem::create([
+                'item_id' => $line->item_id,
+                'property_transaction_line_id' => $line->id,
+                'office_id' => $transaction->office_id,
+                'fund_cluster_id' => $transaction->fund_cluster_id,
+                'current_employee_id' => $transaction->employee_id,
+                'accountable_name' => $transaction->employee?->name,
+                'inventory_code' => self::nextInventoryCode(),
+                'qr_token' => (string) Str::uuid(),
+                'description' => $line->description,
+                'unit' => $line->unit,
+                'unit_cost' => $line->unit_cost,
+                'classification' => $line->classification,
+                'property_no' => $line->property_no,
+                'date_acquired' => $line->date_acquired ?? $transaction->transaction_date,
+                'status' => 'issued',
+                'issued_at' => $transaction->transaction_date,
+            ]);
+
+            InventoryMovement::create([
+                'inventory_item_id' => $inventory->id,
+                'movement_type' => 'issued',
+                'reference_type' => PropertyTransaction::class,
+                'reference_id' => $transaction->id,
+                'to_employee_id' => $transaction->employee_id,
+                'acted_by' => $actedBy,
+                'movement_date' => $transaction->transaction_date,
+                'remarks' => 'Auto-created from approved issuance '.$transaction->control_no,
+            ]);
+        }
+    }
+
+    public static function recordTransfer(Transfer $transfer, TransferLine $line, ?int $actedBy = null): void
+    {
+        if ($line->inventory_item_id) {
+            $item = InventoryItem::findOrFail($line->inventory_item_id);
+            abort_if($item->status === 'disposed', 422, 'Cannot transfer disposed inventory item.');
+            abort_if((int) $item->current_employee_id !== (int) $transfer->from_employee_id, 422, 'Inventory item holder does not match transfer source.');
+
+            $item->update([
+                'current_employee_id' => $transfer->to_employee_id,
+                'accountable_name' => $transfer->toEmployee?->name,
+                'status' => 'issued',
+            ]);
+
+            InventoryMovement::create([
+                'inventory_item_id' => $item->id,
+                'movement_type' => 'transferred',
+                'reference_type' => Transfer::class,
+                'reference_id' => $transfer->id,
+                'from_employee_id' => $transfer->from_employee_id,
+                'to_employee_id' => $transfer->to_employee_id,
+                'acted_by' => $actedBy,
+                'movement_date' => $transfer->transfer_date,
+                'remarks' => 'Transferred via '.$transfer->document_type.' '.$transfer->control_no,
+            ]);
+
+            return;
+        }
+
+        $items = self::resolveItemsForTransfer($transfer, $line);
+        abort_if($items->count() < $line->quantity, 422, 'Not enough inventory units found for transfer line: '.$line->description);
+
+        $items->take($line->quantity)->each(function (InventoryItem $item) use ($transfer, $actedBy): void {
+            $item->update([
+                'current_employee_id' => $transfer->to_employee_id,
+                'accountable_name' => $transfer->toEmployee?->name,
+                'status' => 'issued',
+            ]);
+
+            InventoryMovement::create([
+                'inventory_item_id' => $item->id,
+                'movement_type' => 'transferred',
+                'reference_type' => Transfer::class,
+                'reference_id' => $transfer->id,
+                'from_employee_id' => $transfer->from_employee_id,
+                'to_employee_id' => $transfer->to_employee_id,
+                'acted_by' => $actedBy,
+                'movement_date' => $transfer->transfer_date,
+                'remarks' => 'Transferred via '.$transfer->document_type.' '.$transfer->control_no,
+            ]);
+        });
+    }
+
+    public static function recordDisposal(Disposal $disposal, DisposalLine $line, ?int $actedBy = null): void
+    {
+        if ($line->inventory_item_id) {
+            $item = InventoryItem::findOrFail($line->inventory_item_id);
+            abort_if($item->status === 'disposed', 422, 'Inventory item already disposed.');
+
+            $item->update([
+                'status' => 'disposed',
+                'current_employee_id' => null,
+                'accountable_name' => $disposal->employee?->name,
+                'disposed_at' => $disposal->disposal_date,
+            ]);
+
+            InventoryMovement::create([
+                'inventory_item_id' => $item->id,
+                'movement_type' => 'disposed',
+                'reference_type' => Disposal::class,
+                'reference_id' => $disposal->id,
+                'from_employee_id' => $disposal->employee_id,
+                'acted_by' => $actedBy,
+                'movement_date' => $disposal->disposal_date,
+                'remarks' => 'Disposed via '.$disposal->document_type.' '.$disposal->control_no,
+            ]);
+
+            return;
+        }
+
+        $items = self::resolveItemsForDisposal($disposal, $line);
+        abort_if($items->count() < $line->quantity, 422, 'Not enough inventory units found for disposal line: '.$line->particulars);
+
+        $items->take($line->quantity)->each(function (InventoryItem $item) use ($disposal, $actedBy): void {
+            $item->update([
+                'status' => 'disposed',
+                'current_employee_id' => null,
+                'accountable_name' => $disposal->employee?->name,
+                'disposed_at' => $disposal->disposal_date,
+            ]);
+
+            InventoryMovement::create([
+                'inventory_item_id' => $item->id,
+                'movement_type' => 'disposed',
+                'reference_type' => Disposal::class,
+                'reference_id' => $disposal->id,
+                'from_employee_id' => $disposal->employee_id,
+                'acted_by' => $actedBy,
+                'movement_date' => $disposal->disposal_date,
+                'remarks' => 'Disposed via '.$disposal->document_type.' '.$disposal->control_no,
+            ]);
+        });
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, InventoryItem>
+     */
+    private static function resolveItemsForTransfer(Transfer $transfer, TransferLine $line): Collection
+    {
+        $query = InventoryItem::query()
+            ->where('status', 'issued')
+            ->orderBy('id');
+
+        if ($line->property_transaction_line_id) {
+            $query->where('property_transaction_line_id', $line->property_transaction_line_id);
+        } else {
+            $query->where('description', $line->description);
+        }
+
+        $query->where('current_employee_id', $transfer->from_employee_id);
+
+        return $query->get();
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, InventoryItem>
+     */
+    private static function resolveItemsForDisposal(Disposal $disposal, DisposalLine $line): Collection
+    {
+        $query = InventoryItem::query()
+            ->whereIn('status', ['in_stock', 'issued'])
+            ->orderBy('id');
+
+        if ($line->property_transaction_line_id) {
+            $query->where('property_transaction_line_id', $line->property_transaction_line_id);
+        } else {
+            $query->where('description', $line->particulars);
+        }
+
+        return $query->where(function ($sub) use ($disposal): void {
+            $sub->whereNull('current_employee_id')
+                ->orWhere('current_employee_id', $disposal->employee_id);
+        })->get();
+    }
+
+    private static function nextInventoryCode(): string
+    {
+        do {
+            $code = 'INV-'.now()->format('YmdHis').'-'.Str::upper(Str::random(4));
+        } while (InventoryItem::where('inventory_code', $code)->exists());
+
+        return $code;
+    }
+}

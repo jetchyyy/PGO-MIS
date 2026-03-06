@@ -23,6 +23,8 @@ class TransferStoreRequest extends FormRequest
             'transfer_date' => ['required', 'date'],
             'document_type' => ['required', 'in:PTR,ITR'],
             'lines' => ['required', 'array', 'min:1'],
+            'lines.*.item_id' => ['nullable', 'exists:items,id'],
+            'lines.*.inventory_item_id' => ['nullable', 'exists:inventory_items,id'],
             'lines.*.property_transaction_line_id' => ['nullable', 'exists:property_transaction_lines,id'],
             'lines.*.date_acquired' => ['nullable', 'date'],
             'lines.*.reference_no' => ['required', 'string', 'max:255'],

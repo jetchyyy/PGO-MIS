@@ -4,35 +4,31 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'PGSO-SDN PMIS') }}</title>
+    <title>{{ $whiteLabel['app_name'] ?? config('app.name', 'PGSO-SDN PMIS') }}</title>
 
-    {{-- Primary Meta Tags --}}
-    <meta name="title" content="PGSO Property MIS — Provincial Government of Surigao del Norte">
-    <meta name="description" content="Property Management & Inventory System of the Provincial General Services Office (PGSO), Provincial Government of Surigao del Norte.">
+    <meta name="title" content="{{ $whiteLabel['meta_title'] }}">
+    <meta name="description" content="{{ $whiteLabel['meta_description'] }}">
     <meta name="keywords" content="PGSO, Property MIS, Surigao del Norte, Provincial Government, Property Management, Inventory System">
     <meta name="author" content="Provincial Government of Surigao del Norte">
     <meta name="theme-color" content="#0d47a1">
 
-    {{-- Open Graph / Facebook --}}
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:title" content="PGSO Property MIS — Provincial Government of Surigao del Norte">
-    <meta property="og:description" content="Property Management & Inventory System of the Provincial General Services Office (PGSO), Provincial Government of Surigao del Norte.">
-    <meta property="og:image" content="{{ asset('images/og-image.png') }}">
+    <meta property="og:title" content="{{ $whiteLabel['meta_title'] }}">
+    <meta property="og:description" content="{{ $whiteLabel['meta_description'] }}">
+    <meta property="og:image" content="{{ $whiteLabel['og_image_url'] }}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:site_name" content="PGSO Property MIS">
+    <meta property="og:site_name" content="{{ $whiteLabel['app_name'] }}">
     <meta property="og:locale" content="en_PH">
 
-    {{-- Twitter --}}
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="{{ url()->current() }}">
-    <meta name="twitter:title" content="PGSO Property MIS — Provincial Government of Surigao del Norte">
-    <meta name="twitter:description" content="Property Management & Inventory System of the Provincial General Services Office (PGSO), Provincial Government of Surigao del Norte.">
-    <meta name="twitter:image" content="{{ asset('images/og-image.png') }}">
+    <meta name="twitter:title" content="{{ $whiteLabel['meta_title'] }}">
+    <meta name="twitter:description" content="{{ $whiteLabel['meta_description'] }}">
+    <meta name="twitter:image" content="{{ $whiteLabel['og_image_url'] }}">
 
-    {{-- Favicon --}}
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" type="image/x-icon" href="{{ $whiteLabel['favicon_url'] }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/apple-touch-icon.png') }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -78,7 +74,7 @@
         </main>
 
         <footer class="bg-white border-t border-gray-200 py-3 text-center text-xs text-gray-400">
-            &copy; {{ date('Y') }} <strong>PGSO Property MIS</strong> &mdash; Provincial Government of Surigao Del Norte. All rights reserved.
+            &copy; {{ date('Y') }} <strong>{{ $whiteLabel['app_name'] }}</strong> - {{ $whiteLabel['footer_text'] }}.
         </footer>
     </div>
 </body>

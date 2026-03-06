@@ -43,7 +43,7 @@
                     </div>
                     <div class="flex flex-col gap-1.5">
                         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Transfer From</label>
-                        <select name="from_employee_id" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" required>
+                        <select name="from_employee_id" x-model="fromEmployeeId" class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" required>
                             <option value="">Select Employee</option>
                             @foreach($employees as $e)<option value="{{ $e->id }}">{{ $e->name }}</option>@endforeach
                         </select>
@@ -112,6 +112,7 @@
                                 class="text-red-400 hover:text-red-600 text-xs font-semibold transition">&times; Remove</button>
                         </div>
                         <div class="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
+                            <input type="hidden" :name="'lines['+index+'][property_transaction_line_id]'" x-model="line.property_transaction_line_id">
                             <div class="flex flex-col gap-1.5">
                                 <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">PAR/ICS Reference</label>
                                 <input :name="'lines['+index+'][reference_no]'" x-model="line.reference_no"
@@ -127,33 +128,81 @@
                                 <input :name="'lines['+index+'][unit]'" x-model="line.unit"
                                     class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="e.g. pcs" required>
                             </div>
-                            <div class="flex flex-col gap-1.5 md:col-span-2 relative" x-data="{ showSuggestions: false, suggestions: [] }" @click.outside="showSuggestions = false">
-                                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</label>
+                            <div class="flex flex-col gap-1.5 md:col-span-2 relative" x-data="{ showSuggestions: false, suggestions: [], browseOpen: false, browseItems: [], browseQuery: '' }" @click.outside="showSuggestions = false">
+                                <div class="flex items-center justify-between gap-2">
+                                    <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</label>
+                                    <button type="button"
+                                        @click="
+                                            if (!fromEmployeeId) { return; }
+                                            browseOpen = !browseOpen;
+                                            if (browseOpen) {
+                                                fetch('/inventory/search?mode=transfer&from_employee_id=' + encodeURIComponent(fromEmployeeId) + '&q=' + encodeURIComponent(browseQuery))
+                                                    .then(r => r.json())
+                                                    .then(data => browseItems = data);
+                                            }
+                                        "
+                                        class="rounded border border-gray-300 px-2 py-1 text-[10px] font-semibold text-gray-600 hover:bg-gray-50">
+                                        View Inventory
+                                    </button>
+                                </div>
+                                <input type="hidden" :name="'lines['+index+'][item_id]'" x-model="line.item_id">
+                                <input type="hidden" :name="'lines['+index+'][inventory_item_id]'" x-model="line.inventory_item_id">
                                 <input :name="'lines['+index+'][description]'" x-model="line.description"
                                     @input.debounce.300ms="
+                                        line.inventory_item_id = '';
                                         if (line.description.length >= 2) {
-                                            fetch('/items/search?q=' + encodeURIComponent(line.description))
+                                            if (!fromEmployeeId) { suggestions = []; showSuggestions = false; return; }
+                                            fetch('/inventory/search?mode=transfer&from_employee_id=' + encodeURIComponent(fromEmployeeId) + '&q=' + encodeURIComponent(line.description))
                                                 .then(r => r.json())
                                                 .then(data => { suggestions = data; showSuggestions = data.length > 0; });
                                         } else { showSuggestions = false; suggestions = []; }
                                     "
                                     @focus="if (suggestions.length > 0) showSuggestions = true"
                                     autocomplete="off"
-                                    class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="Type to search catalog or enter manually" required>
+                                    class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="Search by inventory code, property no, model, serial" required>
                                 <div x-show="showSuggestions" x-cloak
                                      class="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto">
                                     <template x-for="(item, si) in suggestions" :key="item.id">
                                         <button type="button"
-                                            @click="line.description = item.name + (item.description ? ' — ' + item.description : ''); line.unit = item.unit; line.amount = parseFloat(item.unit_cost); showSuggestions = false;"
+                                            @click="line.inventory_item_id = item.id; line.item_id = item.item_id || ''; line.property_transaction_line_id = item.property_transaction_line_id || ''; line.reference_no = item.reference_no || ''; line.description = item.description; line.unit = item.unit || ''; line.quantity = 1; line.amount = parseFloat(item.unit_cost); showSuggestions = false;"
                                             class="w-full text-left px-3 py-2 hover:bg-blue-50 border-b border-gray-100 last:border-b-0 transition">
-                                            <p class="text-sm font-semibold text-gray-800" x-text="item.name"></p>
+                                            <p class="text-sm font-semibold text-gray-800">
+                                                <span x-text="item.inventory_code"></span> -
+                                                <span x-text="item.description"></span>
+                                            </p>
                                             <p class="text-[11px] text-gray-500">
-                                                <span x-text="item.category || 'Uncategorized'"></span> &bull;
-                                                <span x-text="item.unit"></span> &bull;
+                                                <span x-text="item.holder || 'N/A'"></span> &bull;
+                                                <span x-text="item.unit || 'unit'"></span> &bull;
                                                 ₱<span x-text="parseFloat(item.unit_cost).toLocaleString('en-PH', {minimumFractionDigits: 2})"></span>
                                             </p>
                                         </button>
                                     </template>
+                                </div>
+                                <div x-show="browseOpen" x-cloak class="mt-2 rounded border border-gray-200 bg-white p-2">
+                                    <div class="mb-2 flex gap-2">
+                                        <input type="text" x-model="browseQuery" placeholder="Search inventory list"
+                                            class="w-full rounded border border-gray-300 px-2 py-1 text-xs">
+                                        <button type="button"
+                                            @click="
+                                                fetch('/inventory/search?mode=transfer&from_employee_id=' + encodeURIComponent(fromEmployeeId) + '&q=' + encodeURIComponent(browseQuery))
+                                                    .then(r => r.json())
+                                                    .then(data => browseItems = data);
+                                            "
+                                            class="rounded bg-gray-800 px-3 py-1 text-xs font-semibold text-white">
+                                            Search
+                                        </button>
+                                    </div>
+                                    <div class="max-h-44 overflow-y-auto border border-gray-100">
+                                        <template x-for="inv in browseItems" :key="'browse-'+inv.id">
+                                            <button type="button"
+                                                @click="line.inventory_item_id = inv.id; line.item_id = inv.item_id || ''; line.property_transaction_line_id = inv.property_transaction_line_id || ''; line.reference_no = inv.reference_no || ''; line.description = inv.description; line.unit = inv.unit || ''; line.quantity = 1; line.amount = parseFloat(inv.unit_cost); browseOpen = false;"
+                                                class="block w-full border-b border-gray-100 px-2 py-1.5 text-left text-xs hover:bg-blue-50">
+                                                <span class="font-semibold" x-text="inv.inventory_code"></span>
+                                                <span x-text="' - ' + inv.description"></span>
+                                                <span class="text-gray-500" x-text="' (' + (inv.holder || 'N/A') + ')'"></span>
+                                            </button>
+                                        </template>
+                                    </div>
                                 </div>
                             </div>
                             <div class="flex flex-col gap-1.5">
@@ -190,9 +239,10 @@
 <script>
 function transferForm() {
     return {
-        lines: [{ reference_no: '', quantity: 1, unit: '', description: '', amount: 0, condition: 'Functional' }],
+        fromEmployeeId: '',
+        lines: [{ item_id: '', inventory_item_id: '', property_transaction_line_id: '', reference_no: '', quantity: 1, unit: '', description: '', amount: 0, condition: 'Functional' }],
         addLine() {
-            this.lines.push({ reference_no: '', quantity: 1, unit: '', description: '', amount: 0, condition: 'Functional' });
+            this.lines.push({ item_id: '', inventory_item_id: '', property_transaction_line_id: '', reference_no: '', quantity: 1, unit: '', description: '', amount: 0, condition: 'Functional' });
         },
         removeLine(index) {
             if (this.lines.length > 1) this.lines.splice(index, 1);

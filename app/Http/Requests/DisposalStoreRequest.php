@@ -27,6 +27,8 @@ class DisposalStoreRequest extends FormRequest
             'appraised_value' => ['nullable', 'numeric', 'min:0'],
             'document_type' => ['required', 'in:IIRUP,RRSEP'],
             'lines' => ['required', 'array', 'min:1'],
+            'lines.*.item_id' => ['nullable', 'exists:items,id'],
+            'lines.*.inventory_item_id' => ['nullable', 'exists:inventory_items,id'],
             'lines.*.property_transaction_line_id' => ['nullable', 'exists:property_transaction_lines,id'],
             'lines.*.date_acquired' => ['nullable', 'date'],
             'lines.*.particulars' => ['required', 'string', 'max:1000'],

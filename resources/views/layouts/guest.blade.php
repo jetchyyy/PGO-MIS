@@ -4,33 +4,29 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'PGSO-SDN PMIS') }}</title>
+    <title>{{ $whiteLabel['app_name'] ?? config('app.name', 'PGSO-SDN PMIS') }}</title>
 
-    {{-- Primary Meta Tags --}}
-    <meta name="title" content="PGSO Property MIS — Provincial Government of Surigao del Norte">
-    <meta name="description" content="Property Management & Inventory System of the Provincial General Services Office (PGSO), Provincial Government of Surigao del Norte.">
+    <meta name="title" content="{{ $whiteLabel['meta_title'] }}">
+    <meta name="description" content="{{ $whiteLabel['meta_description'] }}">
     <meta name="theme-color" content="#0d47a1">
 
-    {{-- Open Graph / Facebook --}}
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:title" content="PGSO Property MIS — Provincial Government of Surigao del Norte">
-    <meta property="og:description" content="Property Management & Inventory System of the Provincial General Services Office (PGSO), Provincial Government of Surigao del Norte.">
-    <meta property="og:image" content="{{ asset('images/og-image.png') }}">
+    <meta property="og:title" content="{{ $whiteLabel['meta_title'] }}">
+    <meta property="og:description" content="{{ $whiteLabel['meta_description'] }}">
+    <meta property="og:image" content="{{ $whiteLabel['og_image_url'] }}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:site_name" content="PGSO Property MIS">
+    <meta property="og:site_name" content="{{ $whiteLabel['app_name'] }}">
     <meta property="og:locale" content="en_PH">
 
-    {{-- Twitter --}}
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="{{ url()->current() }}">
-    <meta name="twitter:title" content="PGSO Property MIS — Provincial Government of Surigao del Norte">
-    <meta name="twitter:description" content="Property Management & Inventory System of the Provincial General Services Office (PGSO), Provincial Government of Surigao del Norte.">
-    <meta name="twitter:image" content="{{ asset('images/og-image.png') }}">
+    <meta name="twitter:title" content="{{ $whiteLabel['meta_title'] }}">
+    <meta name="twitter:description" content="{{ $whiteLabel['meta_description'] }}">
+    <meta name="twitter:image" content="{{ $whiteLabel['og_image_url'] }}">
 
-    {{-- Favicon --}}
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" type="image/x-icon" href="{{ $whiteLabel['favicon_url'] }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/apple-touch-icon.png') }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,11 +40,10 @@
         
         {{-- Background Image & Overlay --}}
         <div class="fixed inset-0 z-0">
-            <img src="{{ asset('images/sdncapitollongshot.jpg') }}" alt="Surigao del Norte Capitol" class="h-full w-full object-cover object-center opacity-30">
+            <img src="{{ $whiteLabel['login_bg_url'] }}" alt="Background" class="h-full w-full object-cover object-center opacity-30">
             <div class="absolute inset-0 bg-gradient-to-b from-slate-900/90 via-slate-900/75 to-slate-900/90"></div>
         </div>
 
-        {{-- Content Wrapper --}}
         <div class="relative z-10 w-full max-w-md">
             
             {{-- Branding Header --}}
@@ -58,13 +53,12 @@
                         <img src="{{ asset('images/surigaodelnorte.png') }}" alt="Logo" class="h-full w-full object-contain drop-shadow-md">
                     </div>
                     <div>
-                        <span class="block text-xs font-medium tracking-[0.25em] text-white/70 uppercase drop-shadow-sm">Provincial General Services Office</span>
-                        <span class="block text-2xl font-semibold tracking-wide text-white mt-1 drop-shadow-md">Property Management System</span>
+                        <span class="block text-xs font-medium tracking-[0.25em] text-white/70 uppercase drop-shadow-sm">{{ $whiteLabel['nav_subtitle'] }}</span>
+                        <span class="block text-2xl font-semibold tracking-wide text-white mt-1 drop-shadow-md">{{ $whiteLabel['nav_title'] }}</span>
                     </div>
                 </a>
             </div>
 
-            {{-- Glassmorphism Card --}}
             <div class="w-full rounded-3xl border border-white/20 bg-white/5 px-8 py-8 shadow-2xl backdrop-blur-xl">
                 {{ $slot }}
             </div>

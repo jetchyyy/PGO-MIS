@@ -147,6 +147,60 @@
                 </div>
             </a>
 
+            @if(Auth::user()->hasRole(\App\Models\User::ROLE_SUPER_ADMIN, \App\Models\User::ROLE_SYSTEM_ADMIN))
+            {{-- User Accounts Card --}}
+            <a href="{{ route('users.index') }}" class="group bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md hover:border-[#1a2c5b]/30 transition overflow-hidden">
+                <div class="px-5 py-3 border-b border-gray-200 bg-[#1a2c5b]">
+                    <h2 class="text-xs font-bold uppercase tracking-widest text-[#c8a84b]">User Accounts</h2>
+                </div>
+                <div class="p-5">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="flex-shrink-0 h-12 w-12 rounded-lg bg-sky-50 border border-sky-200 flex items-center justify-center">
+                            <svg class="h-6 w-6 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5V9H2v11h5m10 0v-2a4 4 0 10-8 0v2m8 0H9m4-8a3 3 0 110-6 3 3 0 010 6z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-2xl font-bold text-gray-800">{{ $userCount }}</p>
+                            <p class="text-xs text-gray-500">registered users</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600">Create new login accounts and assign application roles such as Property Staff, Accountable Officer, and Approving Official.</p>
+                </div>
+                <div class="px-5 py-2.5 bg-gray-50 border-t border-gray-100 text-xs font-semibold text-[#1a2c5b] group-hover:text-blue-700 flex items-center gap-1">
+                    Manage Accounts
+                    <svg class="h-3 w-3 transition group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </div>
+            </a>
+            @endif
+
+            @if(Auth::user()->hasRole(\App\Models\User::ROLE_SUPER_ADMIN))
+            {{-- White Label Card --}}
+            <a href="{{ route('white-label.edit') }}" class="group bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md hover:border-[#1a2c5b]/30 transition overflow-hidden">
+                <div class="px-5 py-3 border-b border-gray-200 bg-[#1a2c5b]">
+                    <h2 class="text-xs font-bold uppercase tracking-widest text-[#c8a84b]">White Label</h2>
+                </div>
+                <div class="p-5">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="flex-shrink-0 h-12 w-12 rounded-lg bg-indigo-50 border border-indigo-200 flex items-center justify-center">
+                            <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v4m0 0l-3-3m3 3l3-3m6 11a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2h2m10 0h2a2 2 0 012 2v8z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-2xl font-bold text-gray-800">Brand</p>
+                            <p class="text-xs text-gray-500">text and media customization</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600">Customize website name, public text, logos, backgrounds, Open Graph image, and favicon from one screen.</p>
+                </div>
+                <div class="px-5 py-2.5 bg-gray-50 border-t border-gray-100 text-xs font-semibold text-[#1a2c5b] group-hover:text-blue-700 flex items-center gap-1">
+                    Manage Branding
+                    <svg class="h-3 w-3 transition group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </div>
+            </a>
+            @endif
+
         </div>
 
         {{-- System Info --}}
