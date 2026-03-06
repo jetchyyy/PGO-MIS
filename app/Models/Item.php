@@ -101,6 +101,11 @@ class Item extends Model
         return $this->hasMany(DisposalLine::class);
     }
 
+    public function inventoryItems(): HasMany
+    {
+        return $this->hasMany(InventoryItem::class);
+    }
+
     /**
      * Get the current accountable status based on latest issuance lines.
      */

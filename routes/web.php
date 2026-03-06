@@ -5,17 +5,22 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DisposalController;
 use App\Http\Controllers\FundClusterController;
 use App\Http\Controllers\IssuanceController;
+use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SignatoryController;
 use App\Http\Controllers\TransferController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\WhiteLabelController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/inventory/track/{token}', [InventoryController::class, 'track'])->name('inventory.track');
 
 Route::middleware(['auth'])->group(function (): void {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -94,6 +99,30 @@ Route::middleware(['auth'])->group(function (): void {
         Route::get('/{item}/edit', [ItemController::class, 'edit'])->name('edit');
         Route::put('/{item}', [ItemController::class, 'update'])->name('update');
         Route::delete('/{item}', [ItemController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('inventory')->name('inventory.')->group(function (): void {
+        Route::get('/search', [InventoryController::class, 'search'])->name('search');
+        Route::get('/', [InventoryController::class, 'index'])->name('index');
+        Route::get('/create', [InventoryController::class, 'create'])->name('create');
+        Route::post('/', [InventoryController::class, 'store'])->name('store');
+        Route::get('/print', [InventoryController::class, 'print'])->name('print');
+        Route::get('/{inventory}', [InventoryController::class, 'show'])->name('show');
+    });
+
+    Route::middleware('role:super_admin,system_admin')->prefix('users')->name('users.')->group(function (): void {
+        Route::get('/', [UserController::class, 'index'])->name('index');
+        Route::get('/create', [UserController::class, 'create'])->name('create');
+        Route::post('/', [UserController::class, 'store'])->name('store');
+        Route::get('/{user}/edit', [UserController::class, 'edit'])->name('edit');
+        Route::put('/{user}', [UserController::class, 'update'])->name('update');
+        Route::put('/{user}/reset-password', [UserController::class, 'resetPassword'])->name('reset-password');
+        Route::put('/{user}/status', [UserController::class, 'toggleStatus'])->name('toggle-status');
+    });
+
+    Route::middleware('role:super_admin')->prefix('white-label')->name('white-label.')->group(function (): void {
+        Route::get('/', [WhiteLabelController::class, 'edit'])->name('edit');
+        Route::put('/', [WhiteLabelController::class, 'update'])->name('update');
     });
 });
 

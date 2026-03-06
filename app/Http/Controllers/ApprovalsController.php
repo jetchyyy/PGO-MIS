@@ -40,17 +40,17 @@ class ApprovalsController extends Controller
             $record = $approval->approvable;
             if ($record instanceof PropertyTransaction) {
                 $record->update(['status' => 'approved', 'approved_at' => now()]);
-                WorkflowUpdater::applyIssuance($record->load('lines'));
+                WorkflowUpdater::applyIssuance($record->load(['lines', 'employee']), $request->user()->id);
             }
 
             if ($record instanceof Transfer) {
                 $record->update(['status' => 'approved', 'approved_at' => now()]);
-                WorkflowUpdater::applyTransfer($record->load(['lines', 'fromEmployee']));
+                WorkflowUpdater::applyTransfer($record->load(['lines', 'fromEmployee', 'toEmployee']), $request->user()->id);
             }
 
             if ($record instanceof Disposal) {
                 $record->update(['status' => 'approved', 'approved_at' => now()]);
-                WorkflowUpdater::applyDisposal($record->load('lines'));
+                WorkflowUpdater::applyDisposal($record->load(['lines', 'employee']), $request->user()->id);
             }
 
             AuditLogger::log($request->user()->id, 'approval.approved', $record, ['approval_id' => $approval->id], $request->ip(), $request->userAgent());

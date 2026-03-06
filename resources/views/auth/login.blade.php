@@ -1,7 +1,7 @@
 <x-guest-layout>
     <div class="mb-6 border-b border-white/10 pb-5 text-center">
-        <h1 class="text-2xl font-black text-white tracking-tight">System Access</h1>
-        <p class="mt-1.5 text-xs font-bold text-slate-400 uppercase tracking-widest">Sign in with your authorized account</p>
+        <h1 class="text-2xl font-black text-white tracking-tight">{{ $whiteLabel['login_heading'] }}</h1>
+        <p class="mt-1.5 text-xs font-bold text-slate-400 uppercase tracking-widest">{{ $whiteLabel['login_subheading'] }}</p>
     </div>
 
     <!-- Session Status -->

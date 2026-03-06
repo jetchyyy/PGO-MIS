@@ -11,7 +11,7 @@ class PropertyTransactionLine extends Model
     use HasFactory;
 
     protected $fillable = [
-        'property_transaction_id', 'item_id', 'quantity', 'unit', 'description', 'property_no', 'date_acquired',
+        'property_transaction_id', 'item_id', 'inventory_item_id', 'quantity', 'unit', 'description', 'property_no', 'date_acquired',
         'unit_cost', 'total_cost', 'classification', 'estimated_useful_life', 'remarks', 'item_status',
     ];
 
@@ -29,5 +29,10 @@ class PropertyTransactionLine extends Model
     public function item(): BelongsTo
     {
         return $this->belongsTo(Item::class);
+    }
+
+    public function inventoryItem(): BelongsTo
+    {
+        return $this->belongsTo(InventoryItem::class);
     }
 }
