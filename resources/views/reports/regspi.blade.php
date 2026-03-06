@@ -74,21 +74,21 @@
             <div class="bg-white border border-gray-200 rounded shadow-sm p-4 flex items-center gap-4">
                 <div class="h-10 w-1 rounded-full bg-[#1a2c5b]"></div>
                 <div>
-                    <p class="text-2xl font-bold text-[#1a2c5b]">{{ $rows->total() }}</p>
+                    <p class="text-2xl font-bold text-[#1a2c5b]">{{ number_format($totalEntries) }}</p>
                     <p class="text-xs font-semibold uppercase tracking-widest text-gray-500 mt-0.5">Total Entries</p>
                 </div>
             </div>
             <div class="bg-white border border-gray-200 rounded shadow-sm p-4 flex items-center gap-4">
                 <div class="h-10 w-1 rounded-full bg-amber-500"></div>
                 <div>
-                    <p class="text-2xl font-bold text-[#1a2c5b]">{{ $rows->where('classification', 'sphv')->count() }}</p>
+                    <p class="text-2xl font-bold text-[#1a2c5b]">{{ number_format((int) ($classificationCounts['sphv'] ?? 0)) }}</p>
                     <p class="text-xs font-semibold uppercase tracking-widest text-gray-500 mt-0.5">SPHV (High Value)</p>
                 </div>
             </div>
             <div class="bg-white border border-gray-200 rounded shadow-sm p-4 flex items-center gap-4">
                 <div class="h-10 w-1 rounded-full bg-gray-400"></div>
                 <div>
-                    <p class="text-2xl font-bold text-[#1a2c5b]">{{ $rows->where('classification', 'splv')->count() }}</p>
+                    <p class="text-2xl font-bold text-[#1a2c5b]">{{ number_format((int) ($classificationCounts['splv'] ?? 0)) }}</p>
                     <p class="text-xs font-semibold uppercase tracking-widest text-gray-500 mt-0.5">SPLV (Low Value)</p>
                 </div>
             </div>
@@ -153,7 +153,7 @@
                     <tfoot class="border-t-2 border-gray-300 bg-gray-50">
                         <tr>
                             <td colspan="8" class="px-3 py-2.5 text-right text-xs font-bold uppercase tracking-widest text-gray-500">Page Total</td>
-                            <td class="px-3 py-2.5 text-right font-extrabold text-[#1a2c5b]">₱{{ number_format($rows->sum('total_cost'), 2) }}</td>
+                            <td class="px-3 py-2.5 text-right font-extrabold text-[#1a2c5b]">PHP {{ number_format((float) $totalCost, 2) }}</td>
                             <td colspan="2"></td>
                         </tr>
                     </tfoot>

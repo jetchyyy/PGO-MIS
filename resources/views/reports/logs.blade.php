@@ -41,18 +41,24 @@
                 </thead>
                 <tbody>
                 @forelse($logs ?? [] as $i => $log)
+                    @php
+                        $eventParts = explode('.', (string) $log->event, 2);
+                        $module = $eventParts[0] ?? '-';
+                        $action = $eventParts[1] ?? ($eventParts[0] ?? '-');
+                        $record = ($log->subject_type && $log->subject_id) ? (class_basename($log->subject_type).'#'.$log->subject_id) : '-';
+                        $details = !empty($log->context) ? json_encode($log->context) : '-';
+                    @endphp
                     <tr class="border-b border-gray-200 hover:bg-blue-50/50 transition {{ $i % 2 === 0 ? 'bg-white' : 'bg-gray-50/40' }}">
                         <td class="px-5 py-4 text-gray-500 text-xs whitespace-nowrap">{{ $log->created_at?->format('M d, Y h:i A') }}</td>
                         <td class="px-5 py-4 font-semibold text-[#1a2c5b]">{{ $log->user->name ?? '-' }}</td>
                         <td class="px-5 py-4">
-                            <span class="inline-block rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide border
-                                {{ $log->action === 'create' ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : ($log->action === 'delete' ? 'border-rose-300 bg-rose-50 text-rose-700' : 'border-amber-300 bg-amber-50 text-amber-700') }}">
-                                {{ ucfirst($log->action ?? '-') }}
+                            <span class="inline-block rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide border border-amber-300 bg-amber-50 text-amber-700">
+                                {{ ucfirst(str_replace('_', ' ', $action)) }}
                             </span>
                         </td>
-                        <td class="px-5 py-4 text-gray-700">{{ $log->module ?? '-' }}</td>
-                        <td class="px-5 py-4 font-mono text-gray-600 text-xs">{{ $log->record_id ?? '-' }}</td>
-                        <td class="px-5 py-4 text-gray-500 text-xs max-w-xs truncate">{{ $log->details ?? '-' }}</td>
+                        <td class="px-5 py-4 text-gray-700">{{ ucfirst(str_replace('_', ' ', $module)) }}</td>
+                        <td class="px-5 py-4 font-mono text-gray-600 text-xs">{{ $record }}</td>
+                        <td class="px-5 py-4 text-gray-500 text-xs max-w-xs truncate">{{ \Illuminate\Support\Str::limit((string) $details, 140) }}</td>
                     </tr>
                 @empty
                     <tr>
