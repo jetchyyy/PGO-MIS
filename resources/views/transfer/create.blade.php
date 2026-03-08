@@ -28,7 +28,7 @@
     {{-- Form --}}
     <div class="w-full px-4 py-5 sm:px-6 lg:px-8">
         @php
-            $defaultLine = ['item_id' => '', 'inventory_item_id' => '', 'property_transaction_line_id' => '', 'reference_no' => '', 'quantity' => 1, 'unit' => '', 'description' => '', 'amount' => 0, 'condition' => 'Functional'];
+            $defaultLine = ['item_id' => '', 'inventory_item_id' => '', 'property_transaction_line_id' => '', 'reference_no' => '', 'quantity' => 1, 'available_quantity' => 1, 'unit' => '', 'description' => '', 'amount' => 0, 'condition' => 'Functional'];
             $initialLines = old('lines', $prefill['lines'] ?? [$defaultLine]);
             if (empty($initialLines)) {
                 $initialLines = [$defaultLine];
@@ -142,8 +142,11 @@
                             </div>
                             <div class="flex flex-col gap-1.5">
                                 <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Quantity</label>
-                                <input :name="'lines['+index+'][quantity]'" type="number" min="1" x-model.number="line.quantity"
+                                <input :name="'lines['+index+'][quantity]'" type="number" min="1" :max="line.available_quantity || null" x-model.number="line.quantity" @input="clampQuantity(line)"
                                     class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]" placeholder="0" required>
+                                <p class="text-[11px] text-gray-500" x-show="line.available_quantity">
+                                    Available to transfer: <span x-text="line.available_quantity"></span>
+                                </p>
                             </div>
                             <div class="flex flex-col gap-1.5">
                                 <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Unit</label>
@@ -257,7 +260,7 @@
 
 <script>
 function transferForm() {
-    const blankLine = { item_id: '', inventory_item_id: '', property_transaction_line_id: '', reference_no: '', quantity: 1, unit: '', description: '', amount: 0, condition: 'Functional' };
+    const blankLine = { item_id: '', inventory_item_id: '', property_transaction_line_id: '', reference_no: '', quantity: 1, available_quantity: 1, unit: '', description: '', amount: 0, condition: 'Functional' };
     return {
         fromEmployeeId: @json($initialFromEmployeeId),
         selectedIssuanceId: @json($selectedIssuanceId ?? ''),
@@ -275,6 +278,15 @@ function transferForm() {
         },
         addLine() {
             this.lines.push({ ...blankLine });
+        },
+        clampQuantity(line) {
+            const max = Number(line.available_quantity || 0);
+            if (max > 0 && Number(line.quantity || 0) > max) {
+                line.quantity = max;
+            }
+            if (Number(line.quantity || 0) < 1) {
+                line.quantity = 1;
+            }
         },
         removeLine(index) {
             if (this.lines.length > 1) this.lines.splice(index, 1);

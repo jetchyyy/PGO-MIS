@@ -42,6 +42,8 @@ class InventoryManager
                 'remarks' => 'Issued from inventory via '.$transaction->control_no,
             ]);
 
+            self::syncSourceLineLifecycle($line->id);
+
             return;
         }
 
@@ -76,6 +78,8 @@ class InventoryManager
                 'remarks' => 'Auto-created from approved issuance '.$transaction->control_no,
             ]);
         }
+
+        self::syncSourceLineLifecycle($line->id);
     }
 
     public static function recordTransfer(Transfer $transfer, TransferLine $line, ?int $actedBy = null): void
@@ -109,6 +113,8 @@ class InventoryManager
                     .($line->reference_no ? ' | Source Issuance: '.$line->reference_no : ''),
             ]);
 
+            self::syncSourceLineLifecycle($item->property_transaction_line_id);
+
             return;
         }
 
@@ -141,6 +147,8 @@ class InventoryManager
                     .($line->reference_no ? ' | Source Issuance: '.$line->reference_no : ''),
             ]);
         });
+
+        self::syncSourceLineLifecycle($line->property_transaction_line_id);
     }
 
     public static function recordDisposal(Disposal $disposal, DisposalLine $line, ?int $actedBy = null): void
@@ -168,6 +176,8 @@ class InventoryManager
                 'movement_date' => $disposal->disposal_date,
                 'remarks' => 'Disposed via '.$disposal->document_type.' '.$disposal->control_no,
             ]);
+
+            self::syncSourceLineLifecycle($item->property_transaction_line_id);
 
             return;
         }
@@ -200,6 +210,8 @@ class InventoryManager
                 'remarks' => 'Disposed via '.$disposal->document_type.' '.$disposal->control_no,
             ]);
         });
+
+        self::syncSourceLineLifecycle($line->property_transaction_line_id);
     }
 
     /**
@@ -257,5 +269,36 @@ class InventoryManager
         throw ValidationException::withMessages([
             'inventory' => $message,
         ]);
+    }
+
+    public static function syncSourceLineLifecycle(?int $sourceLineId): void
+    {
+        if (!$sourceLineId) {
+            return;
+        }
+
+        $sourceLine = PropertyTransactionLine::find($sourceLineId);
+        if (!$sourceLine) {
+            return;
+        }
+
+        $totalTracked = InventoryItem::query()
+            ->where('property_transaction_line_id', $sourceLineId)
+            ->count();
+
+        if ($totalTracked === 0) {
+            return;
+        }
+
+        $activeTracked = InventoryItem::query()
+            ->where('property_transaction_line_id', $sourceLineId)
+            ->whereIn('status', ['in_stock', 'issued'])
+            ->count();
+
+        $status = $activeTracked > 0 ? 'active' : 'disposed';
+
+        if ($sourceLine->item_status !== $status) {
+            $sourceLine->update(['item_status' => $status]);
+        }
     }
 }

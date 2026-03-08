@@ -1294,7 +1294,6 @@ class PdrrmoIssuanceSeeder extends Seeder
             foreach ($issuances as $data) {
                 $employee = $employees[$data['employee']];
                 $transactionDate = $data['transaction_date'];
-                $year = (int) date('Y', strtotime($transactionDate));
 
                 // Determine classification from first line cost
                 $firstCost = (float) $data['lines'][0]['unit_cost'];
@@ -1323,7 +1322,7 @@ class PdrrmoIssuanceSeeder extends Seeder
                 ]);
 
                 $tx->update([
-                    'control_no' => NumberGenerator::next($docType, $year, $tx->id),
+                    'control_no' => NumberGenerator::next($docType, $transactionDate),
                 ]);
 
                 // Create approval record

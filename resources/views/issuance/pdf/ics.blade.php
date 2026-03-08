@@ -93,6 +93,7 @@
         </tr>
     </thead>
     <tbody>
+        @php($remainingRows = max(5 - $issuance->lines->count(), 0))
         @foreach($issuance->lines as $line)
         <tr class="item-rows">
             <td class="center">{{ $line->quantity }}</td>
@@ -104,12 +105,14 @@
             <td class="center">{{ $line->estimated_useful_life ?? '' }}</td>
         </tr>
         @endforeach
-        {{-- Blank filler rows --}}
-        @for($i = $issuance->lines->count(); $i < 12; $i++)
+        @for($i = 0; $i < $remainingRows; $i++)
         <tr class="item-rows">
             <td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td>
         </tr>
         @endfor
+        <tr>
+            <td colspan="7" class="center" style="font-style:italic;">------nothing follows-----</td>
+        </tr>
     </tbody>
 </table>
 

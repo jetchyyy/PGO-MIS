@@ -91,7 +91,7 @@ class IssuanceController extends Controller
             ]);
 
             $tx->update([
-                'control_no' => NumberGenerator::next($docType, now()->year, $tx->id),
+                'control_no' => NumberGenerator::next($docType, $validated['transaction_date']),
             ]);
 
             foreach ($validated['lines'] as $line) {

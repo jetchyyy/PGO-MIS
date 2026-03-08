@@ -62,6 +62,7 @@
         </tr>
     </thead>
     <tbody>
+        @php($remainingRows = max(5 - $issuance->lines->count(), 0))
         @foreach($issuance->lines as $i => $line)
         <tr class="data-row">
             <td class="center">{{ $issuance->transaction_date ? \Carbon\Carbon::parse($issuance->transaction_date)->format('m/d/Y') : '' }}</td>
@@ -76,11 +77,14 @@
             <td>{{ $line->remarks ?? '' }}</td>
         </tr>
         @endforeach
-        @for($i = $issuance->lines->count(); $i < 15; $i++)
+        @for($i = 0; $i < $remainingRows; $i++)
         <tr class="data-row">
             <td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
         </tr>
         @endfor
+        <tr>
+            <td colspan="10" class="center" style="font-style:italic;">------nothing follows-----</td>
+        </tr>
     </tbody>
 </table>
 

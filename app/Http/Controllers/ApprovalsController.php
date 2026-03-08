@@ -19,7 +19,10 @@ class ApprovalsController extends Controller
     {
         $this->authorize('approvals.manage');
 
-        $approvals = Approval::where('status', 'pending')->latest('id')->paginate(25);
+        $approvals = Approval::with('approvable')
+            ->where('status', 'pending')
+            ->latest('id')
+            ->paginate(25);
 
         return view('reports.index', compact('approvals'));
     }

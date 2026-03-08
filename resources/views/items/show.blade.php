@@ -1,274 +1,372 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-gray-100">
+@php
+    $statusBadgeClass = match (strtolower($currentLifecycleStatus)) {
+        'disposed' => 'bg-red-500 text-white',
+        'transferred' => 'bg-amber-500 text-white',
+        'issued' => 'bg-emerald-500 text-white',
+        default => 'bg-slate-500 text-white',
+    };
 
-    {{-- Government Page Banner --}}
-    <div class="bg-[#1a2c5b] border-b-4 border-[#c8a84b] shadow-lg">
-        <div class="w-full px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-            <div class="text-left">
-                <p class="text-xs font-semibold uppercase tracking-widest text-[#c8a84b]">Inventory Management</p>
-                <p class="text-white font-bold text-lg leading-tight mt-0.5">{{ $item->name }}</p>
-                <p class="text-blue-200 text-[11px]">Provincial General Services Office &mdash; Surigao Del Norte</p>
+    $statusPillClass = match (strtolower($currentLifecycleStatus)) {
+        'disposed' => 'bg-red-100 text-red-700 border-red-200',
+        'transferred' => 'bg-amber-100 text-amber-700 border-amber-200',
+        'issued' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+        default => 'bg-slate-100 text-slate-700 border-slate-200',
+    };
+
+    $classificationClass = match($item->classification) {
+        'ppe' => 'bg-blue-100 text-blue-700 border-blue-200',
+        'sphv' => 'bg-amber-100 text-amber-700 border-amber-200',
+        default => 'bg-gray-100 text-gray-600 border-gray-200',
+    };
+@endphp
+
+<div class="min-h-screen bg-slate-100">
+    <div class="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 shadow-lg">
+        <div class="w-full px-4 sm:px-6 lg:px-8 py-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-amber-300">Item History</p>
+                <p class="mt-1 text-xl font-bold text-white">{{ $item->name }}</p>
+                <p class="text-[11px] text-slate-300">Issuance, transfer, and disposal timeline for this catalog item</p>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 self-start lg:self-auto">
+                <span class="inline-flex items-center rounded-sm px-3 py-1 text-xs font-bold uppercase tracking-wider {{ $statusBadgeClass }}">
+                    {{ $currentLifecycleStatus }}
+                </span>
                 <a href="{{ route('items.print_qr', $item) }}" target="_blank"
-                   class="inline-flex items-center gap-1 rounded border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition">
+                   class="inline-flex items-center rounded border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100">
                     QR Label
                 </a>
                 <a href="{{ route('items.edit', $item) }}"
-                   class="inline-flex items-center gap-1 rounded border border-[#c8a84b] bg-[#c8a84b]/10 px-3 py-1.5 text-xs font-semibold text-[#c8a84b] hover:bg-[#c8a84b]/20 transition">
-                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                   class="inline-flex items-center rounded border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-100">
                     Edit
                 </a>
                 <a href="{{ route('items.index') }}"
-                   class="inline-flex items-center gap-1 rounded border border-gray-400 bg-white/10 px-3 py-1.5 text-xs font-semibold text-gray-200 hover:bg-white/20 transition">
-                    &larr; Back
+                   class="inline-flex items-center rounded border border-slate-300 bg-white/10 px-3 py-1.5 text-xs font-semibold text-slate-100 transition hover:bg-white/20">
+                    Back
                 </a>
             </div>
         </div>
     </div>
 
-    {{-- Breadcrumb --}}
-    <div class="bg-white border-b border-gray-200 shadow-sm">
-        <div class="w-full px-4 sm:px-6 lg:px-8 py-2 flex items-center gap-2 text-xs text-gray-500">
-            <a href="{{ route('dashboard') }}" class="hover:text-[#1a2c5b]">Home</a>
+    <div class="bg-white border-b border-slate-200 shadow-sm">
+        <div class="w-full px-4 sm:px-6 lg:px-8 py-2 flex items-center gap-2 text-xs text-slate-500">
+            <a href="{{ route('dashboard') }}" class="hover:text-slate-900">Home</a>
             <span>&rsaquo;</span>
-            <a href="{{ route('settings.index') }}" class="hover:text-[#1a2c5b]">Settings</a>
+            <a href="{{ route('settings.index') }}" class="hover:text-slate-900">Settings</a>
             <span>&rsaquo;</span>
-            <a href="{{ route('items.index') }}" class="hover:text-[#1a2c5b]">Items</a>
+            <a href="{{ route('items.index') }}" class="hover:text-slate-900">Items</a>
             <span>&rsaquo;</span>
-            <span class="text-[#1a2c5b] font-semibold">{{ Str::limit($item->name, 40) }}</span>
+            <span class="font-semibold text-slate-900">{{ Str::limit($item->name, 40) }}</span>
         </div>
     </div>
 
     <div class="w-full px-4 sm:px-6 lg:px-8 py-4 space-y-4">
-
-        {{-- Item Details Card --}}
-        <div class="bg-white border border-gray-200 rounded shadow-sm">
-            <div class="border-b border-gray-100 px-4 py-3 bg-gray-50">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500">Item Details</h3>
-            </div>
-            <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div>
-                    <label class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Name</label>
-                    <p class="font-semibold text-gray-800">{{ $item->name }}</p>
+        <div class="grid grid-cols-1 gap-4 xl:grid-cols-[1.3fr,0.7fr]">
+            <div class="rounded border border-slate-200 bg-white shadow-sm">
+                <div class="border-b border-slate-100 bg-slate-50 px-4 py-3">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Item Details</h3>
                 </div>
-                <div>
-                    <label class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Category</label>
-                    <p class="text-gray-700">{{ $item->category ?? '—' }}</p>
-                </div>
-                <div>
-                    <label class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Unit</label>
-                    <p class="text-gray-700">{{ $item->unit }}</p>
-                </div>
-                <div>
-                    <label class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Unit Cost</label>
-                    <p class="font-mono font-semibold text-gray-800">₱{{ number_format($item->unit_cost, 2) }}</p>
-                </div>
-                <div>
-                    <label class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Classification</label>
-                    @php
-                        $cls = match($item->classification) {
-                            'ppe' => 'bg-blue-100 text-blue-700 border-blue-200',
-                            'sphv' => 'bg-amber-100 text-amber-700 border-amber-200',
-                            default => 'bg-gray-100 text-gray-600 border-gray-200',
-                        };
-                    @endphp
-                    <span class="inline-flex rounded px-2 py-0.5 text-[10px] font-bold uppercase border {{ $cls }}">
-                        {{ strtoupper($item->classification) }}
-                    </span>
-                </div>
-                <div>
-                    <label class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Status</label>
-                    @if($item->is_active)
-                    <span class="inline-flex rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5 text-[10px] font-bold">Active</span>
-                    @else
-                    <span class="inline-flex rounded-full bg-gray-100 text-gray-500 px-2 py-0.5 text-[10px] font-bold">Inactive</span>
+                <div class="grid grid-cols-1 gap-4 p-4 text-sm md:grid-cols-3">
+                    <div>
+                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Name</p>
+                        <p class="font-semibold text-slate-800">{{ $item->name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Category</p>
+                        <p class="text-slate-700">{{ $item->category ?: '-' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Unit</p>
+                        <p class="text-slate-700">{{ $item->unit }}</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Unit Cost</p>
+                        <p class="font-mono font-semibold text-slate-800">PHP {{ number_format((float) $item->unit_cost, 2) }}</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Classification</p>
+                        <span class="inline-flex rounded border px-2 py-0.5 text-[10px] font-bold uppercase {{ $classificationClass }}">
+                            {{ strtoupper($item->classification) }}
+                        </span>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Lifecycle Status</p>
+                        <span class="inline-flex rounded border px-2 py-0.5 text-[10px] font-bold uppercase {{ $statusPillClass }}">
+                            {{ $currentLifecycleStatus }}
+                        </span>
+                    </div>
+                    @if($item->estimated_useful_life)
+                    <div>
+                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Useful Life</p>
+                        <p class="text-slate-700">{{ $item->estimated_useful_life }}</p>
+                    </div>
+                    @endif
+                    @if($item->description)
+                    <div class="md:col-span-3">
+                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Description</p>
+                        <p class="text-xs leading-relaxed text-slate-600">{{ $item->description }}</p>
+                    </div>
                     @endif
                 </div>
-                @if($item->estimated_useful_life)
-                <div>
-                    <label class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Useful Life</label>
-                    <p class="text-gray-700">{{ $item->estimated_useful_life }}</p>
+            </div>
+
+            <div class="rounded border border-slate-200 bg-white shadow-sm">
+                <div class="border-b border-slate-100 bg-slate-50 px-4 py-3">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">QR Preview</h3>
                 </div>
-                @endif
-                @if($item->description)
-                <div class="md:col-span-3">
-                    <label class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Description</label>
-                    <p class="text-gray-600 text-xs leading-relaxed">{{ $item->description }}</p>
-                </div>
-                @endif
-                <div class="md:col-span-3 pt-2">
-                    <label class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">QR Code Preview</label>
-                    <div class="mt-2 flex items-center gap-4">
-                        <img src="{{ $item->qrDataUri(200) }}" alt="Item QR" class="h-24 w-24 border border-gray-300 p-1 bg-white">
-                        <div class="text-xs text-gray-500">
-                            <p>Scan to view encoded catalog item details.</p>
-                            <a href="{{ route('items.print_qr', $item) }}" target="_blank" class="text-emerald-700 hover:underline font-semibold">Print QR Label</a>
-                        </div>
+                <div class="flex h-full flex-col items-center justify-center gap-4 p-5 text-center">
+                    <img src="{{ $item->qrDataUri(200) }}" alt="Item QR" class="h-28 w-28 border border-slate-300 bg-white p-1">
+                    <div class="space-y-1 text-xs text-slate-500">
+                        <p>Scan to open the encoded item details.</p>
+                        <a href="{{ route('items.print_qr', $item) }}" target="_blank" class="font-semibold text-emerald-700 hover:underline">
+                            Print QR Label
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- Summary Stats --}}
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-white border border-gray-200 rounded shadow-sm p-4 text-center">
-                <p class="text-2xl font-bold text-blue-600">{{ $totalIssuedQty }}</p>
-                <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Active Issued Qty</p>
+        <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <div class="rounded border border-slate-200 bg-white p-4 text-center shadow-sm">
+                <p class="text-2xl font-bold text-emerald-600">{{ $totalIssuedQty }}</p>
+                <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Active Issued Qty</p>
             </div>
-            <div class="bg-white border border-gray-200 rounded shadow-sm p-4 text-center">
-                <p class="text-2xl font-bold text-[#1a2c5b]">{{ $issuanceLines->count() }}</p>
-                <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Issuance Lines</p>
+            <div class="rounded border border-slate-200 bg-white p-4 text-center shadow-sm">
+                <p class="text-2xl font-bold text-rose-500">{{ $issuanceLines->count() }}</p>
+                <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Issuance Events</p>
             </div>
-            <div class="bg-white border border-gray-200 rounded shadow-sm p-4 text-center">
-                <p class="text-2xl font-bold text-amber-600">{{ $transferLines->count() }}</p>
-                <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Transfers</p>
+            <div class="rounded border border-slate-200 bg-white p-4 text-center shadow-sm">
+                <p class="text-2xl font-bold text-amber-500">{{ $transferLines->count() }}</p>
+                <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Transfer Events</p>
             </div>
-            <div class="bg-white border border-gray-200 rounded shadow-sm p-4 text-center">
-                <p class="text-2xl font-bold text-red-600">{{ $disposalLines->count() }}</p>
-                <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Disposals</p>
+            <div class="rounded border border-slate-200 bg-white p-4 text-center shadow-sm">
+                <p class="text-2xl font-bold text-cyan-600">{{ $disposalLines->count() }}</p>
+                <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Disposal Events</p>
             </div>
         </div>
 
-        {{-- Issuance History --}}
-        <div class="bg-white border border-gray-200 rounded shadow-sm overflow-hidden">
-            <div class="border-b border-gray-100 px-4 py-3 bg-gray-50 flex items-center justify-between">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500">Issuance History (PAR / ICS)</h3>
-                <span class="text-[10px] bg-blue-100 text-blue-700 rounded px-2 py-0.5 font-bold">{{ $issuanceLines->count() }} Records</span>
+        <div class="overflow-hidden rounded border border-slate-200 bg-white shadow-sm">
+            <div class="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3">
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Item Breakdown</h3>
+                    <p class="mt-1 text-xs text-slate-400">Current holder and movement path for each inventory unit of this catalog item</p>
+                </div>
+                <span class="rounded border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                    {{ $holderBreakdown->count() }} Units
+                </span>
             </div>
-            @if($issuanceLines->count())
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 text-xs">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-3 py-2 text-left text-[10px] font-bold uppercase text-gray-500">Control No.</th>
-                            <th class="px-3 py-2 text-left text-[10px] font-bold uppercase text-gray-500">Date</th>
-                            <th class="px-3 py-2 text-left text-[10px] font-bold uppercase text-gray-500">Description</th>
-                            <th class="px-3 py-2 text-left text-[10px] font-bold uppercase text-gray-500">Property No.</th>
-                            <th class="px-3 py-2 text-left text-[10px] font-bold uppercase text-gray-500">Accountable Person</th>
-                            <th class="px-3 py-2 text-center text-[10px] font-bold uppercase text-gray-500">Qty</th>
-                            <th class="px-3 py-2 text-right text-[10px] font-bold uppercase text-gray-500">Total Cost</th>
-                            <th class="px-3 py-2 text-center text-[10px] font-bold uppercase text-gray-500">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        @foreach($issuanceLines as $line)
-                        <tr class="hover:bg-gray-50/50">
-                            <td class="px-3 py-2">
-                                <a href="{{ route('issuance.show', $line->transaction) }}" class="text-blue-600 hover:underline font-semibold">
-                                    {{ $line->transaction->control_no }}
+
+            @if($holderBreakdown->isNotEmpty())
+            <div class="grid gap-4 p-4 xl:grid-cols-2">
+                @foreach($holderBreakdown as $unit)
+                @php
+                    $unitStatusClass = match ($unit['status']) {
+                        'issued' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                        'disposed' => 'bg-rose-100 text-rose-700 border-rose-200',
+                        default => 'bg-slate-100 text-slate-700 border-slate-200',
+                    };
+                @endphp
+                <article class="rounded border border-slate-200 bg-slate-50/50 p-4">
+                    <div class="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                            <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Inventory Code</p>
+                            <p class="font-mono text-sm font-semibold text-slate-800">{{ $unit['inventory_code'] ?: '-' }}</p>
+                            <p class="mt-1 text-xs text-slate-500">{{ $unit['description'] }}</p>
+                        </div>
+                        <span class="inline-flex rounded border px-2 py-0.5 text-[10px] font-bold uppercase {{ $unitStatusClass }}">
+                            {{ str_replace('_', ' ', $unit['status']) }}
+                        </span>
+                    </div>
+
+                    <div class="mt-4 grid gap-3 md:grid-cols-3">
+                        <div>
+                            <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Current Holder</p>
+                            <p class="text-sm font-semibold text-slate-800">{{ $unit['current_holder'] }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Location</p>
+                            <p class="text-sm text-slate-700">{{ $unit['current_location'] }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Source Reference</p>
+                            <p class="text-sm text-slate-700">{{ $unit['source_reference'] ?: '-' }}</p>
+                        </div>
+                    </div>
+
+                    @if($unit['property_no'])
+                    <div class="mt-3">
+                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Property No.</p>
+                        <p class="text-sm text-slate-700">{{ $unit['property_no'] }}</p>
+                    </div>
+                    @endif
+
+                    <div class="mt-4 border-t border-slate-200 pt-3">
+                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Movement Breakdown</p>
+                        @if($unit['journey']->isNotEmpty())
+                        <div class="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+                            @foreach($unit['journey'] as $step)
+                            <span class="rounded border border-slate-200 bg-white px-2 py-1">
+                                {{ $step['label'] }}
+                                @if($step['date'])
+                                <span class="text-slate-400">({{ $step['date']->format('M d, Y') }})</span>
+                                @endif
+                            </span>
+                            @unless($loop->last)
+                            <span class="text-slate-300">→</span>
+                            @endunless
+                            @endforeach
+                        </div>
+                        @else
+                        <p class="mt-2 text-xs text-slate-400">No movement records yet.</p>
+                        @endif
+                    </div>
+                </article>
+                @endforeach
+            </div>
+            @else
+            <div class="px-4 py-10 text-center text-sm text-slate-400">
+                No inventory units have been created for this item yet.
+            </div>
+            @endif
+        </div>
+
+        <div class="overflow-hidden rounded border border-slate-200 bg-white shadow-sm">
+            <div class="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3">
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Lifecycle Timeline</h3>
+                    <p class="mt-1 text-xs text-slate-400">Chronological history from issuance to transfer to disposal</p>
+                </div>
+                <span class="rounded border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                    {{ $historyEvents->count() }} Events
+                </span>
+            </div>
+
+            @if($historyEvents->isNotEmpty())
+            <div class="overflow-x-auto px-6 py-6">
+                <div class="flex min-w-max items-start gap-10 pb-2">
+                    @foreach($historyEvents as $event)
+                    @php
+                        $isLast = $loop->last;
+                        $accent = match($event['accent']) {
+                            'rose' => [
+                                'panel' => 'bg-rose-500',
+                                'title' => 'text-rose-600',
+                                'meta' => 'border-rose-300 text-rose-700',
+                                'line' => 'bg-rose-200',
+                            ],
+                            'amber' => [
+                                'panel' => 'bg-amber-400',
+                                'title' => 'text-amber-500',
+                                'meta' => 'border-amber-300 text-amber-700',
+                                'line' => 'bg-amber-200',
+                            ],
+                            default => [
+                                'panel' => 'bg-cyan-500',
+                                'title' => 'text-cyan-600',
+                                'meta' => 'border-cyan-300 text-cyan-700',
+                                'line' => 'bg-cyan-200',
+                            ],
+                        };
+                    @endphp
+
+                    <article class="relative w-[220px] shrink-0">
+                        @unless($isLast)
+                        <div class="absolute left-[108px] top-7 h-1 w-[calc(100%+2.5rem)] {{ $accent['line'] }}"></div>
+                        @endunless
+
+                        <div class="relative z-10">
+                            <div class="flex h-16 w-16 items-center justify-center {{ $accent['panel'] }} text-white shadow-lg">
+                                @if($event['icon'] === 'issued')
+                                <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="9"></circle>
+                                    <path d="M12 8v5"></path>
+                                    <path d="M12 16h.01"></path>
+                                </svg>
+                                @elseif($event['icon'] === 'transferred')
+                                <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M7 7h11l-2-2"></path>
+                                    <path d="M17 17H6l2 2"></path>
+                                    <path d="M18 5v4"></path>
+                                    <path d="M6 15v4"></path>
+                                </svg>
+                                @else
+                                <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 3h6"></path>
+                                    <path d="M10 8v6"></path>
+                                    <path d="M14 8v6"></path>
+                                    <path d="M5 6h14"></path>
+                                    <path d="M6 6l1 14h10l1-14"></path>
+                                </svg>
+                                @endif
+                            </div>
+
+                            <div class="mt-4 border-t-4 {{ $accent['line'] }} pt-2">
+                                <div class="inline-flex items-center gap-1 border border-dashed px-3 py-2 text-xs font-bold {{ $accent['meta'] }}">
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="9"></circle>
+                                        <path d="M12 7v5l3 2"></path>
+                                    </svg>
+                                    {{ $event['document_type'] ?: strtoupper($event['type']) }}
+                                </div>
+                            </div>
+
+                            <h4 class="mt-3 text-3xl font-black leading-none {{ $accent['title'] }}">
+                                {{ $event['title'] }}
+                            </h4>
+
+                            <div class="mt-2 space-y-1 text-sm text-slate-600">
+                                <p class="flex items-center gap-1.5">
+                                    <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="9"></circle>
+                                        <path d="M12 7v5l3 2"></path>
+                                    </svg>
+                                    {{ $event['event_time_label'] }}
+                                </p>
+                                <p class="flex items-center gap-1.5">
+                                    <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                                        <path d="M16 3v4"></path>
+                                        <path d="M8 3v4"></path>
+                                        <path d="M3 11h18"></path>
+                                    </svg>
+                                    {{ $event['event_at'] ? $event['event_at']->format('M d, Y') : '-' }}
+                                </p>
+                                <p class="text-xs font-semibold text-slate-700">
+                                    {{ $event['headline'] }}
+                                </p>
+                                @if($event['subheadline'])
+                                <p class="text-xs text-slate-500">{{ $event['subheadline'] }}</p>
+                                @endif
+                                @if($event['control_no'])
+                                <p class="text-xs text-slate-500">Ref: {{ $event['control_no'] }}</p>
+                                @endif
+                                <p class="text-xs text-slate-500">
+                                    Qty {{ $event['quantity'] }} | PHP {{ number_format($event['amount'], 2) }}
+                                </p>
+                                @if($event['property_no'])
+                                <p class="text-xs text-slate-500">Property No: {{ $event['property_no'] }}</p>
+                                @endif
+                                <p class="truncate text-xs italic text-slate-400">{{ $event['note'] }}</p>
+                                @if($event['link'])
+                                <a href="{{ $event['link'] }}" class="inline-flex items-center pt-1 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:underline">
+                                    Open record
                                 </a>
-                            </td>
-                            <td class="px-3 py-2 text-gray-600">{{ optional($line->date_acquired)->format('M d, Y') ?? '—' }}</td>
-                            <td class="px-3 py-2 text-gray-700 max-w-xs truncate">{{ Str::limit($line->description, 60) }}</td>
-                            <td class="px-3 py-2 font-mono text-gray-600">{{ $line->property_no ?? '—' }}</td>
-                            <td class="px-3 py-2 text-gray-700">{{ $line->transaction->employee->name ?? '—' }}</td>
-                            <td class="px-3 py-2 text-center font-semibold">{{ $line->quantity }}</td>
-                            <td class="px-3 py-2 text-right font-mono">₱{{ number_format($line->total_cost, 2) }}</td>
-                            <td class="px-3 py-2 text-center">
-                                @php
-                                    $stCls = match($line->item_status) {
-                                        'active' => 'bg-emerald-100 text-emerald-700',
-                                        'transferred' => 'bg-amber-100 text-amber-700',
-                                        'disposed' => 'bg-red-100 text-red-700',
-                                        'returned' => 'bg-gray-100 text-gray-600',
-                                        default => 'bg-gray-100 text-gray-500',
-                                    };
-                                @endphp
-                                <span class="inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold {{ $stCls }}">
-                                    {{ ucfirst($line->item_status) }}
-                                </span>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                                @endif
+                            </div>
+                        </div>
+                    </article>
+                    @endforeach
+                </div>
             </div>
             @else
-            <div class="px-4 py-6 text-center text-gray-400 text-xs">No issuance records found for this item.</div>
+            <div class="px-4 py-10 text-center text-sm text-slate-400">
+                No issuance, transfer, or disposal records found for this item yet.
+            </div>
             @endif
         </div>
-
-        {{-- Transfer History --}}
-        <div class="bg-white border border-gray-200 rounded shadow-sm overflow-hidden">
-            <div class="border-b border-gray-100 px-4 py-3 bg-gray-50 flex items-center justify-between">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500">Transfer History (PTR / ITR)</h3>
-                <span class="text-[10px] bg-amber-100 text-amber-700 rounded px-2 py-0.5 font-bold">{{ $transferLines->count() }} Records</span>
-            </div>
-            @if($transferLines->count())
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 text-xs">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-3 py-2 text-left text-[10px] font-bold uppercase text-gray-500">Control No.</th>
-                            <th class="px-3 py-2 text-left text-[10px] font-bold uppercase text-gray-500">Transfer Date</th>
-                            <th class="px-3 py-2 text-left text-[10px] font-bold uppercase text-gray-500">Description</th>
-                            <th class="px-3 py-2 text-center text-[10px] font-bold uppercase text-gray-500">Qty</th>
-                            <th class="px-3 py-2 text-right text-[10px] font-bold uppercase text-gray-500">Amount</th>
-                            <th class="px-3 py-2 text-center text-[10px] font-bold uppercase text-gray-500">Condition</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        @foreach($transferLines as $tLine)
-                        <tr class="hover:bg-gray-50/50">
-                            <td class="px-3 py-2 font-semibold text-amber-700">{{ $tLine->transfer->control_no ?? '—' }}</td>
-                            <td class="px-3 py-2 text-gray-600">{{ optional($tLine->transfer->transfer_date ?? null)->format('M d, Y') ?? '—' }}</td>
-                            <td class="px-3 py-2 text-gray-700 max-w-xs truncate">{{ Str::limit($tLine->description, 60) }}</td>
-                            <td class="px-3 py-2 text-center font-semibold">{{ $tLine->quantity }}</td>
-                            <td class="px-3 py-2 text-right font-mono">₱{{ number_format($tLine->amount, 2) }}</td>
-                            <td class="px-3 py-2 text-center text-gray-600">{{ $tLine->condition }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-            @else
-            <div class="px-4 py-6 text-center text-gray-400 text-xs">No transfer records found for this item.</div>
-            @endif
-        </div>
-
-        {{-- Disposal History --}}
-        <div class="bg-white border border-gray-200 rounded shadow-sm overflow-hidden">
-            <div class="border-b border-gray-100 px-4 py-3 bg-gray-50 flex items-center justify-between">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500">Disposal History (IIRUP / RRSEP)</h3>
-                <span class="text-[10px] bg-red-100 text-red-700 rounded px-2 py-0.5 font-bold">{{ $disposalLines->count() }} Records</span>
-            </div>
-            @if($disposalLines->count())
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 text-xs">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-3 py-2 text-left text-[10px] font-bold uppercase text-gray-500">Control No.</th>
-                            <th class="px-3 py-2 text-left text-[10px] font-bold uppercase text-gray-500">Disposal Date</th>
-                            <th class="px-3 py-2 text-left text-[10px] font-bold uppercase text-gray-500">Particulars</th>
-                            <th class="px-3 py-2 text-left text-[10px] font-bold uppercase text-gray-500">Property No.</th>
-                            <th class="px-3 py-2 text-center text-[10px] font-bold uppercase text-gray-500">Qty</th>
-                            <th class="px-3 py-2 text-right text-[10px] font-bold uppercase text-gray-500">Total Cost</th>
-                            <th class="px-3 py-2 text-right text-[10px] font-bold uppercase text-gray-500">Carrying Amt</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        @foreach($disposalLines as $dLine)
-                        <tr class="hover:bg-gray-50/50">
-                            <td class="px-3 py-2 font-semibold text-red-700">{{ $dLine->disposal->control_no ?? '—' }}</td>
-                            <td class="px-3 py-2 text-gray-600">{{ optional($dLine->disposal->disposal_date ?? null)->format('M d, Y') ?? '—' }}</td>
-                            <td class="px-3 py-2 text-gray-700 max-w-xs truncate">{{ Str::limit($dLine->particulars, 60) }}</td>
-                            <td class="px-3 py-2 font-mono text-gray-600">{{ $dLine->property_no ?? '—' }}</td>
-                            <td class="px-3 py-2 text-center font-semibold">{{ $dLine->quantity }}</td>
-                            <td class="px-3 py-2 text-right font-mono">₱{{ number_format($dLine->total_cost, 2) }}</td>
-                            <td class="px-3 py-2 text-right font-mono">₱{{ number_format($dLine->carrying_amount, 2) }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-            @else
-            <div class="px-4 py-6 text-center text-gray-400 text-xs">No disposal records found for this item.</div>
-            @endif
-        </div>
-
     </div>
 </div>
 @endsection

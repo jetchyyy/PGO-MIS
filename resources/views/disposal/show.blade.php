@@ -1,6 +1,16 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $primaryTemplate = $disposal->printTemplate();
+    $statusColor = match($disposal->status) {
+        'draft' => 'bg-gray-100 text-gray-600 border border-gray-300',
+        'submitted' => 'bg-amber-100 text-amber-700 border border-amber-300',
+        'approved' => 'bg-emerald-100 text-emerald-700 border border-emerald-300',
+        'issued' => 'bg-blue-100 text-blue-700 border border-blue-300',
+        default => 'bg-gray-100 text-gray-600 border border-gray-300',
+    };
+@endphp
 <div class="min-h-screen bg-gray-100">
 
     {{-- Government Page Banner --}}
@@ -25,15 +35,6 @@
                 <span class="text-[#1a2c5b] font-semibold">{{ $disposal->control_no }}</span>
             </div>
             <div class="flex items-center gap-2">
-                @php
-                    $statusColor = match($disposal->status) {
-                        'draft'     => 'bg-gray-100 text-gray-600 border border-gray-300',
-                        'submitted' => 'bg-amber-100 text-amber-700 border border-amber-300',
-                        'approved'  => 'bg-emerald-100 text-emerald-700 border border-emerald-300',
-                        'issued'    => 'bg-blue-100 text-blue-700 border border-blue-300',
-                        default     => 'bg-gray-100 text-gray-600 border border-gray-300',
-                    };
-                @endphp
                 <span class="inline-flex items-center rounded px-3 py-1 text-[10px] font-bold uppercase tracking-widest {{ $statusColor }}">
                     {{ ucfirst($disposal->status) }}
                 </span>
@@ -47,16 +48,30 @@
                 </form>
                 @endif
                 @if(in_array($disposal->status, ['approved', 'issued']))
-                <a href="{{ route('disposal.print', [$disposal, 'iirup']) }}" target="_blank"
+                <a href="{{ route('disposal.print', [$disposal, $primaryTemplate]) }}" target="_blank"
                    class="inline-flex items-center gap-1.5 rounded border border-gray-300 bg-white px-4 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition">
                     <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                    Print IIRUP
+                    Print {{ strtoupper($primaryTemplate) }}
                 </a>
+                <a href="{{ route('disposal.print', [$disposal, 'wmr']) }}" target="_blank"
+                   class="inline-flex items-center gap-1.5 rounded border border-gray-300 bg-white px-4 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                    Print WMR
+                </a>
+                @if($disposal->document_type === 'RRSEP')
+                <a href="{{ route('disposal.print', [$disposal, 'iirusp']) }}" target="_blank"
+                   class="inline-flex items-center gap-1.5 rounded border border-gray-300 bg-white px-4 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                    Print IIRUSP
+                </a>
+                @endif
+                @if($disposal->document_type !== 'RRSEP')
                 <a href="{{ route('disposal.print', [$disposal, 'rrsep']) }}" target="_blank"
                    class="inline-flex items-center gap-1.5 rounded border border-gray-300 bg-white px-4 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition">
                     <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                     Print RRSEP
                 </a>
+                @endif
                 @endif
             </div>
         </div>

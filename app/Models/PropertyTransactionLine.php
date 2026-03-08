@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PropertyTransactionLine extends Model
 {
@@ -34,5 +35,24 @@ class PropertyTransactionLine extends Model
     public function inventoryItem(): BelongsTo
     {
         return $this->belongsTo(InventoryItem::class);
+    }
+
+    public function inventoryItems(): HasMany
+    {
+        return $this->hasMany(InventoryItem::class, 'property_transaction_line_id');
+    }
+
+    public function activeQuantity(): int
+    {
+        return (int) $this->inventoryItems()
+            ->whereIn('status', ['in_stock', 'issued'])
+            ->count();
+    }
+
+    public function disposedQuantity(): int
+    {
+        return (int) $this->inventoryItems()
+            ->where('status', 'disposed')
+            ->count();
     }
 }
