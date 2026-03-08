@@ -12,7 +12,7 @@ class DisposalLine extends Model
 
     protected $fillable = [
         'disposal_id', 'item_id', 'inventory_item_id', 'property_transaction_line_id', 'date_acquired', 'particulars', 'property_no', 'quantity',
-        'unit_cost', 'total_cost', 'accumulated_depreciation', 'carrying_amount',
+        'unit', 'unit_cost', 'total_cost', 'appraised_value', 'accumulated_depreciation', 'carrying_amount', 'remarks',
     ];
 
     protected $casts = ['date_acquired' => 'date'];

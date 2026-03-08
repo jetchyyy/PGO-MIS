@@ -23,6 +23,7 @@
     .line-fill { border-bottom: 1px solid #000; display: inline-block; min-height: 11px; padding: 0 3px; vertical-align: bottom; }
     .item-rows td { height: 12px; }
     .sig-cell { height: 58px; vertical-align: top; padding: 4px 6px; }
+    .sig-title { font-size: 7pt; margin-bottom: 4px; }
     .sig-wrap { margin-top: 16px; text-align: center; }
     .sig-name { font-weight: bold; font-size: 8pt; text-decoration: underline; }
     .sig-role { font-size: 7pt; }
@@ -43,13 +44,13 @@
     $blankRows = max(22 - $disposal->lines->count(), 0);
 @endphp
 
-<div class="annex">Annex A.14</div>
+<div class="annex">Annex A.10</div>
 
 <table class="no-border" style="margin-bottom:3px;">
     <tr>
         <td style="width:55px;"></td>
         <td>
-            <div class="doc-title">INVENTORY AND INSPECTION REPORT OF UNSERVICEABLE PROPERTY</div>
+            <div class="doc-title">INVENTORY AND INSPECTION REPORT OF UNSERVICEABLE SEMI-EXPENDABLE PROPERTY</div>
             <div class="doc-subtitle">As of {{ $disposal->disposal_date?->format('F d, Y') ?? '' }}</div>
         </td>
         <td style="width:55px;"></td>

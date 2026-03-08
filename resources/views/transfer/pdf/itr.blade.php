@@ -103,6 +103,7 @@
         </tr>
     </thead>
     <tbody>
+        @php($remainingRows = max(5 - $transfer->lines->count(), 0))
         @foreach($transfer->lines as $line)
         <tr class="item-rows">
             <td class="center">{{ $line->date_acquired ? $line->date_acquired->format('m/d/Y') : '' }}</td>
@@ -113,11 +114,14 @@
             <td class="center">{{ ucfirst($line->condition ?? '') }}</td>
         </tr>
         @endforeach
-        @for($i = $transfer->lines->count(); $i < 12; $i++)
+        @for($i = 0; $i < $remainingRows; $i++)
         <tr class="item-rows">
             <td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td>
         </tr>
         @endfor
+        <tr>
+            <td colspan="6" class="center" style="font-style:italic;">------nothing follows-----</td>
+        </tr>
     </tbody>
 </table>
 

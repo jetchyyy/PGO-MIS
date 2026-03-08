@@ -80,20 +80,37 @@
                         <tr class="border-b border-slate-200 bg-slate-50 text-left">
                             <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-600">ID</th>
                             <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-600">Type</th>
+                            <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-600">Document</th>
                             <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-600">Status</th>
                             <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-600">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                     @foreach($approvals as $approval)
+                        @php
+                            $record = $approval->approvable;
+                            $viewUrl = $approval->approvableViewUrl();
+                        @endphp
                         <tr class="hover:bg-amber-50/40 transition">
                             <td class="px-5 py-3.5 font-mono text-slate-700">{{ $approval->id }}</td>
-                            <td class="px-5 py-3.5 text-slate-700">{{ class_basename($approval->approvable_type) }}</td>
+                            <td class="px-5 py-3.5 text-slate-700">{{ $approval->approvableLabel() }}</td>
+                            <td class="px-5 py-3.5">
+                                <div class="font-semibold text-slate-800">{{ $record->control_no ?? 'No control number' }}</div>
+                                <div class="text-xs text-slate-500">
+                                    {{ $record->document_type ?? 'Document details unavailable' }}
+                                </div>
+                            </td>
                             <td class="px-5 py-3.5">
                                 <span class="inline-flex rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-700">{{ ucfirst($approval->status) }}</span>
                             </td>
                             <td class="px-5 py-3.5">
                                 <div class="flex items-center gap-2">
+                                    @if($viewUrl)
+                                    <a href="{{ $viewUrl }}" class="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-[#1a2c5b] hover:text-[#1a2c5b]">
+                                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7S3.732 16.057 2.458 12z"/></svg>
+                                        View
+                                    </a>
+                                    @endif
                                     <form method="POST" action="{{ route('approvals.approve', $approval) }}" class="inline">
                                         @csrf
                                         <button class="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700">

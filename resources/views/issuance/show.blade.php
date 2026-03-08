@@ -1,6 +1,15 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $statusColor = match ($issuance->status) {
+        'draft' => 'bg-gray-100 text-gray-600 border border-gray-300',
+        'submitted' => 'bg-amber-100 text-amber-700 border border-amber-300',
+        'approved' => 'bg-emerald-100 text-emerald-700 border border-emerald-300',
+        'issued' => 'bg-blue-100 text-blue-700 border border-blue-300',
+        default => 'bg-gray-100 text-gray-600 border border-gray-300',
+    };
+@endphp
 <div class="min-h-screen bg-gray-100">
 
     {{-- Government Page Banner --}}
@@ -25,15 +34,6 @@
                 <span class="text-[#1a2c5b] font-semibold">{{ $issuance->control_no }}</span>
             </div>
             <div class="flex items-center gap-2">
-                @php
-                    $statusColor = match($issuance->status) {
-                        'draft'     => 'bg-gray-100 text-gray-600 border border-gray-300',
-                        'submitted' => 'bg-amber-100 text-amber-700 border border-amber-300',
-                        'approved'  => 'bg-emerald-100 text-emerald-700 border border-emerald-300',
-                        'issued'    => 'bg-blue-100 text-blue-700 border border-blue-300',
-                        default     => 'bg-gray-100 text-gray-600 border border-gray-300',
-                    };
-                @endphp
                 <span class="inline-flex items-center rounded px-3 py-1 text-[10px] font-bold uppercase tracking-widest {{ $statusColor }}">
                     {{ ucfirst($issuance->status) }}
                 </span>

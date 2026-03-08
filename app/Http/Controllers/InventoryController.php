@@ -47,7 +47,7 @@ class InventoryController extends Controller
         $limit = min(max((int) $request->input('limit', 15), 1), 50);
 
         $query = InventoryItem::query()
-            ->with(['currentEmployee:id,name', 'sourceLine:id,property_transaction_id', 'sourceLine.transaction:id,control_no'])
+            ->with(['currentEmployee:id,name,designation,station', 'sourceLine:id,property_transaction_id', 'sourceLine.transaction:id,control_no'])
             ->when($mode === 'issuance', fn ($q) => $q->where('status', 'in_stock'))
             ->when($mode === 'transfer', function ($q) use ($request): void {
                 $q->where('status', 'issued');
@@ -74,9 +74,23 @@ class InventoryController extends Controller
             ->limit($limit);
 
         $rows = $query->get()->map(function (InventoryItem $row): array {
+            $availableQuantity = null;
+            if ($row->property_transaction_line_id) {
+                $availableQuantity = InventoryItem::query()
+                    ->where('property_transaction_line_id', $row->property_transaction_line_id)
+                    ->when(
+                        $row->current_employee_id,
+                        fn ($q) => $q->where('current_employee_id', $row->current_employee_id),
+                        fn ($q) => $q->whereNull('current_employee_id')
+                    )
+                    ->where('status', 'issued')
+                    ->count();
+            }
+
             return [
                 'id' => $row->id,
                 'item_id' => $row->item_id,
+                'fund_cluster_id' => $row->fund_cluster_id,
                 'inventory_code' => $row->inventory_code,
                 'description' => $row->description,
                 'property_no' => $row->property_no,
@@ -86,9 +100,13 @@ class InventoryController extends Controller
                 'unit_cost' => (float) $row->unit_cost,
                 'classification' => $row->classification,
                 'date_acquired' => optional($row->date_acquired)->toDateString(),
+                'current_employee_id' => $row->current_employee_id,
                 'holder' => $row->currentEmployee?->name,
+                'holder_designation' => $row->currentEmployee?->designation,
+                'holder_station' => $row->currentEmployee?->station,
                 'property_transaction_line_id' => $row->property_transaction_line_id,
                 'reference_no' => $row->sourceLine?->transaction?->control_no,
+                'available_quantity' => $availableQuantity ?? 1,
             ];
         });
 

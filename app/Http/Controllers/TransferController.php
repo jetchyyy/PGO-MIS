@@ -58,6 +58,7 @@ class TransferController extends Controller
                         'property_transaction_line_id' => (int) $line->id,
                         'reference_no' => (string) $issuance->control_no,
                         'quantity' => max(1, $quantity),
+                        'available_quantity' => max(1, $quantity),
                         'unit' => (string) ($line->unit ?? ''),
                         'description' => (string) ($line->description ?? ''),
                         'amount' => (float) ($line->unit_cost * max(1, $quantity)),
@@ -113,11 +114,12 @@ class TransferController extends Controller
             ]);
 
             $transfer->update([
-                'control_no' => NumberGenerator::next($transfer->document_type, now()->year, $transfer->id),
+                'control_no' => NumberGenerator::next($transfer->document_type, $validated['transfer_date']),
             ]);
 
             foreach ($validated['lines'] as $line) {
                 $inventory = null;
+                $requestedQty = max(1, (int) ($line['quantity'] ?? 1));
                 if (!empty($line['inventory_item_id'])) {
                     $inventory = InventoryItem::with(['sourceLine.transaction'])->findOrFail((int) $line['inventory_item_id']);
                     if ($inventory->status !== 'issued') {
@@ -129,6 +131,24 @@ class TransferController extends Controller
                         throw ValidationException::withMessages([
                             'inventory' => 'Selected item does not belong to transfer origin employee.',
                         ]);
+                    }
+
+                    if ($requestedQty > 1 && $inventory->property_transaction_line_id) {
+                        $availableQty = InventoryItem::query()
+                            ->where('status', 'issued')
+                            ->where('property_transaction_line_id', (int) $inventory->property_transaction_line_id)
+                            ->where('current_employee_id', (int) $validated['from_employee_id'])
+                            ->count();
+
+                        if ($availableQty < $requestedQty) {
+                            throw ValidationException::withMessages([
+                                'inventory' => "Insufficient quantity for transfer. Requested {$requestedQty}, available {$availableQty}.",
+                            ]);
+                        }
+
+                        $line['property_transaction_line_id'] = $inventory->property_transaction_line_id;
+                        $line['item_id'] = $inventory->item_id;
+                        $inventory = null;
                     }
                 }
 
@@ -152,7 +172,7 @@ class TransferController extends Controller
                     'property_transaction_line_id' => $inventory?->property_transaction_line_id ?? ($line['property_transaction_line_id'] ?? null),
                     'date_acquired' => $inventory?->date_acquired ?? ($line['date_acquired'] ?? null),
                     'reference_no' => $inventory?->sourceLine?->transaction?->control_no ?? $line['reference_no'],
-                    'quantity' => $inventory ? 1 : $line['quantity'],
+                    'quantity' => $inventory ? 1 : $requestedQty,
                     'unit' => $inventory?->unit ?? $line['unit'],
                     'description' => $inventory?->description ?? $line['description'],
                     'amount' => $inventory ? (float) $inventory->unit_cost : $line['amount'],

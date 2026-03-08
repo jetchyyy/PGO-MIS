@@ -15,8 +15,6 @@ use App\Models\SemiExpendableCard;
 use App\Models\SemiExpendableCardEntry;
 use App\Models\Transfer;
 use App\Models\TransferLine;
-use Illuminate\Validation\ValidationException;
-
 class WorkflowUpdater
 {
     public static function applyIssuance(PropertyTransaction $transaction, ?int $actedBy = null): void
@@ -145,16 +143,6 @@ class WorkflowUpdater
     public static function applyTransfer(Transfer $transfer, ?int $actedBy = null): void
     {
         foreach ($transfer->lines as $line) {
-            if (!$line->inventory_item_id && $line->sourceLine) {
-                $status = $line->sourceLine->item_status;
-                if ($status === 'disposed') {
-                    throw ValidationException::withMessages([
-                        'inventory' => 'Cannot transfer disposed items.',
-                    ]);
-                }
-                $line->sourceLine->update(['item_status' => 'transferred']);
-            }
-
             $fromHeader = AccountabilityHeader::where('employee_id', $transfer->from_employee_id)
                 ->where('fund_cluster_id', $transfer->fund_cluster_id)
                 ->where('status', 'active')
@@ -199,16 +187,6 @@ class WorkflowUpdater
     public static function applyDisposal(Disposal $disposal, ?int $actedBy = null): void
     {
         foreach ($disposal->lines as $line) {
-            if (!$line->inventory_item_id && $line->sourceLine && $line->sourceLine->item_status !== 'active') {
-                throw ValidationException::withMessages([
-                    'inventory' => 'Cannot dispose unissued or inactive items.',
-                ]);
-            }
-
-            if (!$line->inventory_item_id && $line->sourceLine) {
-                $line->sourceLine->update(['item_status' => 'disposed']);
-            }
-
             $headers = AccountabilityHeader::where('employee_id', $disposal->employee_id)
                 ->where('fund_cluster_id', $disposal->fund_cluster_id)
                 ->pluck('id');

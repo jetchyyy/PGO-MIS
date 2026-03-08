@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Item;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\CarbonInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -102,24 +104,51 @@ class ItemController extends Controller
         $this->authorize('issuance.manage');
         $this->ensureQrToken($item);
 
+        $inventoryItems = $item->inventoryItems()
+            ->with([
+                'currentEmployee.office',
+                'office',
+                'sourceLine.transaction.employee',
+                'movements.fromEmployee',
+                'movements.toEmployee',
+            ])
+            ->orderBy('id')
+            ->get();
+
         $issuanceLines = $item->issuanceLines()
             ->with(['transaction.employee', 'transaction.office'])
-            ->orderByDesc('created_at')
+            ->orderBy('date_acquired')
+            ->orderBy('id')
             ->get();
 
         $transferLines = $item->transferLines()
-            ->with(['transfer'])
-            ->orderByDesc('created_at')
+            ->with(['transfer.fromEmployee', 'transfer.toEmployee', 'inventoryItem', 'sourceLine'])
+            ->orderBy('date_acquired')
+            ->orderBy('id')
             ->get();
 
         $disposalLines = $item->disposalLines()
-            ->with(['disposal'])
-            ->orderByDesc('created_at')
+            ->with(['disposal.employee', 'inventoryItem', 'sourceLine'])
+            ->orderBy('date_acquired')
+            ->orderBy('id')
             ->get();
 
         $totalIssuedQty = $item->totalIssuedQty();
+        $historyEvents = $this->buildHistoryEvents($issuanceLines, $transferLines, $disposalLines);
+        $currentLifecycleStatus = $historyEvents->last()['status_label'] ?? 'Unissued';
+        $holderBreakdown = $this->buildHolderBreakdown($inventoryItems);
 
-        return view('items.show', compact('item', 'issuanceLines', 'transferLines', 'disposalLines', 'totalIssuedQty'));
+        return view('items.show', compact(
+            'item',
+            'inventoryItems',
+            'issuanceLines',
+            'transferLines',
+            'disposalLines',
+            'totalIssuedQty',
+            'historyEvents',
+            'currentLifecycleStatus',
+            'holderBreakdown'
+        ));
     }
 
     public function printQr(Item $item)
@@ -159,5 +188,164 @@ class ItemController extends Controller
         if (! $item->qr_token) {
             $item->update(['qr_token' => (string) Str::uuid()]);
         }
+    }
+
+    private function buildHistoryEvents(Collection $issuanceLines, Collection $transferLines, Collection $disposalLines): Collection
+    {
+        $events = collect();
+
+        foreach ($issuanceLines as $line) {
+            $transaction = $line->transaction;
+            $eventDate = $transaction?->transaction_date ?? $line->date_acquired ?? $line->created_at;
+
+            $events->push([
+                'type' => 'issuance',
+                'title' => 'Issued',
+                'status_label' => $line->item_status === 'disposed' ? 'Disposed' : 'Issued',
+                'event_at' => $eventDate,
+                'event_sort' => $this->normalizeEventDate($eventDate),
+                'event_time_label' => $this->formatEventTime($eventDate),
+                'sort_order' => 1,
+                'control_no' => $transaction?->control_no,
+                'document_type' => $transaction?->document_type,
+                'link' => $transaction ? route('issuance.show', $transaction) : null,
+                'headline' => $transaction?->employee?->name ?? 'Accountable officer not set',
+                'subheadline' => $transaction?->office?->name,
+                'quantity' => (int) $line->quantity,
+                'amount' => (float) $line->total_cost,
+                'property_no' => $line->property_no,
+                'note' => $line->remarks ?: 'Item issued to accountable officer.',
+                'icon' => 'issued',
+                'accent' => 'rose',
+            ]);
+        }
+
+        foreach ($transferLines as $line) {
+            $transfer = $line->transfer;
+            $eventDate = $transfer?->transfer_date ?? $line->created_at;
+
+            $events->push([
+                'type' => 'transfer',
+                'title' => 'Transferred',
+                'status_label' => 'Transferred',
+                'event_at' => $eventDate,
+                'event_sort' => $this->normalizeEventDate($eventDate),
+                'event_time_label' => $this->formatEventTime($eventDate),
+                'sort_order' => 2,
+                'control_no' => $transfer?->control_no,
+                'document_type' => $transfer?->document_type,
+                'link' => $transfer ? route('transfer.show', $transfer) : null,
+                'headline' => trim(($transfer?->fromEmployee?->name ?? 'Unassigned').' to '.($transfer?->toEmployee?->name ?? 'Unassigned')),
+                'subheadline' => $transfer?->transfer_type === 'others'
+                    ? ($transfer?->transfer_type_other ?: 'Transfer')
+                    : Str::headline((string) $transfer?->transfer_type),
+                'quantity' => (int) $line->quantity,
+                'amount' => (float) $line->amount,
+                'property_no' => $line->inventoryItem?->property_no ?? $line->sourceLine?->property_no,
+                'note' => $line->condition ? 'Condition: '.$line->condition : 'Item transferred to another accountable officer.',
+                'icon' => 'transferred',
+                'accent' => 'amber',
+            ]);
+        }
+
+        foreach ($disposalLines as $line) {
+            $disposal = $line->disposal;
+            $eventDate = $disposal?->disposal_date ?? $line->created_at;
+
+            $events->push([
+                'type' => 'disposal',
+                'title' => 'Disposed',
+                'status_label' => 'Disposed',
+                'event_at' => $eventDate,
+                'event_sort' => $this->normalizeEventDate($eventDate),
+                'event_time_label' => $this->formatEventTime($eventDate),
+                'sort_order' => 3,
+                'control_no' => $disposal?->control_no,
+                'document_type' => $disposal?->document_type,
+                'link' => $disposal ? route('disposal.show', $disposal) : null,
+                'headline' => $disposal?->employee?->name ?? 'Disposed record',
+                'subheadline' => $disposal?->disposal_type === 'others'
+                    ? ($disposal?->disposal_type_other ?: 'Disposal')
+                    : Str::headline((string) $disposal?->disposal_type),
+                'quantity' => (int) $line->quantity,
+                'amount' => (float) $line->total_cost,
+                'property_no' => $line->property_no,
+                'note' => $line->remarks ?: 'Item removed from active inventory.',
+                'icon' => 'disposed',
+                'accent' => 'cyan',
+            ]);
+        }
+
+        return $events
+            ->sortBy([
+                ['event_sort', 'asc'],
+                ['sort_order', 'asc'],
+            ])
+            ->values();
+    }
+
+    private function buildHolderBreakdown(Collection $inventoryItems): Collection
+    {
+        return $inventoryItems->map(function ($inventory): array {
+            $latestMovement = $inventory->movements->sortBy([
+                ['movement_date', 'asc'],
+                ['id', 'asc'],
+            ])->values();
+
+            $journey = $latestMovement->map(function ($movement): array {
+                $label = match ($movement->movement_type) {
+                    'issued' => 'Issued to '.($movement->toEmployee?->name ?? 'Unassigned'),
+                    'transferred' => 'Transferred to '.($movement->toEmployee?->name ?? 'Unassigned'),
+                    'disposed' => 'Disposed by '.($movement->fromEmployee?->name ?? 'Unknown'),
+                    default => Str::headline((string) $movement->movement_type),
+                };
+
+                return [
+                    'label' => $label,
+                    'date' => $movement->movement_date,
+                ];
+            });
+
+            $currentHolder = $inventory->currentEmployee?->name
+                ?? $inventory->accountable_name
+                ?? ($inventory->status === 'disposed' ? 'Disposed' : 'Unassigned');
+
+            $currentLocation = $inventory->currentEmployee?->office?->name
+                ?? $inventory->office?->name
+                ?? '-';
+
+            return [
+                'inventory_code' => $inventory->inventory_code,
+                'property_no' => $inventory->property_no,
+                'status' => $inventory->status,
+                'description' => $inventory->description,
+                'current_holder' => $currentHolder,
+                'current_location' => $currentLocation,
+                'source_reference' => $inventory->sourceLine?->transaction?->control_no,
+                'journey' => $journey,
+            ];
+        });
+    }
+
+    private function normalizeEventDate(CarbonInterface|string|null $date): string
+    {
+        if ($date instanceof CarbonInterface) {
+            return $date->toDateTimeString();
+        }
+
+        return (string) $date;
+    }
+
+    private function formatEventTime(CarbonInterface|string|null $date): string
+    {
+        if (! $date instanceof CarbonInterface) {
+            return '-';
+        }
+
+        if ($date->format('H:i:s') === '00:00:00') {
+            return '-';
+        }
+
+        return $date->format('g:i A');
     }
 }

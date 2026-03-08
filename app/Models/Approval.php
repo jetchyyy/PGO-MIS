@@ -18,4 +18,30 @@ class Approval extends Model
     {
         return $this->morphTo();
     }
+
+    public function approvableLabel(): string
+    {
+        return match (true) {
+            $this->approvable instanceof PropertyTransaction => 'Issuance',
+            $this->approvable instanceof Transfer => 'Transfer',
+            $this->approvable instanceof Disposal => 'Disposal',
+            default => class_basename((string) $this->approvable_type),
+        };
+    }
+
+    public function approvableViewUrl(): ?string
+    {
+        $approvable = $this->approvable;
+
+        if (! $approvable) {
+            return null;
+        }
+
+        return match (true) {
+            $approvable instanceof PropertyTransaction => route('issuance.show', $approvable),
+            $approvable instanceof Transfer => route('transfer.show', $approvable),
+            $approvable instanceof Disposal => route('disposal.show', $approvable),
+            default => null,
+        };
+    }
 }

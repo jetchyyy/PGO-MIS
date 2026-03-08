@@ -133,10 +133,9 @@ class Item extends Model
      */
     public function totalIssuedQty(): int
     {
-        return (int) $this->issuanceLines()
-            ->whereHas('transaction', fn ($q) => $q->whereIn('status', ['approved', 'issued']))
-            ->where('item_status', 'active')
-            ->sum('quantity');
+        return (int) $this->inventoryItems()
+            ->where('status', 'issued')
+            ->count();
     }
 
     public function qrPayload(): string
