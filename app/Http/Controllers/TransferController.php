@@ -13,6 +13,7 @@ use App\Models\PropertyTransactionLine;
 use App\Models\Signatory;
 use App\Models\Transfer;
 use App\Support\AuditLogger;
+use App\Support\DocumentControlRegistry;
 use App\Support\NumberGenerator;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
@@ -23,13 +24,19 @@ use Illuminate\View\View;
 
 class TransferController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
         $this->authorize('transfer.manage');
 
-        $transfers = Transfer::with(['fromEmployee', 'toEmployee'])->latest('id')->paginate(20);
+        $documentTab = strtolower($request->string('doc', 'all')->toString());
 
-        return view('transfer.index', compact('transfers'));
+        $transfers = Transfer::query()
+            ->with(['fromEmployee', 'toEmployee', 'documentControls'])
+            ->when(in_array($documentTab, ['ptr', 'itr'], true), fn ($q) => $q->where('document_type', strtoupper($documentTab)))
+            ->latest('id')
+            ->paginate(20);
+
+        return view('transfer.index', compact('transfers', 'documentTab'));
     }
 
     public function create(Request $request): View
@@ -192,9 +199,12 @@ class TransferController extends Controller
     {
         $this->authorize('transfer.manage');
 
-        $transfer->load(['lines', 'fromEmployee', 'toEmployee']);
+        $transfer->load(['lines', 'fromEmployee', 'toEmployee', 'fundCluster', 'approvals', 'documentControls']);
+        $generatedDocuments = in_array($transfer->status, ['approved', 'issued'], true)
+            ? DocumentControlRegistry::listFor($transfer)
+            : [];
 
-        return view('transfer.show', compact('transfer'));
+        return view('transfer.show', compact('transfer', 'generatedDocuments'));
     }
 
     public function submit(Transfer $transfer, Request $request): RedirectResponse
@@ -235,6 +245,7 @@ class TransferController extends Controller
         AuditLogger::log($request->user()->id, 'transfer.printed', $transfer, ['template' => $template, 'version' => $version], $request->ip(), $request->userAgent());
 
         $transfer->load(['lines.sourceLine', 'fromEmployee', 'toEmployee.office', 'fundCluster']);
+        $document = DocumentControlRegistry::findFor($transfer->loadMissing('documentControls'), $template);
 
         $sig = Signatory::where('is_active', true)->get()->keyBy('role_key');
 
@@ -282,8 +293,10 @@ class TransferController extends Controller
             }
         }
 
-        return Pdf::loadView('transfer.pdf.'.$template, compact('transfer', 'version', 'sig', 'stickerEntries'))
+        return Pdf::loadView('transfer.pdf.'.$template, compact('transfer', 'version', 'sig', 'stickerEntries') + [
+            'documentControlNo' => $document?->control_no,
+        ])
             ->setPaper('a4')
-            ->stream($template.'-'.$transfer->control_no.'.pdf');
+            ->stream($template.'-'.($document?->control_no ?? $transfer->control_no).'.pdf');
     }
 }

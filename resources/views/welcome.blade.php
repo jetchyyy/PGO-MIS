@@ -42,24 +42,24 @@
     </div>
 
     <nav class="relative z-50 w-full border-b border-white/10 bg-slate-900/40 backdrop-blur-md">
-        <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-            <div class="flex items-center gap-4">
-                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 p-1 ring-1 ring-white/20">
+        <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 md:flex-row md:items-center md:justify-between">
+            <div class="flex min-w-0 items-center gap-3 sm:gap-4">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 p-1 ring-1 ring-white/20 sm:h-11 sm:w-11">
                     <img src="{{ $whiteLabel['logo_url'] }}" alt="Logo" class="h-full w-full object-contain">
                 </div>
-                <div class="hidden sm:block">
+                <div class="min-w-0">
                     <span class="block text-[10px] font-bold tracking-[0.2em] uppercase" style="color: {{ $whiteLabel['accent_color'] }}">{{ $whiteLabel['nav_subtitle'] }}</span>
-                    <span class="block text-sm font-black text-white tracking-wide">{{ $whiteLabel['nav_title'] }}</span>
+                    <span class="block text-sm font-black tracking-wide text-white sm:text-base">{{ $whiteLabel['nav_title'] }}</span>
                 </div>
             </div>
-            <div>
+            <div class="w-full md:w-auto">
                 @auth
-                    <a href="{{ url('/dashboard') }}" class="group relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-white/30 bg-white/10 px-6 py-2 text-sm font-bold tracking-wide text-white transition hover:bg-white/20">
+                    <a href="{{ url('/dashboard') }}" class="group relative inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-full border border-white/30 bg-white/10 px-5 py-2.5 text-sm font-bold tracking-wide text-white transition hover:bg-white/20 md:w-auto">
                         <span>Go to Dashboard</span>
                         <svg class="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                     </a>
                 @else
-                    <a href="{{ route('login') }}" class="group relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-white/30 bg-white/10 px-6 py-2 text-sm font-bold tracking-wide text-white transition hover:bg-white/20">
+                    <a href="{{ route('login') }}" class="group relative inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-full border border-white/30 bg-white/10 px-5 py-2.5 text-sm font-bold tracking-wide text-white transition hover:bg-white/20 md:w-auto">
                         <span>Sign In Securely</span>
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
                     </a>
@@ -68,81 +68,81 @@
         </div>
     </nav>
 
-    <main class="relative z-10 mx-auto max-w-7xl px-6 pt-16 pb-24 lg:pt-24 flex flex-col items-center text-center">
-        <div class="flex h-32 w-32 items-center justify-center rounded-full bg-white/10 p-4 ring-2 ring-white/20 shadow-2xl backdrop-blur-sm mb-8 animate-[pulse_5s_ease-in-out_infinite]">
+    <main class="relative z-10 mx-auto flex max-w-7xl flex-col items-center px-4 pb-20 pt-12 text-center sm:px-6 sm:pt-16 lg:pt-24">
+        <div class="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-white/10 p-3 ring-2 ring-white/20 shadow-2xl backdrop-blur-sm animate-[pulse_5s_ease-in-out_infinite] sm:mb-8 sm:h-28 sm:w-28 lg:h-32 lg:w-32 lg:p-4">
             <img src="{{ $whiteLabel['logo_url'] }}" alt="Seal" class="h-full w-full object-contain drop-shadow-xl">
         </div>
 
-        <div class="inline-flex items-center gap-2 rounded-full border px-4 py-1.5 mb-6 backdrop-blur-md" style="border-color: {{ $whiteLabel['accent_color'] }}66; background-color: {{ $whiteLabel['accent_color'] }}1a;">
-            <span class="flex h-2 w-2 rounded-full animate-ping" style="background-color: {{ $whiteLabel['accent_color'] }}"></span>
-            <span class="text-[11px] font-bold uppercase tracking-[0.2em]" style="color: {{ $whiteLabel['accent_color'] }}">{{ $whiteLabel['welcome_badge'] }}</span>
+        <div class="mb-5 inline-flex max-w-full items-center gap-2 rounded-full border px-3 py-1.5 backdrop-blur-md sm:mb-6 sm:px-4" style="border-color: {{ $whiteLabel['accent_color'] }}66; background-color: {{ $whiteLabel['accent_color'] }}1a;">
+            <span class="flex h-2 w-2 shrink-0 rounded-full animate-ping" style="background-color: {{ $whiteLabel['accent_color'] }}"></span>
+            <span class="truncate text-[10px] font-bold uppercase tracking-[0.18em] sm:text-[11px]" style="color: {{ $whiteLabel['accent_color'] }}">{{ $whiteLabel['welcome_badge'] }}</span>
         </div>
 
-        <h1 class="mx-auto max-w-4xl text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl drop-shadow-lg">
+        <h1 class="mx-auto max-w-4xl text-3xl font-black tracking-tight text-white drop-shadow-lg sm:text-5xl lg:text-6xl">
             {{ $whiteLabel['welcome_title'] }}
         </h1>
-        <h2 class="mt-4 text-2xl font-bold tracking-wide text-white/80 sm:text-3xl lg:text-4xl drop-shadow-md">
+        <h2 class="mt-3 text-xl font-bold tracking-wide text-white/80 drop-shadow-md sm:mt-4 sm:text-3xl lg:text-4xl">
             {{ $whiteLabel['welcome_subtitle'] }}
         </h2>
 
-        <p class="mx-auto mt-6 max-w-2xl text-base font-normal leading-relaxed text-white/70 sm:text-lg">
+        <p class="mx-auto mt-5 max-w-2xl px-1 text-sm font-normal leading-relaxed text-white/70 sm:mt-6 sm:text-lg">
             {{ $whiteLabel['welcome_description'] }}
         </p>
 
-        <div class="mt-10 flex flex-col sm:flex-row gap-4">
+        <div class="mt-8 flex w-full max-w-md flex-col gap-3 sm:mt-10 sm:max-w-none sm:flex-row sm:justify-center sm:gap-4">
             @auth
-                <a href="{{ url('/dashboard') }}" class="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/20 px-8 py-4 text-base font-bold tracking-wide shadow-xl backdrop-blur-md transition hover:-translate-y-1" style="background-color: {{ $whiteLabel['button_color'] }}; color: {{ $whiteLabel['button_text_color'] }};">
+                <a href="{{ url('/dashboard') }}" class="inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl border border-white/20 px-6 py-4 text-base font-bold tracking-wide shadow-xl backdrop-blur-md transition hover:-translate-y-1 sm:w-auto sm:px-8" style="background-color: {{ $whiteLabel['button_color'] }}; color: {{ $whiteLabel['button_text_color'] }};">
                     <svg class="h-6 w-6 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
                     <span>Proceed to Dashboard</span>
                 </a>
             @else
-                <a href="{{ route('login') }}" class="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/20 px-8 py-4 text-base font-bold tracking-wide shadow-xl backdrop-blur-md transition hover:-translate-y-1" style="background-color: {{ $whiteLabel['button_color'] }}; color: {{ $whiteLabel['button_text_color'] }};">
+                <a href="{{ route('login') }}" class="inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl border border-white/20 px-6 py-4 text-base font-bold tracking-wide shadow-xl backdrop-blur-md transition hover:-translate-y-1 sm:w-auto sm:px-8" style="background-color: {{ $whiteLabel['button_color'] }}; color: {{ $whiteLabel['button_text_color'] }};">
                     <svg class="h-6 w-6 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                     <span>Login to Portal</span>
                 </a>
             @endauth
         </div>
 
-        <div class="mt-24 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full text-center">
-            <div class="rounded-2xl border border-white/10 bg-white/5 p-8 flex flex-col items-center backdrop-blur-xl transition hover:bg-white/10 hover:border-white/30 shadow-xl group">
-                <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-white/20 mb-5 group-hover:scale-110 group-hover:bg-white/20 transition-all">
+        <div class="mt-14 grid w-full grid-cols-1 gap-4 text-center sm:mt-16 sm:gap-5 md:grid-cols-2 xl:mt-24 xl:grid-cols-4 xl:gap-6">
+            <div class="group flex h-full flex-col items-center rounded-2xl border border-white/10 bg-white/5 p-5 shadow-xl backdrop-blur-xl transition hover:border-white/30 hover:bg-white/10 sm:p-6 lg:p-8">
+                <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-white/20 transition-all group-hover:scale-110 group-hover:bg-white/20 sm:mb-5 sm:h-14 sm:w-14">
                     <svg class="h-7 w-7 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="3" width="16" height="18" rx="2" stroke-width="2"/><path stroke-width="2" stroke-linecap="round" d="M8 8h8M8 12h8M8 16h5"/></svg>
                 </div>
-                <h3 class="text-lg font-bold text-white mb-2">Issuance Tracking</h3>
-                <p class="text-sm font-normal text-white/70 leading-relaxed">Manage and track Property Acknowledgement Receipts (PAR) and Inventory Custodian Slips (ICS).</p>
+                <h3 class="mb-2 text-base font-bold text-white sm:text-lg">Issuance Tracking</h3>
+                <p class="text-sm font-normal leading-relaxed text-white/70">Manage and track Property Acknowledgement Receipts (PAR) and Inventory Custodian Slips (ICS).</p>
             </div>
 
-            <div class="rounded-2xl border border-white/10 bg-white/5 p-8 flex flex-col items-center backdrop-blur-xl transition hover:bg-white/10 hover:border-white/30 shadow-xl group">
-                <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-white/20 mb-5 group-hover:scale-110 group-hover:bg-white/20 transition-all">
+            <div class="group flex h-full flex-col items-center rounded-2xl border border-white/10 bg-white/5 p-5 shadow-xl backdrop-blur-xl transition hover:border-white/30 hover:bg-white/10 sm:p-6 lg:p-8">
+                <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-white/20 transition-all group-hover:scale-110 group-hover:bg-white/20 sm:mb-5 sm:h-14 sm:w-14">
                     <svg class="h-7 w-7 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
                 </div>
-                <h3 class="text-lg font-bold text-white mb-2">Property Transfers</h3>
-                <p class="text-sm font-normal text-white/70 leading-relaxed">Streamline Property Transfer Reports (PTR) securely between different offices and officers.</p>
+                <h3 class="mb-2 text-base font-bold text-white sm:text-lg">Property Transfers</h3>
+                <p class="text-sm font-normal leading-relaxed text-white/70">Streamline Property Transfer Reports (PTR) securely between different offices and officers.</p>
             </div>
 
-            <div class="rounded-2xl border border-white/10 bg-white/5 p-8 flex flex-col items-center backdrop-blur-xl transition hover:bg-white/10 hover:border-white/30 shadow-xl group">
-                <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-white/20 mb-5 group-hover:scale-110 group-hover:bg-white/20 transition-all">
+            <div class="group flex h-full flex-col items-center rounded-2xl border border-white/10 bg-white/5 p-5 shadow-xl backdrop-blur-xl transition hover:border-white/30 hover:bg-white/10 sm:p-6 lg:p-8">
+                <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-white/20 transition-all group-hover:scale-110 group-hover:bg-white/20 sm:mb-5 sm:h-14 sm:w-14">
                     <svg class="h-7 w-7 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 </div>
-                <h3 class="text-lg font-bold text-white mb-2">Disposal Logging</h3>
-                <p class="text-sm font-normal text-white/70 leading-relaxed">Record Inspection and Inventory Reports of Unserviceable Properties (IIRUP) compliance.</p>
+                <h3 class="mb-2 text-base font-bold text-white sm:text-lg">Disposal Logging</h3>
+                <p class="text-sm font-normal leading-relaxed text-white/70">Record Inspection and Inventory Reports of Unserviceable Properties (IIRUP) compliance.</p>
             </div>
 
-            <div class="rounded-2xl border border-white/10 bg-white/5 p-8 flex flex-col items-center backdrop-blur-xl transition hover:bg-white/10 hover:border-white/30 shadow-xl group">
-                <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-white/20 mb-5 group-hover:scale-110 group-hover:bg-white/20 transition-all">
+            <div class="group flex h-full flex-col items-center rounded-2xl border border-white/10 bg-white/5 p-5 shadow-xl backdrop-blur-xl transition hover:border-white/30 hover:bg-white/10 sm:p-6 lg:p-8">
+                <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-white/20 transition-all group-hover:scale-110 group-hover:bg-white/20 sm:mb-5 sm:h-14 sm:w-14">
                     <svg class="h-7 w-7 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 </div>
-                <h3 class="text-lg font-bold text-white mb-2">Audit and Reporting</h3>
-                <p class="text-sm font-normal text-white/70 leading-relaxed">Generate printable Physical Count Reports, RegSPI, and system activity audit logs instantly.</p>
+                <h3 class="mb-2 text-base font-bold text-white sm:text-lg">Audit and Reporting</h3>
+                <p class="text-sm font-normal leading-relaxed text-white/70">Generate printable Physical Count Reports, RegSPI, and system activity audit logs instantly.</p>
             </div>
         </div>
     </main>
 
-    <footer class="relative z-10 w-full flex flex-col items-center justify-center gap-2 border-t border-white/5 py-8 text-center backdrop-blur-md" style="background-color: {{ $whiteLabel['secondary_color'] }}cc;">
-        <p class="text-[11px] font-bold tracking-widest text-white/60 uppercase">
+    <footer class="relative z-10 flex w-full flex-col items-center justify-center gap-2 border-t border-white/5 px-4 py-6 text-center backdrop-blur-md sm:px-6 sm:py-8" style="background-color: {{ $whiteLabel['secondary_color'] }}cc;">
+        <p class="text-[10px] font-bold tracking-[0.24em] text-white/60 uppercase sm:text-[11px] sm:tracking-widest">
             &copy; {{ date('Y') }} {{ $whiteLabel['footer_text'] }}
         </p>
-        <p class="text-[10px] font-medium tracking-widest text-white/40 uppercase">
+        <p class="text-[9px] font-medium tracking-[0.22em] text-white/40 uppercase sm:text-[10px] sm:tracking-widest">
             {{ $whiteLabel['footer_subtext'] }}
         </p>
     </footer>

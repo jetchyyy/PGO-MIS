@@ -7,13 +7,13 @@
     </style>
     {{-- Main navbar - AdminLTE style dark --}}
     <div class="wl-nav-bg shadow-md border-b wl-nav-border">
-        <div class="mx-auto flex h-[50px] max-w-full items-center justify-between px-4">
+        <div class="mx-auto flex min-h-[56px] max-w-full items-center justify-between gap-3 px-4 py-2">
 
             {{-- Left: Brand --}}
-            <a href="{{ route('dashboard') }}" class="flex items-center gap-3 shrink-0">
+            <a href="{{ route('dashboard') }}" class="flex min-w-0 items-center gap-3 shrink-0">
                 <img src="{{ $whiteLabel['logo_url'] }}" alt="Logo" class="h-8 w-8 object-contain">
-                <div class="hidden sm:block">
-                    <span class="text-sm font-bold text-white leading-none">{{ $whiteLabel['nav_title'] }}</span>
+                <div class="hidden min-w-0 sm:block">
+                    <span class="block truncate text-sm font-bold leading-none text-white">{{ $whiteLabel['nav_title'] }}</span>
                     <span class="block text-[10px] text-gray-400 leading-tight">{{ $whiteLabel['nav_subtitle'] }}</span>
                 </div>
             </a>
@@ -95,11 +95,11 @@
             </div>
 
             {{-- Right: User dropdown --}}
-            <div class="hidden md:flex items-center gap-3 ml-auto">
+            <div class="ml-auto hidden md:flex items-center gap-3">
                 <div class="relative" x-data="{ dropOpen: false }">
                     <button @click="dropOpen = !dropOpen" class="flex items-center gap-2 text-gray-300 hover:text-white transition px-3 py-2">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        <span class="text-sm font-medium">{{ Auth::user()->name }}</span>
+                        <span class="max-w-[12rem] truncate text-sm font-medium">{{ Auth::user()->name }}</span>
                         <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
                     </button>
                     <div x-show="dropOpen" @click.outside="dropOpen = false"
@@ -135,7 +135,7 @@
 
     {{-- Mobile menu --}}
     <div x-show="open" x-cloak x-transition class="md:hidden wl-nav-bg border-b wl-nav-border">
-        <div class="px-3 py-2 space-y-0.5">
+        <div class="space-y-0.5 px-3 py-2">
             @php $user = auth()->user(); @endphp
             <a href="{{ route('dashboard') }}" class="block px-3 py-2 text-sm text-gray-300 hover:text-white wl-nav-hover">
                 <svg class="inline h-4 w-4 mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="1.8" d="M3 10.5 12 3l9 7.5V21H3V10.5Z"/><path stroke-width="1.8" d="M9 21v-6h6v6"/></svg>
@@ -195,7 +195,7 @@
         <div class="border-t wl-nav-border px-4 py-3">
             <p class="text-sm font-semibold text-white">{{ Auth::user()->name }}</p>
             <p class="text-xs text-gray-400">{{ str_replace('_', ' ', Auth::user()->role) }}</p>
-            <div class="mt-2 flex gap-4">
+            <div class="mt-2 flex flex-wrap gap-3">
                 <a href="{{ route('profile.edit') }}" class="inline-flex items-center gap-1.5 text-sm text-gray-300 hover:text-white">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                     Profile

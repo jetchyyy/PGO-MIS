@@ -53,4 +53,5 @@ class Disposal extends Model
     public function fundCluster(): BelongsTo { return $this->belongsTo(FundCluster::class); }
     public function approvals(): MorphMany { return $this->morphMany(Approval::class, 'approvable'); }
     public function printLogs(): MorphMany { return $this->morphMany(PrintLog::class, 'printable'); }
+    public function documentControls(): MorphMany { return $this->morphMany(DocumentControl::class, 'documentable'); }
 }

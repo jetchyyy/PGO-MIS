@@ -47,10 +47,6 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        // Seed catalog first so issuance lines can resolve item_id mappings.
-        $this->call([
-            ItemCatalogSeeder::class,
-            PdrrmoIssuanceSeeder::class,
-        ]);
+       
     }
 }

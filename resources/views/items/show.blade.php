@@ -31,7 +31,7 @@
                 <p class="mt-1 text-xl font-bold text-white">{{ $item->name }}</p>
                 <p class="text-[11px] text-slate-300">Issuance, transfer, and disposal timeline for this catalog item</p>
             </div>
-            <div class="flex items-center gap-2 self-start lg:self-auto">
+            <div class="flex flex-wrap items-center gap-2 self-start lg:self-auto">
                 <span class="inline-flex items-center rounded-sm px-3 py-1 text-xs font-bold uppercase tracking-wider {{ $statusBadgeClass }}">
                     {{ $currentLifecycleStatus }}
                 </span>
@@ -129,7 +129,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div class="rounded border border-slate-200 bg-white p-4 text-center shadow-sm">
                 <p class="text-2xl font-bold text-emerald-600">{{ $totalIssuedQty }}</p>
                 <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Active Issued Qty</p>
@@ -149,7 +149,7 @@
         </div>
 
         <div class="overflow-hidden rounded border border-slate-200 bg-white shadow-sm">
-            <div class="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3">
+            <div class="flex flex-col gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Item Breakdown</h3>
                     <p class="mt-1 text-xs text-slate-400">Current holder and movement path for each inventory unit of this catalog item</p>
@@ -234,7 +234,7 @@
         </div>
 
         <div class="overflow-hidden rounded border border-slate-200 bg-white shadow-sm">
-            <div class="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3">
+            <div class="flex flex-col gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Lifecycle Timeline</h3>
                     <p class="mt-1 text-xs text-slate-400">Chronological history from issuance to transfer to disposal</p>

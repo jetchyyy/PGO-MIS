@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Disposal;
+use App\Models\DocumentControl;
 use App\Models\PropertyTransaction;
 use App\Models\Transfer;
 use Carbon\CarbonInterface;
@@ -11,6 +12,23 @@ use InvalidArgumentException;
 
 class NumberGenerator
 {
+    private const DOCUMENT_CONTROL_PREFIXES = [
+        'PAR',
+        'ICS',
+        'PTR',
+        'ITR',
+        'IIRUP',
+        'IIRUSP',
+        'RRSEP',
+        'WMR',
+        'SPLV',
+        'SPHV',
+        'PC',
+        'SPC',
+        'REGSPI',
+        'TAG',
+    ];
+
     private const DOCUMENT_SOURCES = [
         'PAR' => [PropertyTransaction::class, 'transaction_date'],
         'ICS-SPLV' => [PropertyTransaction::class, 'transaction_date'],
@@ -35,6 +53,29 @@ class NumberGenerator
             ->where('document_type', $prefix)
             ->whereYear($dateColumn, (int) $year)
             ->whereMonth($dateColumn, (int) $month)
+            ->where('control_no', 'like', $pattern.'%')
+            ->pluck('control_no')
+            ->map(fn (string $controlNo): int => self::extractSeries($controlNo, $prefix, $year, $month))
+            ->max() ?? 0;
+
+        return sprintf('%s-%s-%s-%04d', $prefix, $year, $month, $lastSeries + 1);
+    }
+
+    public static function nextDocument(string $prefix, CarbonInterface|string $date): string
+    {
+        if (! in_array($prefix, self::DOCUMENT_CONTROL_PREFIXES, true)) {
+            throw new InvalidArgumentException("Unsupported document control type [{$prefix}] for control number generation.");
+        }
+
+        $generatedDate = $date instanceof CarbonInterface ? $date : Carbon::parse($date);
+        $year = $generatedDate->format('Y');
+        $month = $generatedDate->format('m');
+        $pattern = sprintf('%s-%s-%s-', $prefix, $year, $month);
+
+        $lastSeries = DocumentControl::query()
+            ->where('document_code', $prefix)
+            ->whereYear('generated_on', (int) $year)
+            ->whereMonth('generated_on', (int) $month)
             ->where('control_no', 'like', $pattern.'%')
             ->pluck('control_no')
             ->map(fn (string $controlNo): int => self::extractSeries($controlNo, $prefix, $year, $month))

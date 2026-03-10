@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Item;
+use App\Models\InventoryItem;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -19,6 +21,9 @@ class ItemController extends Controller
         $this->authorize('issuance.manage');
 
         $items = Item::query()
+            ->withCount([
+                'inventoryItems as available_quantity' => fn ($query) => $query->where('status', 'in_stock'),
+            ])
             ->when($request->filled('search'), fn ($q) => $q->search($request->string('search')))
             ->when($request->filled('classification'), fn ($q) => $q->where('classification', $request->string('classification')))
             ->when($request->filled('category'), fn ($q) => $q->where('category', $request->string('category')))
@@ -49,13 +54,30 @@ class ItemController extends Controller
             'unit_cost' => 'required|numeric|min:0.01',
             'category' => 'nullable|string|max:255',
             'estimated_useful_life' => 'nullable|string|max:100',
+            'quantity' => 'required|integer|min:1|max:500',
         ]);
 
         $validated['classification'] = Item::classifyByCost((float) $validated['unit_cost']);
+        $quantity = (int) $validated['quantity'];
+        unset($validated['quantity']);
 
-        Item::create($validated);
+        DB::transaction(function () use ($validated, $quantity): void {
+            $item = Item::create($validated);
 
-        return redirect()->route('items.index')->with('status', 'Item added to catalog.');
+            for ($i = 0; $i < $quantity; $i++) {
+                InventoryItem::create([
+                    'item_id' => $item->id,
+                    'inventory_code' => $this->nextInventoryCode(),
+                    'description' => $item->name,
+                    'unit' => $item->unit,
+                    'unit_cost' => $item->unit_cost,
+                    'classification' => $item->classification,
+                    'status' => 'in_stock',
+                ]);
+            }
+        });
+
+        return redirect()->route('items.index')->with('status', "Item added to catalog with {$quantity} unit(s) placed in stock.");
     }
 
     public function edit(Item $item): View
@@ -176,6 +198,9 @@ class ItemController extends Controller
 
         $items = Item::active()
             ->search($term)
+            ->withCount([
+                'inventoryItems as available_quantity' => fn ($query) => $query->where('status', 'in_stock'),
+            ])
             ->orderBy('name')
             ->limit($limit)
             ->get(['id', 'name', 'description', 'unit', 'unit_cost', 'classification', 'category', 'estimated_useful_life']);
@@ -347,5 +372,14 @@ class ItemController extends Controller
         }
 
         return $date->format('g:i A');
+    }
+
+    private function nextInventoryCode(): string
+    {
+        do {
+            $code = 'INV-'.now()->format('YmdHis').'-'.Str::upper(Str::random(4));
+        } while (InventoryItem::where('inventory_code', $code)->exists());
+
+        return $code;
     }
 }

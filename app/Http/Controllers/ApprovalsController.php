@@ -7,6 +7,7 @@ use App\Models\Disposal;
 use App\Models\PropertyTransaction;
 use App\Models\Transfer;
 use App\Support\AuditLogger;
+use App\Support\DocumentControlRegistry;
 use App\Support\WorkflowUpdater;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -44,16 +45,19 @@ class ApprovalsController extends Controller
             if ($record instanceof PropertyTransaction) {
                 $record->update(['status' => 'approved', 'approved_at' => now()]);
                 WorkflowUpdater::applyIssuance($record->load(['lines', 'employee']), $request->user()->id);
+                DocumentControlRegistry::ensureFor($record->loadMissing('documentControls'));
             }
 
             if ($record instanceof Transfer) {
                 $record->update(['status' => 'approved', 'approved_at' => now()]);
                 WorkflowUpdater::applyTransfer($record->load(['lines', 'fromEmployee', 'toEmployee']), $request->user()->id);
+                DocumentControlRegistry::ensureFor($record->loadMissing('documentControls'));
             }
 
             if ($record instanceof Disposal) {
                 $record->update(['status' => 'approved', 'approved_at' => now()]);
                 WorkflowUpdater::applyDisposal($record->load(['lines', 'employee']), $request->user()->id);
+                DocumentControlRegistry::ensureFor($record->loadMissing('documentControls'));
             }
 
             AuditLogger::log($request->user()->id, 'approval.approved', $record, ['approval_id' => $approval->id], $request->ip(), $request->userAgent());

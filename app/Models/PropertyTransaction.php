@@ -31,4 +31,5 @@ class PropertyTransaction extends Model
     public function attachments(): MorphMany { return $this->morphMany(Attachment::class, 'attachable'); }
     public function printLogs(): MorphMany { return $this->morphMany(PrintLog::class, 'printable'); }
     public function regspiEntries(): HasMany { return $this->hasMany(RegSPIEntry::class); }
+    public function documentControls(): MorphMany { return $this->morphMany(DocumentControl::class, 'documentable'); }
 }
