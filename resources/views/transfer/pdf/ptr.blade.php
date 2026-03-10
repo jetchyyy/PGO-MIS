@@ -58,7 +58,7 @@
             <span style="font-size:11pt; font-weight:bold;">{{ $transfer->fromEmployee->name ?? '' }}</span>
         </td>
         <td colspan="3" style="text-align:center; padding:4px 6px;">
-            <span style="font-size:12pt; font-weight:bold; color:#cc0000;">{{ $transfer->control_no }}</span>
+            <span style="font-size:12pt; font-weight:bold; color:#cc0000;">{{ $documentControlNo ?? $transfer->control_no }}</span>
         </td>
     </tr>
     <tr>

@@ -58,7 +58,7 @@
             <span style="font-size:12pt; font-weight:bold;">PROVINCE OF SURIGAO DEL NORTE</span>
         </td>
         <td colspan="3" style="font-size:12pt; font-weight:bold; color:#cc0000; text-align:center; padding:4px 6px;">
-            {{ $issuance->control_no }}
+            {{ $documentControlNo ?? $issuance->control_no }}
         </td>
     </tr>
     <tr>

@@ -14,8 +14,8 @@
 
     {{-- Breadcrumb & Actions --}}
     <div class="bg-white border-b border-gray-200 shadow-sm">
-        <div class="w-full px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between">
-            <div class="flex items-center gap-2 text-xs text-gray-500">
+        <div class="flex w-full flex-col gap-3 px-4 py-2 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+            <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500">
                 <a href="{{ route('dashboard') }}" class="hover:text-[#1a2c5b]">Home</a>
                 <span>&rsaquo;</span>
                 <a href="{{ route('settings.index') }}" class="hover:text-[#1a2c5b]">Settings</a>
@@ -23,7 +23,7 @@
                 <span class="text-[#1a2c5b] font-semibold">Fund Clusters</span>
             </div>
             <a href="{{ route('fund-clusters.create') }}"
-               class="inline-flex items-center gap-2 rounded border border-[#1a2c5b] bg-[#1a2c5b] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#253d82] transition">
+               class="inline-flex w-full items-center justify-center gap-2 rounded border border-[#1a2c5b] bg-[#1a2c5b] px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-[#253d82] sm:w-auto">
                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 Add Fund Cluster
             </a>

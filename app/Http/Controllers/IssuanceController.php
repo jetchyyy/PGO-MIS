@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\IssuanceStoreRequest;
-use App\Models\Approval;
 use App\Models\Employee;
 use App\Models\FundCluster;
 use App\Models\Office;
@@ -12,6 +11,7 @@ use App\Models\PropertyTransaction;
 use App\Models\InventoryItem;
 use App\Models\Signatory;
 use App\Support\AuditLogger;
+use App\Support\DocumentControlRegistry;
 use App\Support\NumberGenerator;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
@@ -26,13 +26,19 @@ class IssuanceController extends Controller
     {
         $this->authorize('issuance.manage');
 
+        $documentTab = strtolower($request->string('doc', 'all')->toString());
+
         $issuances = PropertyTransaction::query()
-            ->with(['office', 'employee', 'fundCluster'])
+            ->with(['office', 'employee', 'fundCluster', 'documentControls'])
+            ->when($documentTab === 'par', fn ($q) => $q->where('document_type', 'PAR'))
+            ->when($documentTab === 'ics', fn ($q) => $q->whereIn('document_type', ['ICS-SPLV', 'ICS-SPHV']))
+            ->when($documentTab === 'splv', fn ($q) => $q->where('document_type', 'ICS-SPLV'))
+            ->when($documentTab === 'sphv', fn ($q) => $q->where('document_type', 'ICS-SPHV'))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
             ->latest('id')
             ->paginate(20);
 
-        return view('issuance.index', compact('issuances'));
+        return view('issuance.index', compact('issuances', 'documentTab'));
     }
 
     public function create(): View
@@ -94,13 +100,26 @@ class IssuanceController extends Controller
                 'control_no' => NumberGenerator::next($docType, $validated['transaction_date']),
             ]);
 
-            foreach ($validated['lines'] as $line) {
+            foreach ($validated['lines'] as $lineIndex => $line) {
                 $inventory = null;
                 if (! empty($line['inventory_item_id'])) {
                     $inventory = InventoryItem::findOrFail((int) $line['inventory_item_id']);
                     if ($inventory->status !== 'in_stock') {
                         throw ValidationException::withMessages([
                             'inventory' => 'Selected inventory item is not available for issuance.',
+                        ]);
+                    }
+                }
+
+                if (! $inventory && ! empty($line['item_id'])) {
+                    $availableQuantity = InventoryItem::query()
+                        ->where('item_id', (int) $line['item_id'])
+                        ->where('status', 'in_stock')
+                        ->count();
+
+                    if ($availableQuantity < (int) $line['quantity']) {
+                        throw ValidationException::withMessages([
+                            "lines.{$lineIndex}.quantity" => "Only {$availableQuantity} unissued item(s) are available for issuance.",
                         ]);
                     }
                 }
@@ -149,9 +168,12 @@ class IssuanceController extends Controller
     {
         $this->authorize('issuance.manage');
 
-        $issuance->load(['lines', 'office', 'employee', 'fundCluster', 'approvals']);
+        $issuance->load(['lines', 'office', 'employee', 'fundCluster', 'approvals', 'documentControls']);
+        $generatedDocuments = in_array($issuance->status, ['approved', 'issued'], true)
+            ? DocumentControlRegistry::listFor($issuance)
+            : [];
 
-        return view('issuance.show', compact('issuance'));
+        return view('issuance.show', compact('issuance', 'generatedDocuments'));
     }
 
     public function submit(PropertyTransaction $issuance, Request $request): RedirectResponse
@@ -195,6 +217,7 @@ class IssuanceController extends Controller
         AuditLogger::log($request->user()->id, 'issuance.printed', $issuance, ['template' => $template, 'version' => $version], $request->ip(), $request->userAgent());
 
         $issuance->load(['lines.inventoryItem.currentEmployee', 'lines.inventoryItem.office', 'office', 'employee', 'fundCluster']);
+        $document = DocumentControlRegistry::findFor($issuance->loadMissing('documentControls'), $template);
 
         $sig = Signatory::where('is_active', true)->get()->keyBy('role_key');
         $orientation = in_array($template, ['property_card', 'semi_property_card', 'regspi']) ? 'landscape' : 'portrait';
@@ -208,10 +231,11 @@ class IssuanceController extends Controller
             'issuance' => $issuance,
             'version' => $version,
             'sig' => $sig,
+            'documentControlNo' => $document?->control_no,
             'inventoryByLine' => $inventoryByLine,
         ])->setOption([
             'isRemoteEnabled' => true,
             'isHtml5ParserEnabled' => true,
-        ])->setPaper('a4', $orientation)->stream($template.'-'.$issuance->control_no.'.pdf');
+        ])->setPaper('a4', $orientation)->stream($template.'-'.($document?->control_no ?? $issuance->control_no).'.pdf');
     }
 }

@@ -19,14 +19,14 @@
     </div>
 
     <div class="w-full px-4 py-6 sm:px-6 lg:px-8">
-        <div class="mb-4 flex items-center justify-between">
+        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p class="text-sm text-gray-600">Total users: <strong>{{ $users->count() }}</strong></p>
-            <a href="{{ route('users.create') }}" class="inline-flex items-center rounded bg-[#1a2c5b] px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white hover:bg-[#16306d]">
+            <a href="{{ route('users.create') }}" class="inline-flex w-full items-center justify-center rounded bg-[#1a2c5b] px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white hover:bg-[#16306d] sm:w-auto">
                 Create Account
             </a>
         </div>
 
-        <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+        <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>

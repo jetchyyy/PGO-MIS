@@ -3,7 +3,6 @@
 @section('content')
 <div class="min-h-screen bg-gray-100">
 
-    {{-- Government Page Banner --}}
     <div class="bg-[#1a2c5b] border-b-4 border-[#c8a84b] shadow-lg">
         <div class="w-full px-4 sm:px-6 lg:px-8 py-4">
             <p class="text-xs font-semibold uppercase tracking-widest text-[#c8a84b]">Inventory Management</p>
@@ -12,7 +11,6 @@
         </div>
     </div>
 
-    {{-- Breadcrumb --}}
     <div class="bg-white border-b border-gray-200 shadow-sm">
         <div class="w-full px-4 sm:px-6 lg:px-8 py-2 flex items-center gap-2 text-xs text-gray-500">
             <a href="{{ route('dashboard') }}" class="hover:text-[#1a2c5b]">Home</a>
@@ -25,19 +23,25 @@
         </div>
     </div>
 
-    {{-- Validation Errors --}}
     @if($errors->any())
     <div class="w-full px-4 sm:px-6 lg:px-8 pt-4">
         <div class="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
             <p class="font-semibold mb-1">Please correct the following errors:</p>
             <ul class="list-disc list-inside space-y-0.5">
-                @foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach
+                @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
             </ul>
         </div>
     </div>
     @endif
 
-    {{-- Form --}}
+    <div class="w-full px-4 sm:px-6 lg:px-8 pt-4">
+        <div class="rounded border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+            The quantity below becomes the initial stock. The app will create that many unissued inventory units for future issuance.
+        </div>
+    </div>
+
     <div class="w-full px-4 py-6 sm:px-6 lg:px-8">
         <form method="POST" action="{{ route('items.store') }}" class="space-y-5" x-data="itemForm()">
             @csrf
@@ -76,7 +80,14 @@
                             placeholder="e.g. pcs, set, unit" required>
                     </div>
                     <div class="flex flex-col gap-1.5">
-                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Unit Cost (₱) <span class="text-red-400">*</span></label>
+                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Initial Quantity <span class="text-red-400">*</span></label>
+                        <input name="quantity" type="number" min="1" max="500" value="{{ old('quantity', 1) }}"
+                            class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]"
+                            placeholder="0" required>
+                        <p class="text-[11px] text-gray-500">Creates unissued inventory stock for this item immediately after saving.</p>
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Unit Cost (PHP) <span class="text-red-400">*</span></label>
                         <input name="unit_cost" type="number" step="0.01" min="0.01" value="{{ old('unit_cost') }}" x-model.number="unitCost"
                             class="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-[#1a2c5b] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1a2c5b]"
                             placeholder="0.00" required>
@@ -89,7 +100,6 @@
                     </div>
                 </div>
 
-                {{-- Classification Preview --}}
                 <div class="px-5 pb-4" x-show="unitCost > 0" x-cloak>
                     <div class="rounded border-2 p-3 flex items-center gap-3 transition-all duration-200"
                          :class="classInfo.borderClass">
@@ -105,7 +115,6 @@
                 </div>
             </div>
 
-            {{-- Actions --}}
             <div class="flex items-center gap-3 pt-1">
                 <button type="submit"
                     class="inline-flex items-center gap-2 rounded border border-[#1a2c5b] bg-[#1a2c5b] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#253d82] transition">
@@ -124,9 +133,9 @@ function itemForm() {
         unitCost: {{ old('unit_cost', 0) }},
         get classInfo() {
             const c = parseFloat(this.unitCost) || 0;
-            if (c >= 50000) return { label: 'PPE — Property, Plant & Equipment', desc: 'Unit cost ≥ ₱50,000 • PAR document • Property Card ledger', borderClass: 'border-blue-400 bg-blue-50', bgClass: 'bg-blue-600', textClass: 'text-blue-700', icon: 'P' };
-            if (c >= 5000) return { label: 'Semi-Expendable — SPHV (₱5,000–₱49,999)', desc: 'ICS-SPHV document • Semi-Expendable Property Card', borderClass: 'border-amber-400 bg-amber-50', bgClass: 'bg-amber-500', textClass: 'text-amber-700', icon: 'S' };
-            if (c > 0) return { label: 'Semi-Expendable — SPLV (₱1–₱4,999)', desc: 'ICS-SPLV document • Semi-Expendable Property Card', borderClass: 'border-gray-300 bg-gray-50', bgClass: 'bg-gray-500', textClass: 'text-gray-700', icon: 'S' };
+            if (c >= 50000) return { label: 'PPE - Property, Plant and Equipment', desc: 'Unit cost >= PHP 50,000 | PAR document | Property Card ledger', borderClass: 'border-blue-400 bg-blue-50', bgClass: 'bg-blue-600', textClass: 'text-blue-700', icon: 'P' };
+            if (c >= 5000) return { label: 'Semi-Expendable - SPHV (PHP 5,000-PHP 49,999)', desc: 'ICS-SPHV document | Semi-Expendable Property Card', borderClass: 'border-amber-400 bg-amber-50', bgClass: 'bg-amber-500', textClass: 'text-amber-700', icon: 'S' };
+            if (c > 0) return { label: 'Semi-Expendable - SPLV (PHP 1-PHP 4,999)', desc: 'ICS-SPLV document | Semi-Expendable Property Card', borderClass: 'border-gray-300 bg-gray-50', bgClass: 'bg-gray-500', textClass: 'text-gray-700', icon: 'S' };
             return { label: '', desc: '', borderClass: 'border-gray-200 bg-gray-50', bgClass: 'bg-gray-400', textClass: 'text-gray-600', icon: '?' };
         }
     };

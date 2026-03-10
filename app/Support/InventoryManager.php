@@ -47,6 +47,50 @@ class InventoryManager
             return;
         }
 
+        if ($line->item_id) {
+            $stockItems = InventoryItem::query()
+                ->where('item_id', $line->item_id)
+                ->where('status', 'in_stock')
+                ->orderBy('id')
+                ->get();
+
+            if ($stockItems->count() < (int) $line->quantity) {
+                $requested = (int) $line->quantity;
+                $available = (int) $stockItems->count();
+
+                self::validationError(
+                    "Insufficient unissued stock for issuance line: {$line->description}. Requested {$requested}, available {$available}."
+                );
+            }
+
+            $stockItems->take((int) $line->quantity)->each(function (InventoryItem $inventory) use ($transaction, $line, $actedBy): void {
+                $inventory->update([
+                    'property_transaction_line_id' => $line->id,
+                    'office_id' => $transaction->office_id,
+                    'fund_cluster_id' => $transaction->fund_cluster_id,
+                    'current_employee_id' => $transaction->employee_id,
+                    'accountable_name' => $transaction->employee?->name,
+                    'status' => 'issued',
+                    'issued_at' => $transaction->transaction_date,
+                ]);
+
+                InventoryMovement::create([
+                    'inventory_item_id' => $inventory->id,
+                    'movement_type' => 'issued',
+                    'reference_type' => PropertyTransaction::class,
+                    'reference_id' => $transaction->id,
+                    'to_employee_id' => $transaction->employee_id,
+                    'acted_by' => $actedBy,
+                    'movement_date' => $transaction->transaction_date,
+                    'remarks' => 'Issued from inventory via '.$transaction->control_no,
+                ]);
+            });
+
+            self::syncSourceLineLifecycle($line->id);
+
+            return;
+        }
+
         for ($i = 0; $i < (int) $line->quantity; $i++) {
             $inventory = InventoryItem::create([
                 'item_id' => $line->item_id,

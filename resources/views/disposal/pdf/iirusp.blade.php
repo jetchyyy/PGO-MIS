@@ -64,9 +64,16 @@
             <span class="line-fill small" style="width:315px; text-align:center;">{{ $disposal->entity_name ?? '' }}</span>
         </td>
         <td style="width:40%; text-align:right;">
-            <span class="header-label small">Fund Cluster:</span>
-            <span class="line-fill small" style="width:140px; text-align:center;">{{ $disposal->fundCluster->code ?? '' }}</span>
+            <span class="header-label small">Control No.:</span>
+            <span class="line-fill small" style="width:140px; text-align:center;">{{ $documentControlNo ?? $disposal->control_no }}</span>
         </td>
+    </tr>
+    <tr>
+        <td style="width:60%;">
+            <span class="header-label small">Fund Cluster:</span>
+            <span class="line-fill small" style="width:120px; text-align:center;">{{ $disposal->fundCluster->code ?? '' }}</span>
+        </td>
+        <td></td>
     </tr>
     <tr>
         <td colspan="2" class="center" style="padding-top:3px;">

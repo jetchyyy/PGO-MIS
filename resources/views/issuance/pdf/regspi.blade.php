@@ -66,7 +66,7 @@
         @foreach($issuance->lines as $i => $line)
         <tr class="data-row">
             <td class="center">{{ $issuance->transaction_date ? \Carbon\Carbon::parse($issuance->transaction_date)->format('m/d/Y') : '' }}</td>
-            <td class="center">{{ $issuance->control_no }}</td>
+            <td class="center">{{ $documentControlNo ?? $issuance->control_no }}</td>
             <td>{{ $line->description }}</td>
             <td class="center">{{ $line->estimated_useful_life ?? '' }}</td>
             <td class="center">{{ $line->quantity }}</td>

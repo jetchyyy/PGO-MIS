@@ -67,7 +67,7 @@
             <span style="font-weight:bold;">Fund Cluster:</span>&nbsp; {{ $disposal->fundCluster->code ?? '' }}
         </td>
         <td colspan="2" style="text-align:center; padding:4px 6px;">
-            <span style="font-size:12pt; font-weight:bold; color:#cc0000;">{{ $disposal->control_no }}</span>
+            <span style="font-size:12pt; font-weight:bold; color:#cc0000;">{{ $documentControlNo ?? $disposal->control_no }}</span>
         </td>
         <td style="font-size:9pt; padding:2px 6px;">
             <span style="font-weight:bold;">Date:</span>&nbsp;

@@ -4,7 +4,7 @@
 @php $user = auth()->user(); $role = $user->role; @endphp
 
 {{-- Content Header --}}
-<div class="flex items-center justify-between mb-4">
+<div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
     <div>
         <h1 class="text-2xl font-bold text-gray-800 leading-tight">Dashboard</h1>
         <p class="text-sm text-gray-500 mt-0.5">
@@ -19,48 +19,48 @@
 </div>
 
 {{-- Info Boxes --}}
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+<div class="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
     <a href="{{ route('issuance.index') }}" class="group block bg-[#17a2b8] text-white shadow hover:shadow-md transition">
-        <div class="flex items-center justify-between p-4">
+        <div class="flex items-center justify-between gap-3 p-4">
             <div>
                 <p class="text-3xl font-bold leading-none">{{ $stats['issuances'] }}</p>
                 <p class="text-sm mt-1 opacity-90">Issuances</p>
             </div>
-            <svg class="h-14 w-14 opacity-20" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="3" width="16" height="18" rx="2"/></svg>
+            <svg class="h-12 w-12 shrink-0 opacity-20 sm:h-14 sm:w-14" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="3" width="16" height="18" rx="2"/></svg>
         </div>
         <div class="bg-black/10 text-center py-1.5 text-xs font-medium">More info &rarr;</div>
     </a>
 
     <a href="{{ route('transfer.index') }}" class="group block bg-[#28a745] text-white shadow hover:shadow-md transition">
-        <div class="flex items-center justify-between p-4">
+        <div class="flex items-center justify-between gap-3 p-4">
             <div>
                 <p class="text-3xl font-bold leading-none">{{ $stats['transfers'] }}</p>
                 <p class="text-sm mt-1 opacity-90">Transfers</p>
             </div>
-            <svg class="h-14 w-14 opacity-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+            <svg class="h-12 w-12 shrink-0 opacity-20 sm:h-14 sm:w-14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
         </div>
         <div class="bg-black/10 text-center py-1.5 text-xs font-medium">More info &rarr;</div>
     </a>
 
     <a href="{{ route('disposal.index') }}" class="group block bg-[#dc3545] text-white shadow hover:shadow-md transition">
-        <div class="flex items-center justify-between p-4">
+        <div class="flex items-center justify-between gap-3 p-4">
             <div>
                 <p class="text-3xl font-bold leading-none">{{ $stats['disposals'] }}</p>
                 <p class="text-sm mt-1 opacity-90">Disposals</p>
             </div>
-            <svg class="h-14 w-14 opacity-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            <svg class="h-12 w-12 shrink-0 opacity-20 sm:h-14 sm:w-14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
         </div>
         <div class="bg-black/10 text-center py-1.5 text-xs font-medium">More info &rarr;</div>
     </a>
 
     <a href="{{ route('approvals.index') }}" class="group block bg-[#ffc107] text-gray-900 shadow hover:shadow-md transition">
-        <div class="flex items-center justify-between p-4">
+        <div class="flex items-center justify-between gap-3 p-4">
             <div>
                 <p class="text-3xl font-bold leading-none">{{ $stats['pending_approvals'] }}</p>
                 <p class="text-sm mt-1 opacity-80">Pending Approvals</p>
             </div>
-            <svg class="h-14 w-14 opacity-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <svg class="h-12 w-12 shrink-0 opacity-20 sm:h-14 sm:w-14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </div>
         <div class="bg-black/10 text-center py-1.5 text-xs font-medium">More info &rarr;</div>
     </a>

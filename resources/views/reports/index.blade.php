@@ -30,7 +30,7 @@
             <div class="px-5 py-3 border-b border-gray-200 bg-[#1a2c5b]">
                 <h2 class="text-xs font-bold uppercase tracking-widest text-[#c8a84b]">Generate Reports</h2>
             </div>
-            <div class="p-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div class="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 xl:grid-cols-4">
                 <a href="{{ route('reports.ppe_count') }}" class="group flex flex-col items-center gap-3 rounded border border-gray-200 bg-gray-50 p-5 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-[#1a2c5b] hover:shadow-md hover:bg-white">
                     <div class="flex h-12 w-12 items-center justify-center rounded border border-gray-200 bg-white text-[#1a2c5b] transition group-hover:bg-[#1a2c5b] group-hover:text-white">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -74,7 +74,7 @@
         @if(isset($approvals) && $approvals->count() > 0)
         <div>
             <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Pending Approvals</h2>
-            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
                 <table class="min-w-full text-sm">
                     <thead>
                         <tr class="border-b border-slate-200 bg-slate-50 text-left">
@@ -104,7 +104,7 @@
                                 <span class="inline-flex rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-700">{{ ucfirst($approval->status) }}</span>
                             </td>
                             <td class="px-5 py-3.5">
-                                <div class="flex items-center gap-2">
+                                <div class="flex flex-wrap items-center gap-2">
                                     @if($viewUrl)
                                     <a href="{{ $viewUrl }}" class="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-[#1a2c5b] hover:text-[#1a2c5b]">
                                         <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7S3.732 16.057 2.458 12z"/></svg>
@@ -139,7 +139,7 @@
         @if(isset($auditLogs) || isset($printLogs))
         <div>
             <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Audit Logs</h2>
-            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm mb-5">
+            <div class="mb-5 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
                 <table class="min-w-full text-sm">
                     <thead>
                         <tr class="border-b border-slate-200 bg-slate-50 text-left">
@@ -163,7 +163,7 @@
             </div>
 
             <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Print Logs</h2>
-            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
                 <table class="min-w-full text-sm">
                     <thead>
                         <tr class="border-b border-slate-200 bg-slate-50 text-left">

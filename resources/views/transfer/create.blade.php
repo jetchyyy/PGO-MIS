@@ -114,13 +114,13 @@
 
             {{-- Section 2: Line Items --}}
             <div class="bg-white border border-gray-200 rounded shadow-sm overflow-hidden">
-                <div class="px-5 py-3 border-b border-gray-200 bg-[#1a2c5b] flex items-center justify-between">
+                <div class="flex flex-col gap-3 border-b border-gray-200 bg-[#1a2c5b] px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
                     <div class="flex items-center gap-2">
                         <span class="flex h-5 w-5 items-center justify-center rounded-full bg-[#c8a84b] text-[#1a2c5b] text-xs font-black">2</span>
                         <h2 class="text-xs font-bold uppercase tracking-widest text-[#c8a84b]">Line Items</h2>
                     </div>
                     <button type="button" @click="addLine()"
-                        class="inline-flex items-center gap-1.5 rounded border border-[#c8a84b] bg-transparent px-3 py-1 text-[11px] font-semibold text-[#c8a84b] hover:bg-[#c8a84b]/10 transition">
+                        class="inline-flex w-full items-center justify-center gap-1.5 rounded border border-[#c8a84b] bg-transparent px-3 py-1 text-[11px] font-semibold text-[#c8a84b] transition hover:bg-[#c8a84b]/10 sm:w-auto">
                         <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                         Add Line
                     </button>
@@ -128,7 +128,7 @@
 
                 <template x-for="(line, index) in lines" :key="index">
                     <div class="p-5 border-b border-gray-100 last:border-b-0">
-                        <div class="flex items-center justify-between mb-3">
+                        <div class="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <span class="text-xs font-bold text-gray-400">ITEM #<span x-text="index + 1"></span></span>
                             <button type="button" x-show="lines.length > 1" @click="removeLine(index)"
                                 class="text-red-400 hover:text-red-600 text-xs font-semibold transition">&times; Remove</button>
@@ -247,12 +247,12 @@
             </div>
 
             {{-- Actions --}}
-            <div class="flex items-center gap-3 pt-1">
-                <button type="submit" class="inline-flex items-center gap-2 rounded border border-[#1a2c5b] bg-[#1a2c5b] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#253d82] transition">
+            <div class="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
+                <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded border border-[#1a2c5b] bg-[#1a2c5b] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#253d82] sm:w-auto">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
                     Save Draft
                 </button>
-                <a href="{{ route('transfer.index') }}" class="rounded border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition">Cancel</a>
+                <a href="{{ route('transfer.index') }}" class="rounded border border-gray-300 bg-white px-5 py-2.5 text-center text-sm font-semibold text-gray-600 transition hover:bg-gray-50 sm:w-auto">Cancel</a>
             </div>
         </form>
     </div>

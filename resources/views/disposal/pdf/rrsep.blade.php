@@ -53,7 +53,7 @@
             {{ $disposal->disposal_date ? $disposal->disposal_date->format('M. d, Y') : '' }}
         </td>
         <td style="text-align:center; padding:4px 6px;">
-            <span style="font-size:12pt; font-weight:bold; color:#cc0000;">{{ $disposal->control_no }}</span>
+            <span style="font-size:12pt; font-weight:bold; color:#cc0000;">{{ $documentControlNo ?? $disposal->control_no }}</span>
         </td>
     </tr>
 </table>

@@ -16,15 +16,15 @@
 
     {{-- Breadcrumb & Actions --}}
     <div class="bg-white border-b border-gray-200 shadow-sm">
-        <div class="w-full px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between">
-            <div class="flex items-center gap-2 text-xs text-gray-500">
+        <div class="flex w-full flex-col gap-3 px-4 py-2 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+            <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500">
                 <a href="{{ route('dashboard') }}" class="hover:text-[#1a2c5b]">Home</a>
                 <span>&rsaquo;</span>
                 <a href="{{ route('reports.index') }}" class="hover:text-[#1a2c5b]">Reports</a>
                 <span>&rsaquo;</span>
                 <span class="text-[#1a2c5b] font-semibold">RegSPI Masterlist</span>
             </div>
-            <button onclick="window.print()" class="inline-flex items-center gap-2 rounded border border-[#1a2c5b] bg-[#1a2c5b] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#253d82] transition">
+            <button onclick="window.print()" class="inline-flex w-full items-center justify-center gap-2 rounded border border-[#1a2c5b] bg-[#1a2c5b] px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-[#253d82] sm:w-auto">
                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                 Print / Export PDF
             </button>
@@ -38,29 +38,29 @@
             <div class="px-4 py-2.5 bg-gray-50 border-b border-gray-200">
                 <h3 class="text-xs font-bold uppercase tracking-widest text-gray-600">Filters</h3>
             </div>
-            <form method="GET" action="{{ route('reports.regspi') }}" class="p-4 flex flex-wrap items-end gap-4">
-                <div>
+            <form method="GET" action="{{ route('reports.regspi') }}" class="flex flex-col gap-4 p-4 sm:flex-row sm:flex-wrap sm:items-end">
+                <div class="w-full sm:w-auto">
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Office</label>
-                    <select name="office_id" class="rounded border border-gray-300 text-xs px-3 py-1.5 w-48">
+                    <select name="office_id" class="w-full rounded border border-gray-300 px-3 py-1.5 text-xs sm:w-48">
                         <option value="">All Offices</option>
                         @foreach($offices as $office)
                         <option value="{{ $office->id }}" {{ request('office_id') == $office->id ? 'selected' : '' }}>{{ $office->name }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div>
+                <div class="w-full sm:w-auto">
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Classification</label>
-                    <select name="classification" class="rounded border border-gray-300 text-xs px-3 py-1.5 w-36">
+                    <select name="classification" class="w-full rounded border border-gray-300 px-3 py-1.5 text-xs sm:w-36">
                         <option value="">All</option>
                         <option value="splv" {{ request('classification') === 'splv' ? 'selected' : '' }}>SPLV</option>
                         <option value="sphv" {{ request('classification') === 'sphv' ? 'selected' : '' }}>SPHV</option>
                     </select>
                 </div>
-                <div>
+                <div class="w-full sm:w-auto">
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Date From</label>
                     <input type="date" name="from" value="{{ request('from') }}" class="rounded border border-gray-300 text-xs px-3 py-1.5">
                 </div>
-                <div>
+                <div class="w-full sm:w-auto">
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Date To</label>
                     <input type="date" name="to" value="{{ request('to') }}" class="rounded border border-gray-300 text-xs px-3 py-1.5">
                 </div>
@@ -96,7 +96,7 @@
 
         {{-- Data Table --}}
         <div class="bg-white border border-gray-200 rounded shadow-sm overflow-hidden">
-            <div class="px-5 py-3 border-b border-gray-200 bg-[#1a2c5b] flex items-center justify-between">
+            <div class="flex flex-col gap-2 border-b border-gray-200 bg-[#1a2c5b] px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <h2 class="text-xs font-bold uppercase tracking-widest text-[#c8a84b]">Registry of Semi-Expendable Property Issued (RegSPI)</h2>
                 <span class="text-blue-200 text-[11px]">Page {{ $rows->currentPage() }} of {{ $rows->lastPage() }}</span>
             </div>

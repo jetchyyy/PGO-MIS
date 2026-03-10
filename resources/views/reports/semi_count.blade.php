@@ -16,15 +16,15 @@
 
     {{-- Breadcrumb --}}
     <div class="bg-white border-b border-gray-200 shadow-sm">
-        <div class="w-full px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between">
-            <div class="flex items-center gap-2 text-xs text-gray-500">
+        <div class="flex w-full flex-col gap-3 px-4 py-2 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+            <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500">
                 <a href="{{ route('dashboard') }}" class="hover:text-[#1a2c5b]">Home</a>
                 <span>&rsaquo;</span>
                 <a href="{{ route('reports.index') }}" class="hover:text-[#1a2c5b]">Reports</a>
                 <span>&rsaquo;</span>
                 <span class="text-[#1a2c5b] font-semibold">Semi Count</span>
             </div>
-            <button onclick="window.print()" class="inline-flex items-center gap-2 rounded border border-[#1a2c5b] bg-[#1a2c5b] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#253d82] transition">
+            <button onclick="window.print()" class="inline-flex w-full items-center justify-center gap-2 rounded border border-[#1a2c5b] bg-[#1a2c5b] px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-[#253d82] sm:w-auto">
                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                 Print Report
             </button>
@@ -34,7 +34,7 @@
     <div class="w-full px-4 py-6 sm:px-6 lg:px-8 space-y-5">
 
         {{-- Summary Statistics --}}
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div class="bg-white border border-gray-200 rounded shadow-sm p-4 flex items-center gap-4">
                 <div class="h-10 w-1 rounded-full bg-[#1a2c5b]"></div>
                 <div>
@@ -115,7 +115,7 @@
 <div id="breakdown-modal" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/50 js-close-breakdown"></div>
     <div class="relative mx-auto mt-10 w-[95%] max-w-7xl rounded bg-white shadow-2xl">
-        <div class="flex items-center justify-between border-b border-gray-200 px-4 py-3">
+        <div class="flex flex-col gap-3 border-b border-gray-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <p class="text-xs font-semibold uppercase tracking-widest text-gray-500">Office Breakdown</p>
                 <p id="breakdown-title" class="text-sm font-bold text-[#1a2c5b]">Loading...</p>

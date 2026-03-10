@@ -11,6 +11,7 @@ use App\Models\PrintLog;
 use App\Models\PropertyTransactionLine;
 use App\Support\AuditLogger;
 use App\Support\DisposalDepreciation;
+use App\Support\DocumentControlRegistry;
 use App\Support\NumberGenerator;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
@@ -21,13 +22,20 @@ use Illuminate\View\View;
 
 class DisposalController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
         $this->authorize('disposal.manage');
 
-        $disposals = Disposal::with('employee')->latest('id')->paginate(20);
+        $documentTab = strtolower($request->string('doc', 'all')->toString());
 
-        return view('disposal.index', compact('disposals'));
+        $disposals = Disposal::query()
+            ->with(['employee', 'documentControls'])
+            ->when(in_array($documentTab, ['iirup', 'iirusp', 'rrsep'], true), fn ($q) => $q->where('document_type', strtoupper($documentTab)))
+            ->when($documentTab === 'wmr', fn ($q) => $q->whereIn('status', ['approved', 'issued']))
+            ->latest('id')
+            ->paginate(20);
+
+        return view('disposal.index', compact('disposals', 'documentTab'));
     }
 
     public function create(): View
@@ -192,9 +200,12 @@ class DisposalController extends Controller
     {
         $this->authorize('disposal.manage');
 
-        $disposal->load(['lines', 'employee', 'fundCluster', 'approvals']);
+        $disposal->load(['lines', 'employee', 'fundCluster', 'approvals', 'documentControls']);
+        $generatedDocuments = in_array($disposal->status, ['approved', 'issued'], true)
+            ? DocumentControlRegistry::listFor($disposal)
+            : [];
 
-        return view('disposal.show', compact('disposal'));
+        return view('disposal.show', compact('disposal', 'generatedDocuments'));
     }
 
     public function submit(Disposal $disposal, Request $request): RedirectResponse
@@ -235,13 +246,16 @@ class DisposalController extends Controller
         AuditLogger::log($request->user()->id, 'disposal.printed', $disposal, ['template' => $template, 'version' => $version], $request->ip(), $request->userAgent());
 
         $disposal->load(['lines', 'employee', 'fundCluster']);
+        $document = DocumentControlRegistry::findFor($disposal->loadMissing('documentControls'), $template);
 
         $sig = \App\Models\Signatory::where('is_active', true)->get()->keyBy('role_key');
 
         $orientation = in_array($template, ['iirup', 'iirusp'], true) ? 'landscape' : 'portrait';
 
-        return Pdf::loadView('disposal.pdf.'.$template, compact('disposal', 'version', 'sig'))
+        return Pdf::loadView('disposal.pdf.'.$template, compact('disposal', 'version', 'sig') + [
+            'documentControlNo' => $document?->control_no,
+        ])
             ->setPaper('a4', $orientation)
-            ->stream($template.'-'.$disposal->control_no.'.pdf');
+            ->stream($template.'-'.($document?->control_no ?? $disposal->control_no).'.pdf');
     }
 }

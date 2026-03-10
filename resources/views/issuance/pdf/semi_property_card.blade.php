@@ -64,7 +64,7 @@
         {{-- First entry from the issuance itself --}}
         <tr class="data-row">
             <td class="center">{{ $issuance->transaction_date ? \Carbon\Carbon::parse($issuance->transaction_date)->format('m/d/Y') : '' }}</td>
-            <td class="center">{{ $issuance->control_no }}</td>
+            <td class="center">{{ $documentControlNo ?? $issuance->control_no }}</td>
             <td class="center">{{ $issuance->lines->sum('quantity') }}</td>
             <td class="numeric">{{ number_format($issuance->lines->first()->unit_cost ?? 0, 2) }}</td>
             <td>{{ $issuance->office->name ?? '' }} / {{ $issuance->employee->name ?? '' }}</td>
