@@ -10,6 +10,7 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\OfficeController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PropertyReturnController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SignatoryController;
@@ -47,6 +48,15 @@ Route::middleware(['auth'])->group(function (): void {
         Route::get('/{transfer}', [TransferController::class, 'show'])->name('show');
         Route::post('/{transfer}/submit', [TransferController::class, 'submit'])->name('submit');
         Route::get('/{transfer}/print/{template}', [TransferController::class, 'print'])->name('print');
+    });
+
+    Route::prefix('returns')->name('returns.')->group(function (): void {
+        Route::get('/', [PropertyReturnController::class, 'index'])->name('index');
+        Route::get('/create', [PropertyReturnController::class, 'create'])->name('create');
+        Route::post('/', [PropertyReturnController::class, 'store'])->name('store');
+        Route::get('/{return}', [PropertyReturnController::class, 'show'])->name('show');
+        Route::post('/{return}/submit', [PropertyReturnController::class, 'submit'])->name('submit');
+        Route::get('/{return}/print/{template}', [PropertyReturnController::class, 'print'])->name('print');
     });
 
     Route::prefix('disposal')->name('disposal.')->group(function (): void {

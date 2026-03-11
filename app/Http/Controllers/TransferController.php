@@ -210,14 +210,15 @@ class TransferController extends Controller
     public function submit(Transfer $transfer, Request $request): RedirectResponse
     {
         $this->authorize('transfer.manage');
-        abort_if($transfer->status !== 'draft', 422);
+        $wasReturned = $transfer->status === 'returned';
+        abort_if(! in_array($transfer->status, ['draft', 'returned'], true), 422);
 
         $transfer->update(['status' => 'submitted', 'submitted_at' => now()]);
         $transfer->approvals()->create(['status' => 'pending']);
 
         AuditLogger::log($request->user()->id, 'transfer.submitted', $transfer, [], $request->ip(), $request->userAgent());
 
-        return back()->with('status', 'Transfer submitted for approval.');
+        return back()->with('status', $wasReturned ? 'Transfer resubmitted for approval.' : 'Transfer submitted for approval.');
     }
 
     public function print(Transfer $transfer, string $template, Request $request)

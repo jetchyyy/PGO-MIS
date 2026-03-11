@@ -45,6 +45,14 @@
                 </a>
                 @endif
 
+                @if($user->hasRole(\App\Models\User::ROLE_SUPER_ADMIN, \App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_PROPERTY_STAFF, \App\Models\User::ROLE_APPROVING_OFFICIAL))
+                <a href="{{ route('returns.index') }}"
+                   class="px-3 py-2 text-sm font-medium transition {{ request()->routeIs('returns.*') ? 'wl-nav-active' : 'text-gray-300 hover:text-white wl-nav-hover' }}">
+                    <svg class="inline h-4 w-4 mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M7 7h10v10H7z"/><path stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="m9 12 2 2 4-4"/></svg>
+                    Returns
+                </a>
+                @endif
+
                 @if($user->hasRole(\App\Models\User::ROLE_SUPER_ADMIN, \App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_PROPERTY_STAFF))
                 <a href="{{ route('disposal.index') }}"
                    class="px-3 py-2 text-sm font-medium transition {{ request()->routeIs('disposal.*') ? 'wl-nav-active' : 'text-gray-300 hover:text-white wl-nav-hover' }}">
@@ -153,6 +161,12 @@
             <a href="{{ route('transfer.index') }}" class="block px-3 py-2 text-sm text-gray-300 hover:text-white wl-nav-hover">
                 <svg class="inline h-4 w-4 mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0-4-4m4 4-4 4m0 6H4m0 0 4-4m-4 4 4 4"/></svg>
                 Transfer
+            </a>
+            @endif
+            @if($user->hasRole(\App\Models\User::ROLE_SUPER_ADMIN, \App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_PROPERTY_STAFF, \App\Models\User::ROLE_APPROVING_OFFICIAL))
+            <a href="{{ route('returns.index') }}" class="block px-3 py-2 text-sm text-gray-300 hover:text-white wl-nav-hover">
+                <svg class="inline h-4 w-4 mr-1 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M7 7h10v10H7z"/><path stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="m9 12 2 2 4-4"/></svg>
+                Returns
             </a>
             @endif
             @if($user->hasRole(\App\Models\User::ROLE_SUPER_ADMIN, \App\Models\User::ROLE_SYSTEM_ADMIN, \App\Models\User::ROLE_PROPERTY_STAFF))

@@ -8,6 +8,8 @@ use App\Models\Disposal;
 use App\Models\DisposalLine;
 use App\Models\PropertyCard;
 use App\Models\PropertyCardEntry;
+use App\Models\PropertyReturn;
+use App\Models\PropertyReturnLine;
 use App\Models\PropertyTransaction;
 use App\Models\PropertyTransactionLine;
 use App\Models\RegSPIEntry;
@@ -197,6 +199,22 @@ class WorkflowUpdater
                 ->update(['status' => 'disposed']);
 
             InventoryManager::recordDisposal($disposal, $line, $actedBy);
+        }
+    }
+
+    public static function applyReturn(PropertyReturn $return, ?int $actedBy = null): void
+    {
+        foreach ($return->lines as $line) {
+            $headers = AccountabilityHeader::where('employee_id', $return->employee_id)
+                ->where('fund_cluster_id', $return->fund_cluster_id)
+                ->pluck('id');
+
+            AccountabilityLine::whereIn('accountability_header_id', $headers)
+                ->where('description', $line->particulars)
+                ->where('status', 'active')
+                ->update(['status' => 'returned']);
+
+            InventoryManager::recordReturn($return, $line, $actedBy);
         }
     }
 }

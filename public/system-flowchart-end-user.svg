@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1180" viewBox="0 0 1600 1180" role="img" aria-labelledby="title desc">
+  <title id="title">PGSO Property System End User Flowchart</title>
+  <desc id="desc">Simplified end-user flow of inventory, issuance, approval, transfer, disposal, and reporting in the PGSO Property System.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#355070" />
+    </marker>
+    <style>
+      .bg { fill: #f7f4ea; }
+      .title { font: 700 30px 'Segoe UI', Tahoma, sans-serif; fill: #1f2a44; }
+      .subtitle { font: 400 16px 'Segoe UI', Tahoma, sans-serif; fill: #52606d; }
+      .lane { fill: #ffffff; stroke: #d7dee7; stroke-width: 2; rx: 24; }
+      .lane-title { font: 700 22px 'Segoe UI', Tahoma, sans-serif; fill: #1f2a44; }
+      .box { fill: #ffffff; stroke: #355070; stroke-width: 2.5; rx: 18; }
+      .box-blue { fill: #eaf2ff; stroke: #3d5a80; stroke-width: 2.5; rx: 18; }
+      .box-gold { fill: #fff5d6; stroke: #b8891d; stroke-width: 2.5; rx: 18; }
+      .box-green { fill: #e8f7ee; stroke: #3a7d44; stroke-width: 2.5; rx: 18; }
+      .box-red { fill: #fdecec; stroke: #b44b4b; stroke-width: 2.5; rx: 18; }
+      .box-gray { fill: #f4f6f8; stroke: #7b8794; stroke-width: 2.5; rx: 18; }
+      .text { font: 600 18px 'Segoe UI', Tahoma, sans-serif; fill: #1f2a44; }
+      .small { font: 400 14px 'Segoe UI', Tahoma, sans-serif; fill: #52606d; }
+      .decision { fill: #fff9e8; stroke: #b8891d; stroke-width: 2.5; }
+      .arrow { stroke: #355070; stroke-width: 4; fill: none; marker-end: url(#arrow); }
+      .note { font: 700 14px 'Segoe UI', Tahoma, sans-serif; fill: #355070; }
+      .legend { font: 600 15px 'Segoe UI', Tahoma, sans-serif; fill: #1f2a44; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1600" height="1180" />
+
+  <text class="title" x="800" y="56" text-anchor="middle">PGSO Property System</text>
+  <text class="subtitle" x="800" y="84" text-anchor="middle">Simplified end-user process flow from item setup to issuance, approval, return by PTR, disposal, and reporting</text>
+
+  <rect class="lane" x="40" y="120" width="1520" height="170" />
+  <text class="lane-title" x="70" y="158">1. Setup and Inventory Preparation</text>
+
+  <rect class="box-blue" x="80" y="185" width="250" height="72" />
+  <text class="text" x="205" y="214" text-anchor="middle">Manage Basic Records</text>
+  <text class="small" x="205" y="237" text-anchor="middle">Offices, officers, fund clusters,</text>
+  <text class="small" x="205" y="255" text-anchor="middle">items, signatories, users</text>
+
+  <rect class="box-blue" x="420" y="185" width="250" height="72" />
+  <text class="text" x="545" y="214" text-anchor="middle">Create Inventory</text>
+  <text class="small" x="545" y="237" text-anchor="middle">Encode stocks and item details</text>
+
+  <rect class="box-blue" x="760" y="185" width="250" height="72" />
+  <text class="text" x="885" y="214" text-anchor="middle">Track Available Items</text>
+  <text class="small" x="885" y="237" text-anchor="middle">Search inventory or scan QR</text>
+
+  <rect class="box-blue" x="1100" y="185" width="250" height="72" />
+  <text class="text" x="1225" y="214" text-anchor="middle">Ready for Issuance</text>
+  <text class="small" x="1225" y="237" text-anchor="middle">Only in-stock items can proceed</text>
+
+  <path class="arrow" d="M 330 221 L 420 221" />
+  <path class="arrow" d="M 670 221 L 760 221" />
+  <path class="arrow" d="M 1010 221 L 1100 221" />
+
+  <rect class="lane" x="40" y="320" width="1520" height="300" />
+  <text class="lane-title" x="70" y="358">2. Issuance Process</text>
+
+  <rect class="box-gold" x="80" y="395" width="250" height="78" />
+  <text class="text" x="205" y="425" text-anchor="middle">Create Issuance</text>
+  <text class="small" x="205" y="447" text-anchor="middle">Choose office, accountable officer,</text>
+  <text class="small" x="205" y="465" text-anchor="middle">fund cluster, date, and items</text>
+
+  <polygon class="decision" points="470,390 610,455 470,520 330,455" />
+  <text class="text" x="470" y="448" text-anchor="middle">What is the</text>
+  <text class="text" x="470" y="470" text-anchor="middle">item value?</text>
+
+  <rect class="box-gold" x="700" y="350" width="280" height="82" />
+  <text class="text" x="840" y="380" text-anchor="middle">PAR Document</text>
+  <text class="small" x="840" y="402" text-anchor="middle">For PPE items worth</text>
+  <text class="small" x="840" y="420" text-anchor="middle">PHP 50,000 and above</text>
+
+  <rect class="box-gold" x="700" y="478" width="280" height="82" />
+  <text class="text" x="840" y="508" text-anchor="middle">ICS Document</text>
+  <text class="small" x="840" y="530" text-anchor="middle">For semi-expendable items worth</text>
+  <text class="small" x="840" y="548" text-anchor="middle">below PHP 50,000</text>
+
+  <rect class="box-gray" x="1080" y="395" width="250" height="78" />
+  <text class="text" x="1205" y="425" text-anchor="middle">Save as Draft</text>
+  <text class="small" x="1205" y="447" text-anchor="middle">System assigns a control number</text>
+  <text class="small" x="1205" y="465" text-anchor="middle">and stores the transaction</text>
+
+  <rect class="box-gray" x="1080" y="510" width="250" height="78" />
+  <text class="text" x="1205" y="540" text-anchor="middle">Submit for Approval</text>
+  <text class="small" x="1205" y="562" text-anchor="middle">Pending approval record is created</text>
+
+  <path class="arrow" d="M 330 434 L 364 434" />
+  <path class="arrow" d="M 610 430 L 700 392" />
+  <path class="arrow" d="M 610 480 L 700 519" />
+  <path class="arrow" d="M 980 391 L 1080 434" />
+  <path class="arrow" d="M 980 519 L 1080 434" />
+  <path class="arrow" d="M 1205 473 L 1205 510" />
+
+  <text class="note" x="630" y="378">PHP 50,000 and above</text>
+  <text class="note" x="622" y="564">Below PHP 50,000</text>
+
+  <rect class="box-red" x="80" y="515" width="250" height="78" />
+  <text class="text" x="205" y="545" text-anchor="middle">Correction Needed</text>
+  <text class="small" x="205" y="567" text-anchor="middle">If mixed classifications are entered,</text>
+  <text class="small" x="205" y="585" text-anchor="middle">the transaction must be separated</text>
+
+  <path class="arrow" d="M 205 515 L 205 473" />
+
+  <rect class="lane" x="40" y="650" width="1520" height="240" />
+  <text class="lane-title" x="70" y="688">3. Approval and Document Release</text>
+
+  <rect class="box-green" x="120" y="745" width="260" height="82" />
+  <text class="text" x="250" y="775" text-anchor="middle">Review by Approving Official</text>
+  <text class="small" x="250" y="797" text-anchor="middle">Checks the submitted issuance,</text>
+  <text class="small" x="250" y="815" text-anchor="middle">transfer, or disposal record</text>
+
+  <polygon class="decision" points="530,736 680,786 530,836 380,786" />
+  <text class="text" x="530" y="780" text-anchor="middle">Approved?</text>
+
+  <rect class="box-red" x="760" y="700" width="260" height="82" />
+  <text class="text" x="890" y="730" text-anchor="middle">Returned to Staff</text>
+  <text class="small" x="890" y="752" text-anchor="middle">Status becomes returned</text>
+  <text class="small" x="890" y="770" text-anchor="middle">for correction and resubmission</text>
+
+  <rect class="box-green" x="760" y="800" width="260" height="82" />
+  <text class="text" x="890" y="830" text-anchor="middle">Approved Record</text>
+  <text class="small" x="890" y="852" text-anchor="middle">Inventory ownership and workflow</text>
+  <text class="small" x="890" y="870" text-anchor="middle">updates are applied by the system</text>
+
+  <rect class="box-green" x="1110" y="800" width="320" height="82" />
+  <text class="text" x="1270" y="830" text-anchor="middle">Generate and Print Documents</text>
+  <text class="small" x="1270" y="852" text-anchor="middle">PAR, ICS, cards, registry, stickers,</text>
+  <text class="small" x="1270" y="870" text-anchor="middle">PTR, ITR, or disposal forms</text>
+
+  <path class="arrow" d="M 1205 588 L 1205 620 L 250 620 L 250 745" />
+  <path class="arrow" d="M 380 786 L 454 786" />
+  <path class="arrow" d="M 680 760 L 760 741" />
+  <path class="arrow" d="M 680 812 L 760 841" />
+  <path class="arrow" d="M 1020 841 L 1110 841" />
+
+  <text class="note" x="690" y="744">No</text>
+  <text class="note" x="694" y="835">Yes</text>
+
+  <rect class="lane" x="40" y="920" width="1520" height="210" />
+  <text class="lane-title" x="70" y="958">4. After Issuance</text>
+
+  <rect class="box" x="120" y="1000" width="250" height="80" />
+  <text class="text" x="245" y="1030" text-anchor="middle">Item is Marked as Issued</text>
+  <text class="small" x="245" y="1052" text-anchor="middle">After printing, the property is</text>
+  <text class="small" x="245" y="1070" text-anchor="middle">officially issued to the user</text>
+
+  <polygon class="decision" points="515,995 645,1040 515,1085 385,1040" />
+  <text class="text" x="515" y="1034" text-anchor="middle">Need to</text>
+  <text class="text" x="515" y="1056" text-anchor="middle">dispose item?</text>
+
+  <rect class="box-gray" x="720" y="950" width="260" height="80" />
+  <text class="text" x="850" y="980" text-anchor="middle">Keep Item in Service</text>
+  <text class="small" x="850" y="1002" text-anchor="middle">Item remains with the current</text>
+  <text class="small" x="850" y="1020" text-anchor="middle">accountable officer</text>
+
+  <rect class="box" x="720" y="1040" width="260" height="80" />
+  <text class="text" x="850" y="1070" text-anchor="middle">Process PTR First</text>
+  <text class="small" x="850" y="1092" text-anchor="middle">Before disposal, the property must</text>
+  <text class="small" x="850" y="1110" text-anchor="middle">be returned using PTR</text>
+
+  <rect class="box-red" x="1060" y="1040" width="280" height="80" />
+  <text class="text" x="1200" y="1070" text-anchor="middle">Start Disposal Process</text>
+  <text class="small" x="1200" y="1092" text-anchor="middle">Only returned items with PTR</text>
+  <text class="small" x="1200" y="1110" text-anchor="middle">should proceed to disposal</text>
+
+  <rect class="box" x="1360" y="950" width="160" height="80" />
+  <text class="text" x="1440" y="980" text-anchor="middle">View Reports</text>
+  <text class="small" x="1440" y="1002" text-anchor="middle">Counts, RegSPI,</text>
+  <text class="small" x="1440" y="1020" text-anchor="middle">logs, breakdown</text>
+
+  <path class="arrow" d="M 1270 882 L 1270 940 L 245 940 L 245 1000" />
+  <path class="arrow" d="M 370 1040 L 385 1040" />
+  <path class="arrow" d="M 645 1018 L 720 990" />
+  <path class="arrow" d="M 645 1062 L 720 1080" />
+  <path class="arrow" d="M 980 1080 L 1060 1080" />
+  <path class="arrow" d="M 245 1000 L 245 950 L 1360 950" />
+  <text class="note" x="660" y="1008">No</text>
+  <text class="note" x="662" y="1078">Yes</text>
+
+  <rect class="box-gray" x="1280" y="145" width="240" height="122" />
+  <text class="legend" x="1300" y="172">Color Guide</text>
+  <rect class="box-blue" x="1300" y="184" width="24" height="18" />
+  <text class="small" x="1336" y="198">Setup and inventory</text>
+  <rect class="box-gold" x="1300" y="210" width="24" height="18" />
+  <text class="small" x="1336" y="224">Issuance actions</text>
+  <rect class="box-green" x="1300" y="236" width="24" height="18" />
+  <text class="small" x="1336" y="250">Approved and printable</text>
+  <rect class="box-red" x="1300" y="262" width="24" height="18" />
+  <text class="small" x="1336" y="276">Returned or needs correction</text>
+</svg>

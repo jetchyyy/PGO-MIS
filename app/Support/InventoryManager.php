@@ -8,6 +8,8 @@ use App\Models\InventoryItem;
 use App\Models\InventoryMovement;
 use App\Models\PropertyTransaction;
 use App\Models\PropertyTransactionLine;
+use App\Models\PropertyReturn;
+use App\Models\PropertyReturnLine;
 use App\Models\Transfer;
 use App\Models\TransferLine;
 use Illuminate\Support\Collection;
@@ -252,6 +254,81 @@ class InventoryManager
                 'acted_by' => $actedBy,
                 'movement_date' => $disposal->disposal_date,
                 'remarks' => 'Disposed via '.$disposal->document_type.' '.$disposal->control_no,
+            ]);
+        });
+
+        self::syncSourceLineLifecycle($line->property_transaction_line_id);
+    }
+
+    public static function recordReturn(PropertyReturn $return, PropertyReturnLine $line, ?int $actedBy = null): void
+    {
+        if ($line->inventory_item_id) {
+            $item = InventoryItem::findOrFail($line->inventory_item_id);
+            if ($item->status === 'disposed') {
+                self::validationError('Disposed inventory item cannot be returned.');
+            }
+
+            if ((int) $item->current_employee_id !== (int) $return->employee_id) {
+                self::validationError('Inventory item holder does not match return source.');
+            }
+
+            $item->update([
+                'status' => 'in_stock',
+                'current_employee_id' => null,
+                'accountable_name' => $return->employee?->name,
+            ]);
+
+            InventoryMovement::create([
+                'inventory_item_id' => $item->id,
+                'movement_type' => 'adjusted',
+                'reference_type' => PropertyReturn::class,
+                'reference_id' => $return->id,
+                'from_employee_id' => $return->employee_id,
+                'acted_by' => $actedBy,
+                'movement_date' => $return->return_date,
+                'remarks' => 'Returned to stock via '.$return->document_type.' '.$return->control_no,
+            ]);
+
+            self::syncSourceLineLifecycle($item->property_transaction_line_id);
+
+            return;
+        }
+
+        $items = InventoryItem::query()
+            ->where('status', 'issued')
+            ->when(
+                $line->property_transaction_line_id,
+                fn ($q) => $q->where('property_transaction_line_id', $line->property_transaction_line_id),
+                fn ($q) => $q->where('description', $line->particulars)
+            )
+            ->where('current_employee_id', $return->employee_id)
+            ->orderBy('id')
+            ->get();
+
+        if ($items->count() < $line->quantity) {
+            $requested = (int) $line->quantity;
+            $available = (int) $items->count();
+            self::validationError(
+                "Insufficient inventory for return line: {$line->particulars}. Requested {$requested}, available {$available}."
+            );
+        }
+
+        $items->take($line->quantity)->each(function (InventoryItem $item) use ($return, $actedBy): void {
+            $item->update([
+                'status' => 'in_stock',
+                'current_employee_id' => null,
+                'accountable_name' => $return->employee?->name,
+            ]);
+
+            InventoryMovement::create([
+                'inventory_item_id' => $item->id,
+                'movement_type' => 'adjusted',
+                'reference_type' => PropertyReturn::class,
+                'reference_id' => $return->id,
+                'from_employee_id' => $return->employee_id,
+                'acted_by' => $actedBy,
+                'movement_date' => $return->return_date,
+                'remarks' => 'Returned to stock via '.$return->document_type.' '.$return->control_no,
             ]);
         });
 

@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Disposal;
 use App\Models\DocumentControl;
+use App\Models\PropertyReturn;
 use App\Models\PropertyTransaction;
 use App\Models\Transfer;
 use Carbon\CarbonInterface;
@@ -17,6 +18,8 @@ class NumberGenerator
         'ICS',
         'PTR',
         'ITR',
+        'PRS',
+        'RRSP',
         'IIRUP',
         'IIRUSP',
         'RRSEP',
@@ -35,6 +38,8 @@ class NumberGenerator
         'ICS-SPHV' => [PropertyTransaction::class, 'transaction_date'],
         'PTR' => [Transfer::class, 'transfer_date'],
         'ITR' => [Transfer::class, 'transfer_date'],
+        'PRS' => [PropertyReturn::class, 'return_date'],
+        'RRSP' => [PropertyReturn::class, 'return_date'],
         'IIRUP' => [Disposal::class, 'disposal_date'],
         'IIRUSP' => [Disposal::class, 'disposal_date'],
         'RRSEP' => [Disposal::class, 'disposal_date'],
