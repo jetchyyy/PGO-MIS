@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Disposal;
 use App\Models\DocumentControl;
+use App\Models\PropertyReturn;
 use App\Models\PropertyTransaction;
 use App\Models\Transfer;
 use Illuminate\Database\Eloquent\Model;
@@ -61,6 +62,7 @@ class DocumentControlRegistry
         return match (true) {
             $record instanceof PropertyTransaction => $record->transaction_date->toDateString(),
             $record instanceof Transfer => $record->transfer_date->toDateString(),
+            $record instanceof PropertyReturn => $record->return_date->toDateString(),
             $record instanceof Disposal => $record->disposal_date->toDateString(),
             default => now()->toDateString(),
         };
