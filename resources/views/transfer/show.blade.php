@@ -39,12 +39,12 @@
                 <span class="inline-flex items-center rounded px-3 py-1 text-[10px] font-bold uppercase tracking-widest {{ $statusColor }}">
                     {{ ucfirst($transfer->status) }}
                 </span>
-                @if($transfer->status === 'draft')
+                @if(in_array($transfer->status, ['draft', 'returned'], true))
                 <form method="POST" action="{{ route('transfer.submit', $transfer) }}">
                     @csrf
                     <button class="inline-flex items-center gap-1.5 rounded border border-[#1a2c5b] bg-[#1a2c5b] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#253d82] transition">
                         <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-                        Submit for Approval
+                        {{ $transfer->status === 'returned' ? 'Resubmit for Approval' : 'Submit for Approval' }}
                     </button>
                 </form>
                 @endif

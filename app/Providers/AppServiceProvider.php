@@ -28,6 +28,7 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::define('issuance.manage', fn (User $user) => $user->hasRole(User::ROLE_PROPERTY_STAFF, User::ROLE_APPROVING_OFFICIAL));
         Gate::define('transfer.manage', fn (User $user) => $user->hasRole(User::ROLE_PROPERTY_STAFF, User::ROLE_APPROVING_OFFICIAL));
+        Gate::define('return.manage', fn (User $user) => $user->hasRole(User::ROLE_PROPERTY_STAFF, User::ROLE_APPROVING_OFFICIAL));
         Gate::define('disposal.manage', fn (User $user) => $user->hasRole(User::ROLE_PROPERTY_STAFF, User::ROLE_APPROVING_OFFICIAL));
         Gate::define('inventory.manage', fn (User $user) => $user->hasRole(User::ROLE_PROPERTY_STAFF, User::ROLE_APPROVING_OFFICIAL, User::ROLE_ACCOUNTABLE_OFFICER));
         Gate::define('approvals.manage', fn (User $user) => $user->hasRole(User::ROLE_APPROVING_OFFICIAL));

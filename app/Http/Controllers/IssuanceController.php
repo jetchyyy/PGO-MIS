@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\IssuanceStoreRequest;
 use App\Models\Employee;
 use App\Models\FundCluster;
+use App\Models\InventoryItem;
 use App\Models\Office;
 use App\Models\PrintLog;
 use App\Models\PropertyTransaction;
-use App\Models\InventoryItem;
 use App\Models\Signatory;
 use App\Support\AuditLogger;
 use App\Support\DocumentControlRegistry;
@@ -58,9 +58,10 @@ class IssuanceController extends Controller
 
         $issuance = DB::transaction(function () use ($request, $validated) {
             $classifications = collect($validated['lines'])->map(function (array $line): string {
-                $cost = !empty($line['inventory_item_id'])
+                $cost = ! empty($line['inventory_item_id'])
                     ? (float) InventoryItem::findOrFail((int) $line['inventory_item_id'])->unit_cost
                     : (float) $line['unit_cost'];
+
                 if ($cost >= 50000) {
                     return 'ppe';
                 }
@@ -102,6 +103,7 @@ class IssuanceController extends Controller
 
             foreach ($validated['lines'] as $lineIndex => $line) {
                 $inventory = null;
+
                 if (! empty($line['inventory_item_id'])) {
                     $inventory = InventoryItem::findOrFail((int) $line['inventory_item_id']);
                     if ($inventory->status !== 'in_stock') {
@@ -169,27 +171,32 @@ class IssuanceController extends Controller
         $this->authorize('issuance.manage');
 
         $issuance->load(['lines', 'office', 'employee', 'fundCluster', 'approvals', 'documentControls']);
+        $returnableCount = InventoryItem::query()
+            ->whereIn('property_transaction_line_id', $issuance->lines->pluck('id'))
+            ->where('status', 'issued')
+            ->where('current_employee_id', $issuance->employee_id)
+            ->count();
         $generatedDocuments = in_array($issuance->status, ['approved', 'issued'], true)
             ? DocumentControlRegistry::listFor($issuance)
             : [];
 
-        return view('issuance.show', compact('issuance', 'generatedDocuments'));
+        return view('issuance.show', compact('issuance', 'generatedDocuments', 'returnableCount'));
     }
 
     public function submit(PropertyTransaction $issuance, Request $request): RedirectResponse
     {
         $this->authorize('issuance.manage');
-        abort_if($issuance->status !== 'draft', 422, 'Only draft transactions can be submitted.');
+        $wasReturned = $issuance->status === 'returned';
+        abort_if(! in_array($issuance->status, ['draft', 'returned'], true), 422, 'Only draft or returned transactions can be submitted.');
 
         DB::transaction(function () use ($issuance, $request): void {
             $issuance->update(['status' => 'submitted', 'submitted_at' => now()]);
-
             $issuance->approvals()->create(['status' => 'pending']);
 
             AuditLogger::log($request->user()->id, 'issuance.submitted', $issuance, [], $request->ip(), $request->userAgent());
         });
 
-        return back()->with('status', 'Issuance submitted for approval.');
+        return back()->with('status', $wasReturned ? 'Issuance resubmitted for approval.' : 'Issuance submitted for approval.');
     }
 
     public function print(PropertyTransaction $issuance, string $template, Request $request)
@@ -218,9 +225,8 @@ class IssuanceController extends Controller
 
         $issuance->load(['lines.inventoryItem.currentEmployee', 'lines.inventoryItem.office', 'office', 'employee', 'fundCluster']);
         $document = DocumentControlRegistry::findFor($issuance->loadMissing('documentControls'), $template);
-
         $sig = Signatory::where('is_active', true)->get()->keyBy('role_key');
-        $orientation = in_array($template, ['property_card', 'semi_property_card', 'regspi']) ? 'landscape' : 'portrait';
+        $orientation = in_array($template, ['property_card', 'semi_property_card', 'regspi'], true) ? 'landscape' : 'portrait';
         $inventoryByLine = InventoryItem::with(['currentEmployee', 'office'])
             ->whereIn('property_transaction_line_id', $issuance->lines->pluck('id'))
             ->orderBy('id')

@@ -4,11 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\DisposalStoreRequest;
 use App\Models\Disposal;
-use App\Models\Employee;
-use App\Models\FundCluster;
-use App\Models\InventoryItem;
 use App\Models\PrintLog;
-use App\Models\PropertyTransactionLine;
+use App\Models\PropertyReturn;
 use App\Support\AuditLogger;
 use App\Support\DisposalDepreciation;
 use App\Support\DocumentControlRegistry;
@@ -19,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use InvalidArgumentException;
 
 class DisposalController extends Controller
 {
@@ -27,10 +25,11 @@ class DisposalController extends Controller
         $this->authorize('disposal.manage');
 
         $documentTab = strtolower($request->string('doc', 'all')->toString());
+        $allowedTabs = ['iirup', 'iirusp', 'rrsep'];
 
         $disposals = Disposal::query()
             ->with(['employee', 'documentControls'])
-            ->when(in_array($documentTab, ['iirup', 'iirusp', 'rrsep'], true), fn ($q) => $q->where('document_type', strtoupper($documentTab)))
+            ->when(in_array($documentTab, $allowedTabs, true), fn ($q) => $q->where('document_type', strtoupper($documentTab)))
             ->when($documentTab === 'wmr', fn ($q) => $q->whereIn('status', ['approved', 'issued']))
             ->latest('id')
             ->paginate(20);
@@ -38,28 +37,69 @@ class DisposalController extends Controller
         return view('disposal.index', compact('disposals', 'documentTab'));
     }
 
-    public function create(): View
+    public function create(Request $request): View|RedirectResponse
     {
         $this->authorize('disposal.manage');
 
+        $selectedReturnId = $request->integer('return_id') ?: null;
+        if ($selectedReturnId) {
+            $selectedReturn = PropertyReturn::query()
+                ->with('disposal')
+                ->findOrFail($selectedReturnId);
+
+            if ($selectedReturn->disposal !== null) {
+                return redirect()
+                    ->route('disposal.show', $selectedReturn->disposal)
+                    ->with('status', 'A disposal draft already exists for this return record.');
+            }
+        }
+
         return view('disposal.create', [
-            'employees' => Employee::orderBy('name')->get(),
-            'fundClusters' => FundCluster::orderBy('code')->get(),
+            'approvedReturns' => PropertyReturn::query()
+                ->with(['employee', 'fundCluster', 'lines', 'disposal'])
+                ->whereIn('status', ['approved', 'issued'])
+                ->latest('id')
+                ->get()
+                ->filter(fn (PropertyReturn $return): bool => $return->disposal === null)
+                ->values(),
+            'selectedReturnId' => $selectedReturnId,
         ]);
     }
 
     public function store(DisposalStoreRequest $request): RedirectResponse
     {
         $validated = $request->validated();
-        $documentType = Disposal::resolveDocumentType($validated['lines']);
+        $propertyReturn = PropertyReturn::with(['lines', 'employee', 'fundCluster', 'disposal'])
+            ->findOrFail((int) $validated['property_return_id']);
 
-        $disposal = DB::transaction(function () use ($validated, $request, $documentType) {
+        if (! in_array($propertyReturn->status, ['approved', 'issued'], true)) {
+            throw ValidationException::withMessages([
+                'property_return_id' => 'Only approved return records can proceed to disposal.',
+            ]);
+        }
+
+        if ($propertyReturn->disposal !== null) {
+            return redirect()
+                ->route('disposal.show', $propertyReturn->disposal)
+                ->with('status', 'A disposal draft already exists for this return record.');
+        }
+
+        try {
+            $documentType = Disposal::resolveDocumentType($propertyReturn->lines->all());
+        } catch (InvalidArgumentException $e) {
+            throw ValidationException::withMessages([
+                'property_return_id' => $e->getMessage(),
+            ]);
+        }
+
+        $disposal = DB::transaction(function () use ($validated, $request, $documentType, $propertyReturn) {
             $disposal = Disposal::create([
-                'entity_name' => $validated['entity_name'],
-                'employee_id' => $validated['employee_id'],
-                'designation' => $validated['designation'] ?? null,
-                'station' => $validated['station'] ?? null,
-                'fund_cluster_id' => $validated['fund_cluster_id'],
+                'entity_name' => $propertyReturn->entity_name,
+                'employee_id' => $propertyReturn->employee_id,
+                'designation' => $propertyReturn->designation,
+                'station' => $propertyReturn->station,
+                'fund_cluster_id' => $propertyReturn->fund_cluster_id,
+                'property_return_id' => $propertyReturn->id,
                 'disposal_date' => $validated['disposal_date'],
                 'disposal_type' => $this->legacyDisposalType($validated['disposal_method']),
                 'disposal_type_other' => $validated['disposal_method'] === 'others' ? ($validated['disposal_method_other'] ?? null) : null,
@@ -71,110 +111,45 @@ class DisposalController extends Controller
                 'disposal_method' => $validated['disposal_method'],
                 'disposal_method_other' => $validated['disposal_method_other'] ?? null,
                 'document_type' => $documentType,
+                'prerequisite_form_type' => $propertyReturn->document_type,
+                'prerequisite_form_no' => $propertyReturn->control_no,
+                'prerequisite_form_date' => $propertyReturn->return_date,
                 'control_no' => 'TMP',
                 'status' => 'draft',
                 'created_by' => $request->user()->id,
             ]);
 
-            $disposal->update(['control_no' => NumberGenerator::next($disposal->document_type, $validated['disposal_date'])]);
+            $disposal->update([
+                'control_no' => NumberGenerator::next($disposal->document_type, $validated['disposal_date']),
+            ]);
 
-            foreach ($validated['lines'] as $line) {
-                $inventory = null;
-                $requestedQty = max(1, (int) ($line['quantity'] ?? 1));
-                if (!empty($line['inventory_item_id'])) {
-                    $inventory = InventoryItem::findOrFail((int) $line['inventory_item_id']);
-                    if ($inventory->status !== 'issued') {
-                        throw ValidationException::withMessages([
-                            'inventory' => 'Selected inventory item is not currently issued.',
-                        ]);
-                    }
-                    if ((int) $inventory->current_employee_id !== (int) $validated['employee_id']) {
-                        throw ValidationException::withMessages([
-                            'inventory' => 'Selected item does not belong to the selected accountable officer.',
-                        ]);
-                    }
-                    if ((int) $inventory->fund_cluster_id !== (int) $validated['fund_cluster_id']) {
-                        throw ValidationException::withMessages([
-                            'fund_cluster_id' => 'Selected item does not belong to the chosen fund cluster.',
-                        ]);
-                    }
-
-                    if ($requestedQty > 1 && $inventory->property_transaction_line_id) {
-                        $availableQty = InventoryItem::query()
-                            ->where('status', 'issued')
-                            ->where('property_transaction_line_id', (int) $inventory->property_transaction_line_id)
-                            ->where('current_employee_id', (int) $validated['employee_id'])
-                            ->count();
-
-                        if ($availableQty < $requestedQty) {
-                            throw ValidationException::withMessages([
-                                'inventory' => "Insufficient quantity with selected accountable officer. Requested {$requestedQty}, available {$availableQty}.",
-                            ]);
-                        }
-
-                        $line['property_transaction_line_id'] = $inventory->property_transaction_line_id;
-                        $line['item_id'] = $inventory->item_id;
-                        $inventory = null;
-                    }
-                }
-
-                if (!$inventory && !empty($line['property_transaction_line_id'])) {
-                    $source = PropertyTransactionLine::with('transaction')->findOrFail($line['property_transaction_line_id']);
-                    if ($source->item_status === 'disposed') {
-                        throw ValidationException::withMessages([
-                            'inventory' => 'Item already disposed.',
-                        ]);
-                    }
-                    if (!in_array($source->transaction->status, ['approved', 'issued'], true)) {
-                        throw ValidationException::withMessages([
-                            'inventory' => 'Cannot dispose unissued items.',
-                        ]);
-                    }
-
-                    $availableQty = InventoryItem::query()
-                        ->where('status', 'issued')
-                        ->where('property_transaction_line_id', (int) $line['property_transaction_line_id'])
-                        ->where('current_employee_id', (int) $validated['employee_id'])
-                        ->count();
-                    if ($availableQty < $requestedQty) {
-                        throw ValidationException::withMessages([
-                            'inventory' => "Insufficient quantity with selected accountable officer. Requested {$requestedQty}, available {$availableQty}.",
-                        ]);
-                    }
-                }
-
-                $qty = $inventory ? 1 : $requestedQty;
-                $unitCost = $inventory ? (float) $inventory->unit_cost : (float) ($line['unit_cost'] ?? 0);
+            foreach ($propertyReturn->lines as $line) {
+                $qty = (int) $line->quantity;
+                $unitCost = (float) $line->unit_cost;
                 $total = $qty * $unitCost;
-                $useFormulaDepreciation = array_key_exists('use_formula_depreciation', $line)
-                    ? filter_var($line['use_formula_depreciation'], FILTER_VALIDATE_BOOL)
-                    : true;
-                $formulaDepreciation = DisposalDepreciation::calculate(
-                    $inventory?->date_acquired?->toDateString() ?? ($line['date_acquired'] ?? null),
+                $depreciation = DisposalDepreciation::calculate(
+                    $line->date_acquired?->toDateString(),
                     $validated['disposal_date'],
                     $total
                 );
-                $depr = $useFormulaDepreciation
-                    ? $formulaDepreciation
-                    : min($total, max(0, (float) ($line['accumulated_depreciation'] ?? 0)));
-                $appraisedValue = (float) ($line['appraised_value'] ?? ($validated['appraised_value'] ?? $total));
-                $carryingAmount = max(0, round($total - $depr, 2));
+                $appraisedValue = (float) ($validated['appraised_value'] ?? $total);
+                $carryingAmount = max(0, round($total - $depreciation, 2));
 
                 $disposal->lines()->create([
-                    'item_id' => $inventory?->item_id ?? ($line['item_id'] ?? null),
-                    'inventory_item_id' => $inventory?->id ?? null,
-                    'property_transaction_line_id' => $inventory?->property_transaction_line_id ?? ($line['property_transaction_line_id'] ?? null),
-                    'date_acquired' => $inventory?->date_acquired ?? ($line['date_acquired'] ?? null),
-                    'particulars' => $inventory?->description ?? ($line['particulars'] ?? ''),
-                    'property_no' => $inventory?->property_no ?? ($line['property_no'] ?? null),
+                    'item_id' => $line->item_id,
+                    'inventory_item_id' => $line->inventory_item_id,
+                    'property_transaction_line_id' => $line->property_transaction_line_id,
+                    'date_acquired' => $line->date_acquired,
+                    'particulars' => $line->particulars,
+                    'property_no' => $line->property_no,
                     'quantity' => $qty,
-                    'unit' => $inventory?->unit ?? ($line['unit'] ?? null),
+                    'unit' => $line->unit,
                     'unit_cost' => $unitCost,
                     'total_cost' => $total,
                     'appraised_value' => $appraisedValue,
-                    'accumulated_depreciation' => $depr,
+                    'accumulated_depreciation' => $depreciation,
                     'carrying_amount' => $carryingAmount,
-                    'remarks' => $line['remarks'] ?? null,
+                    'remarks' => $line->remarks,
                 ]);
             }
 
@@ -184,7 +159,7 @@ class DisposalController extends Controller
         });
 
         return redirect()->route('disposal.show', $disposal)
-            ->with('status', "Disposal draft created. Document type: {$documentType}.");
+            ->with('status', 'Disposal draft created.');
     }
 
     private function legacyDisposalType(string $disposalMethod): string
@@ -201,6 +176,7 @@ class DisposalController extends Controller
         $this->authorize('disposal.manage');
 
         $disposal->load(['lines', 'employee', 'fundCluster', 'approvals', 'documentControls']);
+        $disposal->loadMissing('propertyReturn');
         $generatedDocuments = in_array($disposal->status, ['approved', 'issued'], true)
             ? DocumentControlRegistry::listFor($disposal)
             : [];
@@ -211,14 +187,15 @@ class DisposalController extends Controller
     public function submit(Disposal $disposal, Request $request): RedirectResponse
     {
         $this->authorize('disposal.manage');
-        abort_if($disposal->status !== 'draft', 422);
+        $wasReturned = $disposal->status === 'returned';
+        abort_if(! in_array($disposal->status, ['draft', 'returned'], true), 422);
 
         $disposal->update(['status' => 'submitted', 'submitted_at' => now()]);
         $disposal->approvals()->create(['status' => 'pending']);
 
         AuditLogger::log($request->user()->id, 'disposal.submitted', $disposal, [], $request->ip(), $request->userAgent());
 
-        return back()->with('status', 'Disposal submitted for approval.');
+        return back()->with('status', $wasReturned ? 'Disposal resubmitted for approval.' : 'Disposal submitted for approval.');
     }
 
     public function print(Disposal $disposal, string $template, Request $request)
@@ -247,9 +224,7 @@ class DisposalController extends Controller
 
         $disposal->load(['lines', 'employee', 'fundCluster']);
         $document = DocumentControlRegistry::findFor($disposal->loadMissing('documentControls'), $template);
-
         $sig = \App\Models\Signatory::where('is_active', true)->get()->keyBy('role_key');
-
         $orientation = in_array($template, ['iirup', 'iirusp'], true) ? 'landscape' : 'portrait';
 
         return Pdf::loadView('disposal.pdf.'.$template, compact('disposal', 'version', 'sig') + [

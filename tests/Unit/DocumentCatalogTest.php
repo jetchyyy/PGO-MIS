@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Models\Disposal;
+use App\Models\PropertyReturn;
 use App\Models\PropertyTransaction;
 use App\Models\Transfer;
 use App\Support\DocumentCatalog;
@@ -38,17 +39,22 @@ class DocumentCatalogTest extends TestCase
         $transfer = new Transfer([
             'document_type' => 'PTR',
         ]);
+        $return = new PropertyReturn([
+            'document_type' => 'RRSP',
+        ]);
         $disposal = new Disposal([
             'document_type' => 'RRSEP',
         ]);
 
         $transferDocuments = collect(DocumentCatalog::templatesForTransfer($transfer))->keyBy('code');
+        $returnDocuments = collect(DocumentCatalog::templatesForReturn($return))->keyBy('code');
         $disposalDocuments = collect(DocumentCatalog::templatesForDisposal($disposal))->keyBy('code');
 
         $this->assertSame('ptr', $transferDocuments['PTR']['template']);
         $this->assertSame('sticker', $transferDocuments['TAG']['template']);
+        $this->assertSame('rrsp', $returnDocuments['RRSP']['template']);
         $this->assertSame('rrsep', $disposalDocuments['RRSEP']['template']);
-        $this->assertSame('wmr', $disposalDocuments['WMR']['template']);
         $this->assertSame('iirusp', $disposalDocuments['IIRUSP']['template']);
+        $this->assertSame('wmr', $disposalDocuments['WMR']['template']);
     }
 }
