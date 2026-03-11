@@ -39,12 +39,12 @@
                 <span class="inline-flex items-center rounded px-3 py-1 text-[10px] font-bold uppercase tracking-widest {{ $statusColor }}">
                     {{ ucfirst($issuance->status) }}
                 </span>
-                @if($issuance->status === 'draft')
+                @if(in_array($issuance->status, ['draft', 'returned'], true))
                 <form method="POST" action="{{ route('issuance.submit', $issuance) }}">
                     @csrf
                     <button class="inline-flex items-center gap-1.5 rounded border border-[#1a2c5b] bg-[#1a2c5b] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#253d82] transition">
                         <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-                        Submit for Approval
+                        {{ $issuance->status === 'returned' ? 'Resubmit for Approval' : 'Submit for Approval' }}
                     </button>
                 </form>
                 @endif
@@ -55,6 +55,15 @@
                     <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h8m-8 4h8m-8 4h5M3 6a2 2 0 012-2h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V6z"/></svg>
                     Create Transfer
                 </a>
+                @endcan
+                @can('return.manage')
+                @if(($returnableCount ?? 0) > 0)
+                <a href="{{ route('returns.create', ['issuance_id' => $issuance->id]) }}"
+                   class="inline-flex items-center gap-1.5 rounded border border-amber-300 bg-amber-50 px-4 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-100 transition">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h10v10H7z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 12 2 2 4-4"/></svg>
+                    Create Return
+                </a>
+                @endif
                 @endcan
                 <a href="{{ route('issuance.print', [$issuance, 'sticker']) }}" target="_blank"
                    class="inline-flex items-center gap-1.5 rounded border border-emerald-300 bg-emerald-50 px-4 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition">

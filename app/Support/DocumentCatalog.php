@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Disposal;
+use App\Models\PropertyReturn;
 use App\Models\PropertyTransaction;
 use App\Models\Transfer;
 use Illuminate\Database\Eloquent\Model;
@@ -17,6 +18,8 @@ class DocumentCatalog
         'SPHV' => ['code' => 'SPHV', 'title' => 'Semi-Expendable Property High Value', 'template' => 'classification_sphv'],
         'PTR' => ['code' => 'PTR', 'title' => 'Property Transfer Report', 'template' => 'ptr'],
         'ITR' => ['code' => 'ITR', 'title' => 'Inventory Transfer Report', 'template' => 'itr'],
+        'PRS' => ['code' => 'PRS', 'title' => 'Property Return Slip', 'template' => 'prs'],
+        'RRSP' => ['code' => 'RRSP', 'title' => 'Receipt of Returned Semi-Expendable Property', 'template' => 'rrsp'],
         'IIRUP' => ['code' => 'IIRUP', 'title' => 'Inventory and Inspection Report of Unserviceable Property', 'template' => 'iirup'],
         'IIRUSP' => ['code' => 'IIRUSP', 'title' => 'Inventory and Inspection Report of Unserviceable Semi-Expendable Property', 'template' => 'iirusp'],
         'RRSEP' => ['code' => 'RRSEP', 'title' => 'Receipt of Returned Semi-Expendable Property', 'template' => 'rrsep'],
@@ -37,6 +40,7 @@ class DocumentCatalog
         return match (true) {
             $record instanceof PropertyTransaction => self::templatesForIssuance($record),
             $record instanceof Transfer => self::templatesForTransfer($record),
+            $record instanceof PropertyReturn => self::templatesForReturn($record),
             $record instanceof Disposal => self::templatesForDisposal($record),
             default => throw new InvalidArgumentException('Unsupported record for document catalog.'),
         };
@@ -73,18 +77,25 @@ class DocumentCatalog
 
     public static function templatesForDisposal(Disposal $disposal): array
     {
-        $documents = [
-            self::DOCUMENTS[$disposal->document_type],
-            self::DOCUMENTS['WMR'],
-        ];
-
         if ($disposal->document_type === Disposal::DOCUMENT_TYPE_RRSEP) {
-            $documents[] = self::DOCUMENTS['IIRUSP'];
-        } else {
-            $documents[] = self::DOCUMENTS['RRSEP'];
+            return [
+                self::DOCUMENTS['RRSEP'],
+                self::DOCUMENTS['IIRUSP'],
+                self::DOCUMENTS['WMR'],
+            ];
         }
 
-        return array_values($documents);
+        return [
+            self::DOCUMENTS['IIRUP'],
+            self::DOCUMENTS['WMR'],
+        ];
+    }
+
+    public static function templatesForReturn(PropertyReturn $return): array
+    {
+        return [
+            self::DOCUMENTS[$return->document_type],
+        ];
     }
 
     public static function templateFor(Model $record, string $template): array

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Approval;
 use App\Models\Disposal;
+use App\Models\PropertyReturn;
 use App\Models\PropertyTransaction;
 use App\Models\Transfer;
 use App\Support\AuditLogger;
@@ -51,6 +52,12 @@ class ApprovalsController extends Controller
             if ($record instanceof Transfer) {
                 $record->update(['status' => 'approved', 'approved_at' => now()]);
                 WorkflowUpdater::applyTransfer($record->load(['lines', 'fromEmployee', 'toEmployee']), $request->user()->id);
+                DocumentControlRegistry::ensureFor($record->loadMissing('documentControls'));
+            }
+
+            if ($record instanceof PropertyReturn) {
+                $record->update(['status' => 'approved', 'approved_at' => now()]);
+                WorkflowUpdater::applyReturn($record->load(['lines', 'employee']), $request->user()->id);
                 DocumentControlRegistry::ensureFor($record->loadMissing('documentControls'));
             }
 

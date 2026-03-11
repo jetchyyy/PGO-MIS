@@ -169,17 +169,23 @@ class IssuanceController extends Controller
         $this->authorize('issuance.manage');
 
         $issuance->load(['lines', 'office', 'employee', 'fundCluster', 'approvals', 'documentControls']);
+        $returnableCount = InventoryItem::query()
+            ->whereIn('property_transaction_line_id', $issuance->lines->pluck('id'))
+            ->where('status', 'issued')
+            ->where('current_employee_id', $issuance->employee_id)
+            ->count();
         $generatedDocuments = in_array($issuance->status, ['approved', 'issued'], true)
             ? DocumentControlRegistry::listFor($issuance)
             : [];
 
-        return view('issuance.show', compact('issuance', 'generatedDocuments'));
+        return view('issuance.show', compact('issuance', 'generatedDocuments', 'returnableCount'));
     }
 
     public function submit(PropertyTransaction $issuance, Request $request): RedirectResponse
     {
         $this->authorize('issuance.manage');
-        abort_if($issuance->status !== 'draft', 422, 'Only draft transactions can be submitted.');
+        $wasReturned = $issuance->status === 'returned';
+        abort_if(! in_array($issuance->status, ['draft', 'returned'], true), 422, 'Only draft or returned transactions can be submitted.');
 
         DB::transaction(function () use ($issuance, $request): void {
             $issuance->update(['status' => 'submitted', 'submitted_at' => now()]);
@@ -189,7 +195,7 @@ class IssuanceController extends Controller
             AuditLogger::log($request->user()->id, 'issuance.submitted', $issuance, [], $request->ip(), $request->userAgent());
         });
 
-        return back()->with('status', 'Issuance submitted for approval.');
+        return back()->with('status', $wasReturned ? 'Issuance resubmitted for approval.' : 'Issuance submitted for approval.');
     }
 
     public function print(PropertyTransaction $issuance, string $template, Request $request)
